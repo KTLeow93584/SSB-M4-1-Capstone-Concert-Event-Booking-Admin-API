@@ -1,0 +1,290 @@
+-- Schema to reset the database's tables.
+DO $$
+BEGIN
+-- Drop all tables from child to parent, in that specific order, to not trigger foreign key constraint blocker.
+  
+  -- Promotions Table
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = 'ror_event_host' AND table_name = 'promotions') THEN
+    DROP TABLE promotions;
+  END IF;
+  
+  -- Events Table
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = 'ror_event_host' AND table_name = 'events') THEN
+    DROP TABLE events;
+  END IF;
+  
+  -- Venues Table
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = 'ror_event_host' AND table_name = 'venues') THEN
+    DROP TABLE venues;
+  END IF;
+  
+  -- User Verifications Table
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = 'ror_event_host' AND table_name = 'user_verifications') THEN
+    DROP TABLE user_verifications;
+  END IF;
+  
+  -- Individuals Table
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = 'ror_event_host' AND table_name = 'individuals') THEN
+    DROP TABLE individuals;
+  END IF;
+  
+  -- Organizations Table
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = 'ror_event_host' AND table_name = 'organizations') THEN
+    DROP TABLE organizations;
+  END IF;
+  
+  -- Password Reset Requests Table
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = 'ror_event_host' AND table_name = 'password_requests') THEN
+    DROP TABLE password_requests;
+  END IF;
+  
+  -- Users Table
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = 'ror_event_host' AND table_name = 'users') THEN
+    DROP TABLE users;
+  END IF;
+  
+  -- Countries Table
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = 'ror_event_host' AND table_name = 'countries') THEN
+    DROP TABLE countries;
+  END IF;
+  
+-- Then, recreate the tables with appropriate primary & foreign keys.
+  -- Countries Table
+  CREATE TABLE countries (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR,
+    abbreviation VARCHAR(4),
+    phone_code VARCHAR(8),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+  
+  -- Users Table
+  CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(64),
+    country_id INT,
+    contact_number VARCHAR(16),
+    password VARCHAR(64),
+    role VARCHAR(8),
+    social_provider VARCHAR(32),
+    social_uid VARCHAR(32),
+    device_id VARCHAR(64),
+    refresh_token TEXT,
+    profile_picture TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (country_id) REFERENCES countries(id) ON DELETE SET NULL
+  );
+  
+  -- Password Requests Table
+  CREATE TABLE password_requests (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    token VARCHAR(64),
+    expire_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+  
+  -- Individuals Table
+  CREATE TABLE individuals (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    name VARCHAR(128),
+    nric varchar(64),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+  
+  -- Organizations Table
+  CREATE TABLE organizations (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    name VARCHAR(128),
+    registration_number VARCHAR(128),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+  
+  CREATE TABLE user_verifications(
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    token VARCHAR(64),
+    verified_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+
+  -- Venues Table
+  CREATE TABLE venues (
+    id SERIAL PRIMARY KEY,
+    address VARCHAR,
+    state VARCHAR,
+    catalogues TEXT ARRAY DEFAULT '{}',
+    remarks TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+
+  -- Events Table
+  CREATE TABLE events (
+    id SERIAL PRIMARY KEY,
+    organiser_id INT NOT NULL,
+    staff_id INT,
+    venue_id INT,
+    name VARCHAR(64),
+    promo_image TEXT,
+    remarks TEXT,
+    scheduled_at_start TIMESTAMP,
+    scheduled_at_end TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (organiser_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (staff_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (venue_id) REFERENCES venues(id) ON DELETE SET NULL
+  );
+
+  -- Promotion Table
+  CREATE TABLE promotions (
+    id SERIAL PRIMARY KEY,
+    amount INT NOT NULL,
+    start_date TIMESTAMP NOT NULL,
+    end_date TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+  
+  -- Install extension to obtain the hash method.
+  CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+  -- Create the 'countries' table.
+  INSERT INTO countries (name, abbreviation, phone_code) VALUES('Malaysia', 'MY', '60');
+  INSERT INTO countries (name, abbreviation, phone_code) VALUES('Singapore', 'SG', '65');
+  INSERT INTO countries (name, abbreviation, phone_code) VALUES('Indonesia', 'ID', '62');
+  INSERT INTO countries (name, abbreviation, phone_code) VALUES('Thailand', 'TH', '66');
+  INSERT INTO countries (name, abbreviation, phone_code) VALUES('Japan', 'JP', '81');
+  INSERT INTO countries (name, abbreviation, phone_code) VALUES('Taiwan', 'TW', '886');
+  
+  -- Create dummy users in the 'users' table.
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
+  VALUES('admin@admin.com', 1, '11-1111111', crypt('123456', gen_salt('bf')), 'admin', null);
+  
+  INSERT INTO individuals (user_id, name, nric) 
+  VALUES(1, 'admin nimda', '990505051111');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
+  VALUES('staff1@staff.com', 1, '11-1111111', crypt('111111', gen_salt('bf')), 'staff', null);
+  
+  INSERT INTO individuals (user_id, name, nric) 
+  VALUES(2, 'Dummy Staff 1', '910505052222');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
+  VALUES('staff2@staff.com', 2, '11-1111111', crypt('222222', gen_salt('bf')), 'staff', null);
+  
+  INSERT INTO individuals (user_id, name, nric) 
+  VALUES(3, 'Dummy Staff 2', '920505052222');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
+  VALUES('staff3@staff.com', 3, '11-1111111', crypt('333333', gen_salt('bf')), 'staff', null);
+  
+  INSERT INTO individuals (user_id, name, nric) 
+  VALUES(4, 'Dummy Staff 3', '930505052222');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
+  VALUES('user1@user.com', 1, '11-1111111', crypt('111', gen_salt('bf')), 'user', null);
+  
+  INSERT INTO individuals (user_id, name, nric) 
+  VALUES(5, 'Dummy User 1', '910505053333');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
+  VALUES('user2@user.com', 1, '11-1111111', crypt('222', gen_salt('bf')), 'user', null);
+  
+  INSERT INTO individuals (user_id, name, nric) 
+  VALUES(6, 'Dummy User 2', '920505053333');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
+  VALUES('user3@user.com', 2, '11-1111111', crypt('333', gen_salt('bf')), 'user', null);
+  
+  INSERT INTO individuals (user_id, name, nric) 
+  VALUES(7, 'Dummy User 3', '930505053333');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
+  VALUES('user4@user.com', 2, '11-1111111', crypt('444', gen_salt('bf')), 'user', null);
+  
+  INSERT INTO individuals (user_id, name, nric) 
+  VALUES(8, 'Dummy User 4', '940505053333');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
+  VALUES('user5@user.com', 3, '11-1111111', crypt('555', gen_salt('bf')), 'user', null);
+  
+  INSERT INTO individuals (user_id, name, nric) 
+  VALUES(9, 'Dummy User 5', '950505053333');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
+  VALUES('user6@user.com', 3, '11-1111111', crypt('666', gen_salt('bf')), 'user', null);
+  
+  INSERT INTO individuals (user_id, name, nric) 
+  VALUES(10, 'Dummy User 6', '960505053333');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
+  VALUES('user7@user.com', 4, '11-1111111', crypt('777', gen_salt('bf')), 'user', null);
+  
+  INSERT INTO individuals (user_id, name, nric) 
+  VALUES(11, 'Dummy User 7', '970505053333');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
+  VALUES('user8@user.com', 4, '11-1111111', crypt('888', gen_salt('bf')), 'user', null);
+  
+  INSERT INTO individuals (user_id, name, nric) 
+  VALUES(12, 'Dummy User 8', '980505053333');
+  
+  -- Create dummy venues.
+  INSERT INTO venues (address, state, catalogues, remarks) 
+  VALUES('1147 Bartlett Avenue, Royal Oak', 'Michigan', 
+  '{ https://s1.ticketm.net/uk/tmimages/venue/maps/uk3/11947s.gif, https://images.unsplash.com/photo-1583795311768-2ef98ac78740?q=80&w=1000&auto=format&fit=crop }', 
+  '');
+  
+  INSERT INTO venues (address, state, catalogues, remarks) 
+  VALUES('1543 Morningview Lane, Ottumwa', 'Iowa', 
+  '{ https://images.adsttc.com/media/images/5dfb/62ff/3312/fd37/1000/017b/large_jpg/01_Concert_Hall-page-001.jpg?1576755945, https://images.unsplash.com/photo-1499364615650-ec38552f4f34?q=80&w=1000&auto=format&fit=crop }', 
+  '');
+  
+  INSERT INTO venues (address, state, catalogues, remarks) 
+  VALUES('1831 Post Farm Road, Atlanta', 'Georgia', 
+  '{ https://www.rncm.ac.uk/uploads/Concert_Hall_Mini_Plan-640x360.png, https://thumbs.dreamstime.com/b/rock-concert-4-254192.jpg }', 
+  '');
+  
+  -- Create dummy promotions.
+  INSERT INTO promotions (amount, start_date, end_date) VALUES(8, '2024-03-26 00:00:00', '2024-03-29 23:59:59');
+  INSERT INTO promotions (amount, start_date, end_date) VALUES(12, '2024-03-26 00:00:00', '2024-04-01 23:59:59');
+  INSERT INTO promotions (amount, start_date, end_date) VALUES(5, '2024-03-26 00:00:00', '2024-04-03 23:59:59');
+  
+  -- Create events.
+  INSERT INTO events (organiser_id, staff_id, venue_id, name, promo_image, remarks, scheduled_at_start, scheduled_at_end) 
+  VALUES(6, 2, 2, 
+  'One Ok Rock Luxury Disease', 
+  'https://pbs.twimg.com/media/F0WiDJ5aUAAZCL4?format=jpg&name=small', 
+  '', 
+  '2024-03-30 20:30:00',
+  '2024-03-30 23:30:00');
+  
+  INSERT INTO events (organiser_id, staff_id, venue_id, name, promo_image, remarks, scheduled_at_start, scheduled_at_end) 
+  VALUES(9, 2, 2, 
+  'Abingdon Boys School Live Concert', 
+  'https://static.wikia.nocookie.net/tokyo-magnitude-8-point-zero/images/2/2e/Abingdon_Boys_School.jpg/revision/latest?cb=20210710151310',
+  '', 
+  '2024-03-31 19:15:00',
+  '2024-03-31 22:15:00');
+  
+  INSERT INTO events (organiser_id, staff_id, venue_id, name, promo_image, remarks, scheduled_at_start, scheduled_at_end) 
+  VALUES(7, 2, 2, 
+  'Fear and Loathing in Last Vegas Concert 2024', 
+  'https://i.pinimg.com/originals/d0/f5/83/d0f5833a3f352fdf02c7f77d8a9dc603.jpg', 
+  '',
+  '2024-02-04 15:30:00',
+  '2024-03-31 18:30:00');
+  
+  INSERT INTO events (organiser_id, staff_id, venue_id, name, promo_image, remarks, scheduled_at_start, scheduled_at_end) 
+  VALUES(8, 2, 2, 
+  'Dummy Band Maid Concert 2024', 
+  'https://www.moshimoshi-nippon.jp/wp/wp-content/uploads/2020/07/62e7e706ec9dd790c218595d732882b2.jpg', 
+  '',
+  '2024-04-04 10:00:00',
+  '2024-04-04 14:00:00');
+END $$
