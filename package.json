@@ -22,7 +22,7 @@
     "mailgun.js": "^10.2.1",
     "node-fetch": "^3.2.6",
     "pg": "^8.11.3",
-    "telesignsdk": "^2.2.3",
+    "telesign": "^1.1.2",
     "twilio": "^5.0.3",
     "vercel": "^33.7.0"
   }
