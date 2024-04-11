@@ -6,8 +6,6 @@ const {
   sendMailToRecipientHTML
 } = require("../mailing_service.js");
 
-const { clientURL } = require("../settings/settings.js");
-
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -165,7 +163,7 @@ router.post("/register", async (req, res) => {
       `Hello, ${body.name}. Please verify your email.`,
       { 
         name: body.name, 
-        link: clientURL + "/verify/" + verificationToken
+        link: CLIENT_URL + "/verify/" + verificationToken
       },
       "mail-templates/user_verify_email.ejs",
     );
@@ -391,7 +389,7 @@ router.post("/password/forget", async (req, res) => {
       `Hello, ${user.name}. We have received your password reset request (Forgot Password).`,
       {
         name: user.name,
-        link: clientURL + "/password/reset/" + requestToken
+        link: CLIENT_URL + "/password/reset/" + requestToken
       },
       "mail-templates/forgot_password.ejs",
     );

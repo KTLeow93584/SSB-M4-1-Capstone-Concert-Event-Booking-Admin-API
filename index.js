@@ -49,12 +49,6 @@ const telesignServices = require("./phone_verify_telesign.js");
 //telesignServices.verifyPhoneNumberIdentity("60175845732");
 //telesignServices.sendOTPSMSToPhoneNumber("60175845732");
 // ===============
-// Phone Verification - Twilio
-//const twilioServices = require("./phone_verify_twilio.js");
-
-//twilioServices.lookUpPhoneNumber("+60175845732");
-//twilioServices.verifyPhoneNumber("+600175845732");
-// =======================================
 // Authentication Endpoints. (Login/Registration/etc.)
 const authRoutes = require("./apis/auth_api.js");
 app.use("/", authRoutes);
