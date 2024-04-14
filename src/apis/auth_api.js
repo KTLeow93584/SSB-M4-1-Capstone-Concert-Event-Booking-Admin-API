@@ -4,7 +4,7 @@ let express = require("express");
 const {
   sendMailToRecipientText,
   sendMailToRecipientHTML
-} = require("../mailing_service.js");
+} = require("../services/mail/mailing_service.js");
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -35,7 +35,7 @@ const {
   authenticateFirebaseJWToken,
   createJSONSuccessResponseToClient,
   createJSONErrorResponseToClient
-} = require("../middlewares.js");
+} = require("../services/middlewares.js");
 // =======================================
 // Registration.
 router.post("/register", async (req, res) => {
@@ -165,7 +165,7 @@ router.post("/register", async (req, res) => {
         name: body.name, 
         link: CLIENT_URL + "/verify/" + verificationToken
       },
-      "mail-templates/user_verify_email.ejs",
+      "../services/mail/templates/user_verify_email.ejs",
     );
     // =======================
     return createJSONSuccessResponseToClient(res, 201);
@@ -391,7 +391,7 @@ router.post("/password/forget", async (req, res) => {
         name: user.name,
         link: CLIENT_URL + "/password/reset/" + requestToken
       },
-      "mail-templates/forgot_password.ejs",
+      "../services/mail/templates/forgot_password.ejs",
     );
 
     return createJSONSuccessResponseToClient(res, 201);
@@ -521,7 +521,7 @@ router.post("/verify", async (req, res) => {
       user.email,
       `Welcome to Republic of Rock, ${user.name}`,
       { name: user.name },
-      "mail-templates/welcome.ejs",
+      "../services/mail/templates/welcome.ejs",
     );
     
     return createJSONSuccessResponseToClient(res, 201);

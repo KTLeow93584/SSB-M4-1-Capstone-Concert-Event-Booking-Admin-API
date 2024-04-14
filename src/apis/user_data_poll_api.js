@@ -16,9 +16,9 @@ const router = express.Router();
 const {
   authenticateCustomJWToken, authenticateFirebaseJWToken,
   createJSONSuccessResponseToClient, createJSONErrorResponseToClient
-} = require('../middlewares.js');
+} = require('../services/middlewares.js');
 // =======================================
-router.get('/events/ad', [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
+router.get('/events', [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -87,11 +87,12 @@ router.get('/events/ad', [authenticateCustomJWToken, authenticateFirebaseJWToken
   }
 });
 
-router.get('/event/admin', [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
+router.get('/event/:id', [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
   const client = await pool.connect();
 
   try {
     const email = req.email;
+    const { event_id } = req.params
 
     // Retrieve the user id from email for next query.
     let sqlQuery = `SELECT id FROM users WHERE email = $1`;

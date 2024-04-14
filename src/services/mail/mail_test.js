@@ -1,8 +1,8 @@
 // =======================================
 const {
   sendMailToRecipientText,
-  sendMailToRecipientHTML,
-} = require("../mailing_service.js");
+  sendMailToRecipientHTML
+} = require("./mailing_service.js");
 
 // Email Dummy Tests (Uncomment to test)
 
@@ -13,7 +13,7 @@ sendMailToRecipientHTML(
   "leowkeantat@gmail.com",
   `Welcome to Republic of Rock, Anonymous`,
   { name: "Anonymous" },
-  "mail-templates/welcome.ejs"
+  "../services/mail/templates/welcome.ejs"
 );
 */
 
@@ -24,7 +24,7 @@ sendMailToRecipientHTML(
   "leowkeantat@gmail.com",
   `Hello, Anonymous. Please verify your email.`,
   { name: "Anonymous", link: "https://www.google.com" },
-  "mail-templates/verify_email.ejs"
+  "../services/mail/templates/verify_email.ejs"
 );
 */
 
@@ -35,7 +35,7 @@ sendMailToRecipientHTML(
   "leowkeantat@gmail.com",
   `Hello, Anonymous. We have received your password reset request (Forgot Password).`,
   { name: "Anonymous", link: "https://www.google.com" },
-  "mail-templates/forgot_password.ejs"
+  "../services/mail/templates/forgot_password.ejs"
 );
 */
 
@@ -46,7 +46,7 @@ sendMailToRecipientHTML(
   "leowkeantat@gmail.com",
   `Hello, Anonymous. The admins have verified your credentials.`,
   { name: "Anonymous", link: "https://www.google.com" },
-  "mail-templates/admin_verify_email.ejs"
+  "../services/mail/templates/admin_verify_email.ejs"
 );
 */
 // =======================================

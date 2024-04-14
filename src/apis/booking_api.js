@@ -16,7 +16,7 @@ const {
   authenticateFirebaseJWToken,
   createJSONSuccessResponseToClient,
   createJSONErrorResponseToClient
-} = require("../middlewares.js");
+} = require("../services/middlewares.js");
 // =======================================
 // Retrieve All Events from a specific user (Must be Logged In) Endpoint.
 router.get("/events/user", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
@@ -34,20 +34,14 @@ router.get("/events/user", [authenticateCustomJWToken, authenticateFirebaseJWTok
     if (user.role !== "user")
       return createJSONErrorResponseToClient(res, 200, 405, "incorrect-role");
 
-    const eventResults = await performEventsToDisplayQuery(
-      client,
-      user_id,
-      user.role,
-    );
+    const eventResults = await performEventsToDisplayQuery(client, user_id, user.role);
 
     if (eventResults.rowCount > 0)
-      return createJSONSuccessResponseToClient(res, 200, {
-        events: eventResults.rows,
-      });
+      return createJSONSuccessResponseToClient(res, 200, { events: eventResults.rows });
     else {
       createJSONSuccessResponseToClient(res, 200, {
         message: "No events found for this user.",
-        events: [],
+        events: []
       });
     }
   }
@@ -78,20 +72,14 @@ router.get("/events/staff", [authenticateCustomJWToken, authenticateFirebaseJWTo
     if (user.role === "user")
       return createJSONErrorResponseToClient(res, 200, 405, "incorrect-role");
 
-    const eventResults = await performEventsToDisplayQuery(
-      client,
-      user_id,
-      user.role,
-    );
+    const eventResults = await performEventsToDisplayQuery(client, user_id, user.role);
 
     if (eventResults.rowCount > 0)
-      return createJSONSuccessResponseToClient(res, 200, {
-        events: eventResults.rows,
-      });
+      return createJSONSuccessResponseToClient(res, 200, { events: eventResults.rows });
     else {
       createJSONSuccessResponseToClient(res, 200, {
         message: "No events found for this staff.",
-        events: [],
+        events: []
       });
     }
   }
@@ -120,25 +108,16 @@ router.get("/event/:id", [authenticateCustomJWToken, authenticateFirebaseJWToken
     const user = query.rows[0];
     const user_id = user.id;
 
-    const eventResults = await performSingleEventToModifyQuery(
-      client,
-      event_id,
-      user_id,
-    );
+    const eventResults = await getEventsQuery(client, event_id, user_id);
 
     if (eventResults.rowCount > 0)
       return createJSONSuccessResponseToClient(res, 200, {
         event: {
-          ...eventResults.rows[0],
+          ...eventResults.rows[0]
         },
       });
     else
-      return createJSONErrorResponseToClient(
-        res,
-        200,
-        404,
-        "event-not-found",
-      );
+      return createJSONErrorResponseToClient(res, 200, 404, "event-not-found");
   }
   catch (error) {
     // Debug
@@ -192,9 +171,7 @@ router.post("/event", [authenticateCustomJWToken, authenticateFirebaseJWToken], 
         FROM venues 
         WHERE id = $1;
       `;
-      const existingVenueQuery = await client.query(existingVenueSelect, [
-        event_venue_id,
-      ]);
+      const existingVenueQuery = await client.query(existingVenueSelect, [event_venue_id]);
       const venueResult = existingVenueQuery.rows[0];
       // ======================
       // Get Country Data
@@ -210,9 +187,9 @@ router.post("/event", [authenticateCustomJWToken, authenticateFirebaseJWToken], 
       // ======================
       // Insert into Events Table and return "created_at".
       const newEventSelect = `
-      INSERT INTO events (organiser_id, venue_id, name, promo_image, remarks, scheduled_at_start, scheduled_at_end)  
-      VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, created_at;
-    `;
+        INSERT INTO events (organiser_id, venue_id, name, promo_image, remarks, scheduled_at_start, scheduled_at_end)  
+        VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, created_at;
+      `;
       const newEventQuery = await client.query(newEventSelect, [
         userResult.id, event_venue_id,
         event_name, event_promo_image, event_remarks,
@@ -246,7 +223,7 @@ router.post("/event", [authenticateCustomJWToken, authenticateFirebaseJWToken], 
           venue_address: venueResult.address,
           venue_state: venueResult.state,
           venue_image_catalogues: venueResult.catalogues,
-        },
+        }
       });
     }
     // User does not exist
@@ -329,21 +306,21 @@ router.put("/event", [authenticateCustomJWToken, authenticateFirebaseJWToken], a
     const email = req.email;
 
     // Retrieve the user id from email for next query.
-    let sqlQuery = `SELECT id FROM users WHERE email = $1`;
+    let sqlQuery = "SELECT id FROM users WHERE email = $1";
     let query = await client.query(sqlQuery, [email]);
     const user_id = query.rows[0].id;
 
     sqlQuery = `
-    UPDATE events SET 
-      venue_id = $1,
-      name = $2,
-      promo_image = $3,
-      remarks = $4,
-      scheduled_at_start = $5,
-      scheduled_at_end = $6
-    WHERE id = $7 AND organiser_id = $8
-    RETURNING *;
-  `;
+      UPDATE events SET 
+        venue_id = $1,
+        name = $2,
+        promo_image = $3,
+        remarks = $4,
+        scheduled_at_start = $5,
+        scheduled_at_end = $6
+      WHERE id = $7 AND organiser_id = $8
+      RETURNING *;
+    `;
     query = await client.query(sqlQuery, [
       event_venue_id, event_name, event_promo_image,
       event_remarks, event_scheduled_start, event_scheduled_end,
@@ -380,7 +357,7 @@ router.delete("/event", [authenticateCustomJWToken, authenticateFirebaseJWToken]
     const email = req.email;
 
     // Retrieve the user id from email for next query.
-    let sqlQuery = `SELECT id FROM users WHERE email = $1`;
+    let sqlQuery = "SELECT id FROM users WHERE email = $1";
     let query = await client.query(sqlQuery, [email]);
     const user_id = query.rows[0].id;
 
@@ -405,7 +382,7 @@ router.delete("/event", [authenticateCustomJWToken, authenticateFirebaseJWToken]
     return createJSONSuccessResponseToClient(res, 200, {
       message: deleteEventQuery.rowCount > 0 ? "Event successfully deleted." : "Event already deleted or does not exist.",
       event: {
-        event_id: parseInt(event_id),
+        event_id: parseInt(event_id)
       }
     });
   }
@@ -471,11 +448,11 @@ async function performEventsToDisplayQuery(client, user_id, role) {
 
     LEFT JOIN venues v
       ON e.venue_id = v.id
-    ` +
-    (role === "user" ? `WHERE e.organiser_id = $1` : `WHERE e.staff_id = $1`) +
-    `
-      ORDER BY created_at DESC;
-    `;
+  ` +
+  (role === "user" ? `WHERE e.organiser_id = $1` : `WHERE e.staff_id = $1`) +
+  `
+    ORDER BY created_at DESC;
+  `;
   const events = await client.query(eventQuery, [user_id]);
 
   // Debug
@@ -484,7 +461,7 @@ async function performEventsToDisplayQuery(client, user_id, role) {
   return events;
 }
 
-async function performSingleEventToModifyQuery(client, event_id, user_id) {
+async function getEventsQuery(client, event_id, user_id) {
   const eventQuery = `
     SELECT
       id as event_id,
@@ -495,7 +472,7 @@ async function performSingleEventToModifyQuery(client, event_id, user_id) {
       venue_id as event_venue_id,
       remarks as event_remarks
     FROM events
-    WHERE id= $1 AND organiser_id = $2
+    WHERE id = $1 AND organiser_id = $2
     ORDER BY created_at DESC;
   `;
   const events = await client.query(eventQuery, [event_id, user_id]);

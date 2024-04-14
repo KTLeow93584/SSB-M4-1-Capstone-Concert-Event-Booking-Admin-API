@@ -18,7 +18,7 @@ const {
   authenticateFirebaseJWToken,
   createJSONSuccessResponseToClient,
   createJSONErrorResponseToClient,
-} = require("../middlewares.js");
+} = require("../services/middlewares.js");
 // =======================================
 router.get(
   "/profile",

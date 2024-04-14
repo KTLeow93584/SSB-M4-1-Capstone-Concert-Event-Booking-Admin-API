@@ -19,6 +19,13 @@ const pool = new Pool({
   }
 });
 // =======================================
+// Sets the view engine to ejs
+app.set("view engine", 'ejs');
+app.set("views", path.join(__dirname, "/views"));
+// =======================================
+// Expose Static Asset Definitions Folder (base_dir/public)
+app.use(express.static(path.join(__dirname, "/../public")));
+// ======================================
 async function getPostgresVersion() {
   const client = await pool.connect();
   try
@@ -37,14 +44,39 @@ getPostgresVersion();
 // =======================================
 // Homepage.
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "/index.html"));
+  res.render("index");
 });
-app.get("/welcome", (req, res) => {
-  res.sendFile(path.join(__dirname, "/mail-templates/welcome.ejs"));
+
+app.get("/login", (req, res) => {
+  res.render("./pages/login");
+});
+
+app.get("/api/doc", (req, res) => {
+  res.render("./pages/api_documentations/index");
+});
+
+app.get("/api/doc/auth_user", (req, res) => {
+  res.render("pages/api_documentations/authentication_users_api_doc");
+});
+
+app.get("/api/doc/events", (req, res) => {
+  res.render("pages/api_documentations/events_api_doc");
+});
+
+app.get("/api/doc/profile", (req, res) => {
+  res.render("pages/api_documentations/profile_api_doc");
+});
+
+app.get("/api/doc/auth_admins", (req, res) => {
+  res.render("pages/api_documentations/authentication_admins_api_doc");
+});
+
+app.get("/api/doc/admin_poll", (req, res) => {
+  res.render("pages/api_documentations/admin_poll_api_doc");
 });
 // =======================================
 // Phone Verification - Telesign
-const telesignServices = require("./phone_verify_telesign.js");
+const telesignServices = require("./services/phone_verify_telesign.js");
 
 //telesignServices.verifyPhoneNumberIdentity("60175845732");
 //telesignServices.sendOTPSMSToPhoneNumber("60175845732");
@@ -75,7 +107,7 @@ app.use("/", venueRoutes);
 // =======================================
 // Error Page. (After all APIs and pages have been exhausted)
 app.use((req, res) => {
-  res.status(404).sendFile(path.join(__dirname, "/error_page.html"));
+  res.status(404).sendFile(path.join(__dirname, "./views/pages/error_page.html"));
 });
 // =======================================
 app.listen(3000, () => {
