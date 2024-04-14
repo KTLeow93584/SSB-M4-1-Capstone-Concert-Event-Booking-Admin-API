@@ -198,7 +198,7 @@ router.post("/login", async (req, res) => {
       social_provider: req.body.social_provider ? req.body.social_provider.replace(".com", "") : null,
       social_uid: req.body.social_uid ? req.body.social_uid : null,
       social_access_token: req.body.social_access_token,
-      social_refresh_token: req.body.social_refresh_token,
+      social_refresh_token: req.body.social_refresh_token
     };
 
     // Debug

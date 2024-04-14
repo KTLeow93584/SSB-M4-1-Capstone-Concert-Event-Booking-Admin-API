@@ -27,6 +27,7 @@
                                     description: '',
                                     endpoint_url: '/profile',
                                     endpoint_type: 'GET',
+                                    endpoint_parameters: null,
                                     endpoint_success_responses: [
                                         {
                                             name: 'Success. (With Results)' ,
@@ -96,17 +97,23 @@
                                     description: '',
                                     endpoint_url: '/profile',
                                     endpoint_type: 'PUT',
+                                    endpoint_parameters: {
+                                        name: '...',
+                                        country_id: 1,
+                                        contact_number: '123456789',
+                                        profile_picture: '...'
+                                    },
                                     endpoint_success_responses: [
                                         {
                                             name: 'Success.',
                                             description: '',
                                             json_response: `
                                                 user: {
-                                                        "id": 1,
-                                                        "country_id": 1,
-                                                        "contact_number": "...",
-                                                        "profile_picture": INSERT_URL_HERE,
-                                                        "name": "..."
+                                                        id: 1,
+                                                        country_id: 1,
+                                                        contact_number: "...",
+                                                        profile_picture: INSERT_URL_HERE,
+                                                        name: "..."
                                                 }
                                             `
                                         }

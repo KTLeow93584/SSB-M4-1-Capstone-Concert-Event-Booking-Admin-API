@@ -20,9 +20,84 @@
             <span>Type: </span>
             <span class="font-bold"><%= endpoint_type %></span>
         </li>
+        <!-- ============================================= -->
+        <%
+            let header = '';
+            switch (endpoint_type) {
+                case 'GET':
+                    header = 'Params';
+                    break;
+                case 'POST':
+                case 'PUT':
+                case 'DELETE':
+                    header = 'Body';
+                    break;
+                case 'OPTIONS':
+                case 'HEAD':
+                case 'TRACE':
+                    break;
+                default:
+                    break;
+            }
+        %>
+
+        <!-- Parameter (GET) or Body (POST/PUT) List Table -->
+        <table class="align-top border-collapse border border-slate-400">
+            <tbody class="align-top">
+                <tr>
+                    <td class="border border-slate-300 px-6 py-3 w-screen">
+                        <span>
+                            <%= header %> (<span class="font-bold">JSON Format</span>):
+                            <span> </span>
+                            <%= endpoint_parameters ? "" : "N/A" %>
+                        </span>
+                        <% if (endpoint_parameters) { %>
+                            <% let paramsJSON = JSON.stringify(endpoint_parameters); %>
+                            <% 
+                                paramsJSON = paramsJSON.replace(
+                                    new RegExp('{|\\[|,|}', 'g' ), 
+                                    (match) => match === '{' || match === '[' || match === ',' ? match + '\n' : '\n' + match
+                                ); 
+                            %>
+
+                            <% if (endpoint_parameters) { %>
+                                <div class="code-container">
+                                    <% let lines = paramsJSON.split(/\r?\n/).map((line) => line.trim()); %>
+
+                                    <% let tabIndentCount = 0; %>
+                                    <% lines.forEach((line, lineIndex) => { %>
+                                        <!-- ===================================================== -->
+                                        <!-- Increase Tab Indent on every "{" character encounter. -->
+                                        <!-- Decrease Tab Indent on every "}" character encounter. -->
+                                        <% 
+                                            if (line.includes("}") || line.includes("]"))
+                                                tabIndentCount = (tabIndentCount === 0) ? 0 : (tabIndentCount - 1);
+                                        %>
+                                        <!-- ===================================================== -->
+                                        <p class="code-text m-0 p-0">
+                                            <% for (let i = 0; i < tabIndentCount; ++i) { %>
+                                                <span class="whitespace-pre-wrap">    </span>
+                                            <% } %>
+                                            <%= line %>
+                                        </p>
+                                        <%
+                                            if (line.includes("{") || line.includes("["))
+                                                ++tabIndentCount;
+                                        %>
+                                    <% }); %>
+                                </div>
+                            <% } %>
+                        <% } %>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <!-- ============================================= -->
+        <!-- Successful Response -->
         <li class="my-3">
             <span>Successful Response(s): </span>
             <br />
+            <!-- Successful Response Table-->
             <table class="align-top border-collapse border border-slate-400">
                 <tbody class="align-top">
                     <tr>
@@ -47,23 +122,17 @@
                                         <div class="code-container">
                                             <%
                                                 if (response.json_response) {
-                                                    const lines = response.json_response.split(/\r?\n/).map((line) => line.trim());
-                                            %>
-
-                                            <% 
-                                                let openIndent = "{";
-                                                let closeIndent = "}"
-                                                let openArray = "[";
-                                                let closeArray = "]";
+                                                    let lines = response.json_response.split(/\r?\n/).map((line) => line.trim());
                                             %>
 
                                             <% let tabIndentCount = 0; %>
+
                                             <% lines.forEach((line, lineIndex) => { %>
                                                 <!-- ===================================================== -->
                                                 <!-- Increase Tab Indent on every "{" character encounter. -->
                                                 <!-- Decrease Tab Indent on every "}" character encounter. -->
                                                 <% 
-                                                    if (line.includes(closeIndent) || line.includes(closeArray))
+                                                    if (line.includes("}") || line.includes("]"))
                                                         tabIndentCount = (tabIndentCount === 0) ? 0 : (tabIndentCount - 1);
                                                 %>
                                                 <!-- ===================================================== -->
@@ -74,13 +143,10 @@
                                                     <%= line %>
                                                 </p>
                                                 <%
-                                                    if (line.includes(openIndent) || line.includes(openArray))
+                                                    if (line.includes("{") || line.includes("["))
                                                         ++tabIndentCount;
                                                 %>
-                                            <%
-                                                    }); 
-                                                }
-                                            %>
+                                            <% }); } %>
                                         </div>
                                     </li>
                                     <%- (index < endpoint_success_responses.length - 1) ? '<hr class="my-5 border-[#000000]" />' : '' %>
@@ -91,9 +157,12 @@
                 </tbody>
             </table>
         </li>
+        <!-- ============================================= -->
+        <!-- Failed Response -->
         <li>
             <span>Error/Failed Response(s): </span>
             <br />
+            <!-- Failed Response Table -->
             <table class="align-top border-collapse border border-slate-400">
                 <tbody class="align-top">
                     <tr>
@@ -112,22 +181,17 @@
                                         <br />
 
                                         <div class="code-container">
-                                            <% const lines = response.json_response.split(/\r?\n/).map((line) => line.trim()); %>
-
-                                            <% 
-                                                let openIndent = "{";
-                                                let closeIndent = "}";
-                                            %>
+                                            <% let lines = response.json_response.split(/\r?\n/).map((line) => line.trim()); %>
 
                                             <% let tabIndentCount = 0; %>
+
                                             <% lines.forEach((line, lineIndex) => { %>
                                                 <!-- ===================================================== -->
                                                 <!-- Increase Tab Indent on every "{" character encounter. -->
                                                 <!-- Decrease Tab Indent on every "}" character encounter. -->
                                                 <% 
-                                                    if (line.includes(closeIndent)) {
+                                                    if (line.includes("}") || line.includes("]"))
                                                         tabIndentCount = (tabIndentCount === 0) ? 0 : (tabIndentCount - 1);
-                                                    }
                                                 %>
                                                 <!-- ===================================================== -->
                                                 <p class="code-text m-0 p-0">
@@ -137,9 +201,8 @@
                                                     <%= line %>
                                                 </p>
                                                 <%
-                                                    if (line.includes(openIndent)) {
+                                                    if (line.includes("{") || line.includes("["))
                                                         ++tabIndentCount;
-                                                    } 
                                                 %>
                                             <% }); %>
                                         </div>
@@ -152,5 +215,6 @@
                 </tbody>
             </table>
         </li>
+        <!-- ============================================= -->
     </ul>
 </li>

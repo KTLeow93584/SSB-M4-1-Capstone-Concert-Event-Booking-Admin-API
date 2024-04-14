@@ -27,6 +27,7 @@
                                 description: '',
                                 endpoint_url: '/events/user',
                                 endpoint_type: 'GET',
+                                endpoint_parameters: null,
                                 endpoint_success_responses: [
                                     {
                                         name: 'Success. (With Results)',
@@ -99,6 +100,7 @@
                                 description: '',
                                 endpoint_url: '/events/staff',
                                 endpoint_type: 'GET',
+                                endpoint_parameters: null,
                                 endpoint_success_responses: [
                                     {
                                         name: 'Success. (With Results)',
@@ -171,6 +173,9 @@
                                 description: 'Retrieving all the info about an event where the requesting user is the organizer.',
                                 endpoint_url: '/event/:id',
                                 endpoint_type: 'GET',
+                                endpoint_parameters: {
+                                    id: 1
+                                },
                                 endpoint_success_responses: [
                                     {
                                         name: 'Success. (With Results)',
@@ -225,6 +230,14 @@
                                 description: '',
                                 endpoint_url: '/event',
                                 endpoint_type: 'POST',
+                                endpoint_parameters: {
+                                    event_venue_id: 1,
+                                    event_name: '...', 
+                                    event_scheduled_start: '1985-09-25 17:45:30.005', 
+                                    event_scheduled_end: '1985-09-25 17:45:30.005',
+                                    event_promo_image: '...', 
+                                    event_remarks: '...'
+                                },
                                 endpoint_success_responses: [
                                     {
                                         name: 'Success. (With Results)',
@@ -310,6 +323,15 @@
                                 description: '',
                                 endpoint_url: '/event',
                                 endpoint_type: 'PUT',
+                                endpoint_parameters: {
+                                    event_id: 1,
+                                    event_venue_id: 1,
+                                    event_name: '...', 
+                                    event_scheduled_start: '1985-09-25 17:45:30.005', 
+                                    event_scheduled_end: '1985-09-25 17:45:30.005',
+                                    event_promo_image: '...', 
+                                    event_remarks: '...'
+                                },
                                 endpoint_success_responses: [
                                     {
                                         name: 'Success. (With Results)',
@@ -372,6 +394,9 @@
                                 description: '',
                                 endpoint_url: '/event',
                                 endpoint_type: 'DELETE',
+                                endpoint_parameters: {
+                                    event_id: 1
+                                },
                                 endpoint_success_responses: [
                                     {
                                         name: 'Success. (Regardless if any records were deleted)',
@@ -421,6 +446,9 @@
                                 description: '',
                                 endpoint_url: '/event/approve',
                                 endpoint_type: 'POST',
+                                endpoint_parameters: {
+                                    event_id: 1
+                                },
                                 endpoint_success_responses: [
                                     {
                                         name: 'Success. (Code: 201)',

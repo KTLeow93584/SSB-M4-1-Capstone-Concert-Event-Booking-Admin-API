@@ -26,7 +26,19 @@
                                 title: 'Registration',
                                 description: 'Has two variants: Registration via Social Platforms (Google, Facebook) or Registration via Email & Password Combinations. Also can register either as an individual or an organization.',
                                 endpoint_url: '/register',
-                                endpoint_type: 'GET',
+                                endpoint_type: 'POST',
+                                endpoint_parameters: {
+                                    email: '...@some-email.com',
+                                    country_id: 1,
+                                    contact_number: '123456789',
+                                    password: '...',
+                                    social_provider: 'facebook',
+                                    social_uid: '123456789',
+                                    name: '...',
+                                    nric: '...',
+                                    organization_name: '...',
+                                    organization_registration_number: '...'
+                                },
                                 endpoint_success_responses: [
                                     {
                                         name: 'Success. (Code: 201)',
@@ -112,7 +124,15 @@
                                 title: 'Login',
                                 description: 'Has two variants: Logging in via Social Platforms (Google, Facebook) or Logging in via Email & Password Combinations.',
                                 endpoint_url: '/login',
-                                endpoint_type: 'GET',
+                                endpoint_type: 'POST',
+                                endpoint_parameters: {
+                                    email: '...@some-email.com',
+                                    password: '...',
+                                    social_provider: 'facebook',
+                                    social_uid: '123456789',
+                                    social_access_token: '...',
+                                    social_refresh_token: '...',
+                                },
                                 endpoint_success_responses: [
                                     {
                                         name: 'Success. (With Results)',
@@ -178,6 +198,7 @@
                                 description: 'In the event the login fails, do nothing for the back-end side. Front-end app, however should clear the cached token.',
                                 endpoint_url: '/logout',
                                 endpoint_type: 'POST',
+                                endpoint_parameters: null,
                                 endpoint_success_responses: [
                                     {
                                         name: 'Success. (Code: 201)',
@@ -208,6 +229,7 @@
                                 description: '',
                                 endpoint_url: '/password/forget',
                                 endpoint_type: 'POST',
+                                endpoint_parameters: null,
                                 endpoint_success_responses: [
                                     {
                                         name: 'Success. (Code: 201)',
@@ -252,6 +274,9 @@
                                 description: 'Sanity check from the front-end app to test if the request tallied is valid.',
                                 endpoint_url: '/password/reset/verify',
                                 endpoint_type: 'POST',
+                                endpoint_parameters: {
+                                    token: '...'
+                                },
                                 endpoint_success_responses: [
                                     {
                                         name: 'Success. (Code: 201)',
@@ -282,6 +307,10 @@
                                 description: 'Execute the request.',
                                 endpoint_url: '/password/reset',
                                 endpoint_type: 'POST',
+                                endpoint_parameters: {
+                                    password: '...',
+                                    token: '...'
+                                },
                                 endpoint_success_responses: [
                                     {
                                         name: 'Success. (Code: 201)',
