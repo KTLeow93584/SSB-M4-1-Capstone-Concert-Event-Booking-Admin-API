@@ -43,10 +43,10 @@ router.post("/register", async (req, res) => {
 
   try {
     // Hash the password and check for the existence of email.
-    const body = {
+    let body = {
       email: req.body.email.toLowerCase(),
       country_id: req.body.country_id,
-      contact_number: req.body.contact_number,
+      contact_number: req.body.contact_number ? req.body.contact_number.replace("-", "") : null,
       password: req.body.password,
       social_provider: req.body.social_provider ? req.body.social_provider.replace(".com", "") : null,
       social_uid: req.body.social_uid,
@@ -59,6 +59,9 @@ router.post("/register", async (req, res) => {
       organization_name: req.body.organization_name,
       organization_registration_number: req.body.organization_registration_number
     };
+    // =======================
+    if (typeof body.contact_number === "number")
+      body.contact_number = body.contact_number.toString();
     // =======================
     // Missing Form Inputs
     if (!body.email || !body.country_id || !body.contact_number || !body.password || 

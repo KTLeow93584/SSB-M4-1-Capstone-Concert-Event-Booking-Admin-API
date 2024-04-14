@@ -142,7 +142,11 @@ router.post("/event", [authenticateCustomJWToken, authenticateFirebaseJWToken], 
     } = req.body;
 
     const email = req.email;
-
+    // =======================
+    // Missing Form Inputs
+    if (!email || !event_venue_id || !event_name || !event_scheduled_start || !event_scheduled_end || !event_promo_image)
+        return createJSONErrorResponseToClient(res, 200, 405, "incomplete-form");
+    // =======================
     // Get existing user
     const existingUserSelect = `
       SELECT 
@@ -215,71 +219,19 @@ router.post("/event", [authenticateCustomJWToken, authenticateFirebaseJWToken], 
           organiser_contact_number: userResult.contact_number,
 
           staff_email: null,
-          staff_first_name: null,
-          staff_last_name: null,
+          staff_name: null,
           staff_phone_code: null,
           staff_contact_number: null,
 
           venue_address: venueResult.address,
           venue_state: venueResult.state,
-          venue_image_catalogues: venueResult.catalogues,
+          venue_image_catalogues: venueResult.catalogues
         }
       });
     }
     // User does not exist
     else
       return createJSONErrorResponseToClient(res, 200, 404, "no-user-found");
-  }
-  catch (error) {
-    // Debug
-    console.error(error.stack);
-
-    return createJSONErrorResponseToClient(res, 200, 500, "server-error");
-  }
-  finally {
-    client.release();
-  }
-});
-
-// Approve an existing Event Endpoint. (Must come from staff/admin)
-router.post("/event/approve", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
-  const client = await pool.connect();
-
-  try {
-    const { event_id } = req.body;
-    const email = req.email;
-
-    // Retrieve the user id from email for next query.
-    let sqlQuery = `
-      SELECT
-        id,
-        role 
-      FROM users 
-      WHERE email = $1
-    `;
-    let query = await client.query(sqlQuery, [email]);
-    
-    const user = query.rows[0];
-    const user_id = user.id;
-
-    if (user.role === "user")
-      return createJSONErrorResponseToClient(res, 200, 405, "incorrect-role");
-
-    // Get existing user
-    const selectEventQuery = await client.query(
-      "SELECT * from events where id = $1",
-      [event_id]
-    );
-    if (selectEventQuery.rows.length <= 0)
-      return createJSONErrorResponseToClient(res, 200, 404, "event-not-found");
-
-    query = await client.query(
-      "UPDATE events SET staff_id = $1 WHERE id = $2",
-      [user_id, event_id]
-    );
-
-    // Send new data back to client.
-    return createJSONSuccessResponseToClient(res, 201);
   }
   catch (error) {
     // Debug
@@ -304,7 +256,11 @@ router.put("/event", [authenticateCustomJWToken, authenticateFirebaseJWToken], a
     } = req.body;
 
     const email = req.email;
-
+    // =======================
+    // Missing Form Inputs
+    if (!email || !event_venue_id || !event_name || !event_scheduled_start || !event_scheduled_end || !event_promo_image)
+        return createJSONErrorResponseToClient(res, 200, 405, "incomplete-form");
+    // =======================
     // Retrieve the user id from email for next query.
     let sqlQuery = "SELECT id FROM users WHERE email = $1";
     let query = await client.query(sqlQuery, [email]);
@@ -385,6 +341,57 @@ router.delete("/event", [authenticateCustomJWToken, authenticateFirebaseJWToken]
         event_id: parseInt(event_id)
       }
     });
+  }
+  catch (error) {
+    // Debug
+    console.error(error.stack);
+
+    return createJSONErrorResponseToClient(res, 200, 500, "server-error");
+  }
+  finally {
+    client.release();
+  }
+});
+
+// Approve an existing Event Endpoint. (Must come from staff/admin)
+router.post("/event/approve", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const { event_id } = req.body;
+    const email = req.email;
+
+    // Retrieve the user id from email for next query.
+    let sqlQuery = `
+      SELECT
+        id,
+        role 
+      FROM users 
+      WHERE email = $1
+    `;
+    let query = await client.query(sqlQuery, [email]);
+    
+    const user = query.rows[0];
+    const user_id = user.id;
+
+    if (user.role === "user")
+      return createJSONErrorResponseToClient(res, 200, 405, "incorrect-role");
+
+    // Get existing user
+    const selectEventQuery = await client.query(
+      "SELECT * from events where id = $1",
+      [event_id]
+    );
+    if (selectEventQuery.rows.length <= 0)
+      return createJSONErrorResponseToClient(res, 200, 404, "event-not-found");
+
+    query = await client.query(
+      "UPDATE events SET staff_id = $1 WHERE id = $2",
+      [user_id, event_id]
+    );
+
+    // Send new data back to client.
+    return createJSONSuccessResponseToClient(res, 201);
   }
   catch (error) {
     // Debug

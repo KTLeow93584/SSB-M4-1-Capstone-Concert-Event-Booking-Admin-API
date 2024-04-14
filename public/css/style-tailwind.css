@@ -1062,6 +1062,13 @@ input:checked + .toggle-bg {
 .z-50 {
   z-index: 50;
 }
+.m-0 {
+  margin: 0px;
+}
+.mx-8 {
+  margin-left: 2rem;
+  margin-right: 2rem;
+}
 .my-4 {
   margin-top: 1rem;
   margin-bottom: 1rem;
@@ -1069,6 +1076,10 @@ input:checked + .toggle-bg {
 .my-5 {
   margin-top: 1.25rem;
   margin-bottom: 1.25rem;
+}
+.my-3 {
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
 }
 .mb-1 {
   margin-bottom: 0.25rem;
@@ -1178,6 +1189,19 @@ input:checked + .toggle-bg {
 .w-full {
   width: 100%;
 }
+.w-screen {
+  width: 100vw;
+}
+.min-w-max {
+  min-width: -moz-max-content;
+  min-width: max-content;
+}
+.min-w-48 {
+  min-width: 12rem;
+}
+.min-w-96 {
+  min-width: 24rem;
+}
 .flex-1 {
   flex: 1 1 0%;
 }
@@ -1243,6 +1267,9 @@ input:checked + .toggle-bg {
 }
 .list-none {
   list-style-type: none;
+}
+.list-\[upper-roman\] {
+  list-style-type: upper-roman;
 }
 .grid-cols-4 {
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1311,6 +1338,12 @@ input:checked + .toggle-bg {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.whitespace-pre-line {
+  white-space: pre-line;
+}
+.whitespace-pre-wrap {
+  white-space: pre-wrap;
 }
 .rounded {
   border-radius: 0.25rem;
@@ -1411,6 +1444,13 @@ input:checked + .toggle-bg {
 .bg-white\/50 {
   background-color: rgb(255 255 255 / 0.5);
 }
+.bg-blue-300 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(164 202 254 / var(--tw-bg-opacity));
+}
+.p-0 {
+  padding: 0px;
+}
 .p-1 {
   padding: 0.25rem;
 }
@@ -1459,6 +1499,14 @@ input:checked + .toggle-bg {
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
 }
+.py-6 {
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+}
+.px-28 {
+  padding-left: 7rem;
+  padding-right: 7rem;
+}
 .pb-4 {
   padding-bottom: 1rem;
 }
@@ -1467,6 +1515,15 @@ input:checked + .toggle-bg {
 }
 .pt-20 {
   padding-top: 5rem;
+}
+.pt-6 {
+  padding-top: 1.5rem;
+}
+.pb-3 {
+  padding-bottom: 0.75rem;
+}
+.pt-5 {
+  padding-top: 1.25rem;
 }
 .text-center {
   text-align: center;
@@ -1536,6 +1593,10 @@ input:checked + .toggle-bg {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
 }
+.text-green-500 {
+  --tw-text-opacity: 1;
+  color: rgb(14 159 110 / var(--tw-text-opacity));
+}
 .opacity-0 {
   opacity: 0;
 }
@@ -1586,11 +1647,13 @@ input:checked + .toggle-bg {
   transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
 }
 
-code {
+.code-container {
+    background-color: #f1f1f1;
+}
+
+.code-text {
     font-family: Consolas, "courier new";
     color: crimson;
-    background-color: #f1f1f1;
-    padding: 2px;
     font-size: 105%;
 }
 

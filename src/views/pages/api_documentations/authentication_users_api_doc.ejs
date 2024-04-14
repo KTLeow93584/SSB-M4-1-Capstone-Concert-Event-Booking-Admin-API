@@ -18,258 +18,296 @@
                 <p class="text-2xl font-bold">
                     Category: Authentication (Consumers)
                 </p>
-                <div class="mt-5">
-                    <ul class="list-disc list-inside">
-                    <!-- Registration API -->
-                    <%- include('../../components/code_doc_section', {
-                        title: 'Registration',
-                        description: 'Has two variants: Registration via Social Platforms (Google, Facebook) or Registration via Email & Password Combinations. Also can register either as an individual or an organization.',
-                        endpoint_url: '/register',
-                        endpoint_type: 'GET',
-                        endpoint_success_response: `Empty (Code: 201)`, 
-                        endpoint_failed_responses: [ 
-                        {
-                            name: 'Incomplete Form',
-                            description: 'Occurs when there are missing fields in the form', 
-                            code: '405',
-                            json_response: `
-                            {
-                                success: false,
-                                error: {
-                                status: "incomplete-form",
-                                code: 405
-                                }
-                            }
-                            `
-                        },
-                        {
-                            name: 'Ambiguous Registration Type' ,
-                            description: 'Occurs when user sends in a form containing which identifies him/her as both an \"individual\" and \"organization\".',
-                            code: '405',
-                            json_response: `
-                            {
-                                success: false,
-                                error: {
-                                status: "ambiguous-registration-type",
-                                code: 405
-                                }
-                            }
-                            `
-                        },
-                        {
-                            name: 'Incorrect Password Format' ,
-                            description: 'Password must meet the following criteria - Contains at least 1 symbol, 1 number, 1uppercase alphabet, 1 lowercase alphabet, at least 8 characters long and no whitespaces.',
-                            code: '405',
-                            json_response: `
-                            {
-                                success: false,
-                                error: {
-                                status: "incorrect-password-format",
-                                code: 405
-                                }
-                            }
-                            `
-                        },
-                        {
-                            name: 'User already exists/Email is in use.' ,
-                            description: 'The email input already ties to an existing account.',
-                            code: '409',
-                            json_response: `
-                            {
-                                success: false,
-                                error: {
-                                status: "user-already-exist",
-                                code: 409
-                                }
-                            }
-                            `
-                        },
-                        {
-                            name: 'Server Codebase Error.' ,
-                            description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
-                            code: '500',
-                            json_response: `
-                            {
-                                success: false,
-                                error: {
-                                status: "server-error",
-                                code: 500
-                                }
-                            }
-                            `
-                        }
-                        ]
-                    }) %>
-                    <!-- Login API -->
-                    <%- include('../../components/code_doc_section', {
-                        title: 'Login',
-                        description: 'Has two variants: Logging in via Social Platforms (Google, Facebook) or Logging in via Email & Password Combinations.',
-                        endpoint_url: '/login',
-                        endpoint_type: 'GET',
-                        endpoint_success_response: `
-                        user: {
-                            user_id: integer,
-                            name: string
-                        },
-                        token: string,
-                        auth_type: "socials" or "basic" (Determined by the flag, "isViaSocials")
-                        `, 
-                        endpoint_failed_responses: [
-                        {
-                            name: 'No User Found',
-                            description: '[Social Login] No account was located with the social credentials. Front-end should move the user to the registration page with this response.', 
-                            code: '404',
-                            json_response: `
-                            {
-                                success: false,
-                                error: {
-                                status: "no-user-found",
-                                code: 404
-                                }
-                            }
-                            `
-                        },
-                        {
-                            name: 'Incorrect Email/Password Combination' ,
-                            description: '[Email Password Login] The combined credentials either did not match to any registered users or it was due to an invalid password (upon matched). Front-end should return an error indicating this.',
-                            code: '401',
-                            json_response: `
-                            {
-                                success: false,
-                                error: {
-                                status: "incorrect-credentials",
-                                code: 401
-                                }
-                            }
-                            `
-                        },
-                        {
-                            name: 'Server Codebase Error.' ,
-                            description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
-                            code: '500',
-                            json_response: `
-                            {
-                                success: false,
-                                error: {
-                                status: "server-error",
-                                code: 500
-                                }
-                            }
-                            `
-                        }
-                        ]
-                    }) %>
-                    <!-- Logout API -->
-                    <%- include('../../components/code_doc_section', {
-                        title: 'Logout',
-                        description: 'In the event the login fails, do nothing for the back-end side. Front-end app, however should clear the cached token.',
-                        endpoint_url: '/logout',
-                        endpoint_type: 'POST',
-                        endpoint_success_response: `Empty (Code: 201)`, 
-                        endpoint_failed_responses: [
-                        {
-                            name: 'Server Codebase Error.' ,
-                            description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
-                            code: '500',
-                            json_response: `
-                            {
-                                success: false,
-                                error: {
-                                status: "server-error",
-                                code: 500
-                                }
-                            }
-                            `
-                        }
-                        ]
-                    }) %>
-                    <!-- Forget Password API -->
-                    <%- include('../../components/code_doc_section', {
-                        title: 'Forget Password',
-                        description: '',
-                        endpoint_url: '/password/forget',
-                        endpoint_type: 'POST',
-                        endpoint_success_response: `Empty (Code: 201)`, 
-                        endpoint_failed_responses: [
-                        {
-                            name: 'No User Found',
-                            description: 'No account was located with the input email.', 
-                            code: '404',
-                            json_response: `
-                            {
-                                success: false,
-                                error: {
-                                status: "no-user-found",
-                                code: 404
-                                }
-                            }
-                            `
-                        },
-                        {
-                            name: 'Server Codebase Error.' ,
-                            description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
-                            code: '500',
-                            json_response: `
-                            {
-                                success: false,
-                                error: {
-                                status: "server-error",
-                                code: 500
-                                }
-                            }
-                            `
-                        }
-                        ]
-                    }) %>
-                    <!-- Verify Password Reset API -->
-                    <%- include('../../components/code_doc_section', {
-                        title: 'Verify Password Reset Request',
-                        description: 'Sanity check from the front-end app to test if the request tallied is valid.',
-                        endpoint_url: '/password/reset/verify',
-                        endpoint_type: 'POST',
-                        endpoint_success_response: `Empty (Code: 201)`, 
-                        endpoint_failed_responses: [
-                        {
-                            name: 'Server Codebase Error.' ,
-                            description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
-                            code: '500',
-                            json_response: `
-                            {
-                                success: false,
-                                error: {
-                                status: "server-error",
-                                code: 500
-                                }
-                            }
-                            `
-                        }
-                        ]
-                    }) %>
-                    <!-- Perform Password Reset API -->
-                    <%- include('../../components/code_doc_section', {
-                        title: 'Perform Password Reset Request',
-                        description: 'Execute the request.',
-                        endpoint_url: '/password/reset',
-                        endpoint_type: 'POST',
-                        endpoint_success_response: `Empty (Code: 201)`, 
-                        endpoint_failed_responses: [
-                        {
-                            name: 'Server Codebase Error.' ,
-                            description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
-                            code: '500',
-                            json_response: `
-                            {
-                                success: false,
-                                error: {
-                                status: "server-error",
-                                code: 500
-                                }
-                            }
-                            `
-                        }
-                        ]
-                    }) %>
-                    </ul>
+                <div class="mt-5 mx-8">
+                    <div class="w-full">
+                        <ul class="list-disc list-inside">
+                            <!-- Registration API -->
+                            <%- include('../../components/code_doc_section', {
+                                title: 'Registration',
+                                description: 'Has two variants: Registration via Social Platforms (Google, Facebook) or Registration via Email & Password Combinations. Also can register either as an individual or an organization.',
+                                endpoint_url: '/register',
+                                endpoint_type: 'GET',
+                                endpoint_success_responses: [
+                                    {
+                                        name: 'Success. (Code: 201)',
+                                        description: 'Nothing to return to front-end app.',
+                                        json_response: null
+                                    }
+                                ], 
+                                endpoint_failed_responses: [
+                                    {
+                                        name: 'Incomplete Form',
+                                        description: 'Occurs when there are missing fields in the form.',
+                                        code_message: '405',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: "incomplete-form",
+                                                    code: 405
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Ambiguous Registration Type' ,
+                                        description: 'Occurs when user sends in a form containing which identifies him/her as both an \"individual\" and \"organization\".',
+                                        code_message: '405',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: "ambiguous-registration-type",
+                                                    code: 405
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Incorrect Password Format' ,
+                                        description: 'Password must meet the following criteria - Contains at least 1 symbol, 1 number, 1uppercase alphabet, 1 lowercase alphabet, at least 8 characters long and no whitespaces.',
+                                        code_message: '405',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: "incorrect-password-format",
+                                                    code: 405
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'User already exists/Email is in use.' ,
+                                        description: 'The email input already ties to an existing account.',
+                                        code_message: '409',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: "user-already-exist",
+                                                    code: 409
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Server Codebase Error.' ,
+                                        description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
+                                        code_message: '500',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: "server-error",
+                                                    code: 500
+                                                }
+                                            }
+                                        `
+                                    }
+                                ]
+                            }) %>
+                            <!-- Login API -->
+                            <%- include('../../components/code_doc_section', {
+                                title: 'Login',
+                                description: 'Has two variants: Logging in via Social Platforms (Google, Facebook) or Logging in via Email & Password Combinations.',
+                                endpoint_url: '/login',
+                                endpoint_type: 'GET',
+                                endpoint_success_responses: [
+                                    {
+                                        name: 'Success. (With Results)',
+                                        description: '',
+                                        json_response: `
+                                            user: {
+                                                user_id: integer,
+                                                name: string
+                                            },
+                                            token: string,
+                                            auth_type: "socials" or "basic" (Determined by the flag, "isViaSocials")
+                                        `
+                                    }
+                                ], 
+                                endpoint_failed_responses: [
+                                    {
+                                        name: 'No User Found',
+                                        description: '[Social Login] No account was located with the social credentials. Front-end should move the user to the registration page with this response.', 
+                                        code_message: '404',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: "no-user-found",
+                                                    code: 404
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Incorrect Email/Password Combination' ,
+                                        description: '[Email Password Login] The combined credentials either did not match to any registered users or it was due to an invalid password (upon matched). Front-end should return an error indicating this.',
+                                        code_message: '401',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: "incorrect-credentials",
+                                                    code: 401
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Server Codebase Error.' ,
+                                        description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
+                                        code_message: '500',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: "server-error",
+                                                    code: 500
+                                                }
+                                            }
+                                        `
+                                    }
+                                ]
+                            }) %>
+                            <!-- Logout API -->
+                            <%- include('../../components/code_doc_section', {
+                                title: 'Logout',
+                                description: 'In the event the login fails, do nothing for the back-end side. Front-end app, however should clear the cached token.',
+                                endpoint_url: '/logout',
+                                endpoint_type: 'POST',
+                                endpoint_success_responses: [
+                                    {
+                                        name: 'Success. (Code: 201)',
+                                        description: 'Nothing to return to front-end app.',
+                                        json_response: null
+                                    }
+                                ], 
+                                endpoint_failed_responses: [
+                                    {
+                                        name: 'Server Codebase Error.' ,
+                                        description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
+                                        code_message: '500',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: "server-error",
+                                                    code: 500
+                                                }
+                                            }
+                                        `
+                                    }
+                                ]
+                            }) %>
+                            <!-- Forget Password API -->
+                            <%- include('../../components/code_doc_section', {
+                                title: 'Forget Password',
+                                description: '',
+                                endpoint_url: '/password/forget',
+                                endpoint_type: 'POST',
+                                endpoint_success_responses: [
+                                    {
+                                        name: 'Success. (Code: 201)',
+                                        description: 'Nothing to return to front-end app.',
+                                        json_response: null
+                                    }
+                                ], 
+                                endpoint_failed_responses: [
+                                    {
+                                        name: 'No User Found',
+                                        description: 'No account was located with the input email.', 
+                                        code_message: '404',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: "no-user-found",
+                                                    code: 404
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Server Codebase Error.' ,
+                                        description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
+                                        code_message: '500',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: "server-error",
+                                                    code: 500
+                                                }
+                                            }
+                                        `
+                                    }
+                                ]
+                            }) %>
+                            <!-- Verify Password Reset API -->
+                            <%- include('../../components/code_doc_section', {
+                                title: 'Verify Password Reset Request',
+                                description: 'Sanity check from the front-end app to test if the request tallied is valid.',
+                                endpoint_url: '/password/reset/verify',
+                                endpoint_type: 'POST',
+                                endpoint_success_responses: [
+                                    {
+                                        name: 'Success. (Code: 201)',
+                                        description: 'Nothing to return to front-end app.',
+                                        json_response: null
+                                    }
+                                ], 
+                                endpoint_failed_responses: [
+                                    {
+                                        name: 'Server Codebase Error.' ,
+                                        description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
+                                        code_message: '500',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: "server-error",
+                                                    code: 500
+                                                }
+                                            }
+                                        `
+                                    }
+                                ]
+                            }) %>
+                            <!-- Perform Password Reset API -->
+                            <%- include('../../components/code_doc_section', {
+                                title: 'Perform Password Reset Request',
+                                description: 'Execute the request.',
+                                endpoint_url: '/password/reset',
+                                endpoint_type: 'POST',
+                                endpoint_success_responses: [
+                                    {
+                                        name: 'Success. (Code: 201)',
+                                        description: 'Nothing to return to front-end app.',
+                                        json_response: null
+                                    }
+                                ], 
+                                endpoint_failed_responses: [
+                                    {
+                                        name: 'Server Codebase Error.' ,
+                                        description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
+                                        code_message: '500',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: "server-error",
+                                                    code: 500
+                                                }
+                                            }
+                                        `
+                                    }
+                                ]
+                            }) %>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>

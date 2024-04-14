@@ -7,8 +7,11 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build-css": "postcss ./src/styles.css -o ./public/css/style-tailwind.css",
     "watch-css": "postcss ./src/styles.css -o ./public/css/style-tailwind.css --watch",
+    "start-server": "node src/index.js",
+    "start-server-watch": "node --watch src/index.js",
     "build": "npm run build-css && node src/index.js",
-    "start": "concurrently \"npm run watch-css\" \"node src/index.js\""
+    "start": "concurrently \"npm run watch-css\" \"npm run start-server\"",
+    "start-watch": "concurrently \"npm run watch-css\" \"npm run start-server-watch\""
   },
   "keywords": [],
   "author": "Leow Kean Tat (Kaz)",

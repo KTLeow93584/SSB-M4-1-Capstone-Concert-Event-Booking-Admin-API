@@ -3,27 +3,89 @@
 
     <br />
 
-    <div class="mb-8">
-        <span><%= description %></span>
-    </div>
+    <% if (description) { %>
+        <div class="mb-8">
+            <span><%= description %></span>
+        </div>
+    <% } else { %>
+        <div class="mb-8"></div>
+    <% } %>
 
-    <ul class="list-decimal list-inside">
-        <li>
+    <ul class="list-[upper-roman] list-inside">
+        <li class="my-3">
             <span>URL Endpoint: </span>
-            <code><%= endpoint_url %></code>
+            <code class="code-container code-text"><%= endpoint_url %></code>
         </li>
-        <li>
+        <li class="my-3">
             <span>Type: </span>
             <span class="font-bold"><%= endpoint_type %></span>
         </li>
-        <li>
-            <span>Successful Response: </span>
+        <li class="my-3">
+            <span>Successful Response(s): </span>
             <br />
             <table class="align-top border-collapse border border-slate-400">
                 <tbody class="align-top">
                     <tr>
-                        <td class="border border-slate-300 px-6">
-                            <code class="whitespace-none"><%= endpoint_success_response %></code>
+                        <td class="border border-slate-300 px-6 pt-5 pb-3 w-screen">
+                            <ol class="list-decimal list-inside">
+                                <% endpoint_success_responses.forEach((response, index)=> { %>
+                                    <li>
+                                        <span class="text-green-500">
+                                            <%= response.name %>
+                                        </span>
+
+                                        <br />
+
+                                        <% if (response.description) { %>
+                                            <div>
+                                                <span><%= response.description %></span>
+                                            </div>
+
+                                            <br />
+                                        <% } %>
+
+                                        <div class="code-container">
+                                            <%
+                                                if (response.json_response) {
+                                                    const lines = response.json_response.split(/\r?\n/).map((line) => line.trim());
+                                            %>
+
+                                            <% 
+                                                let openIndent = "{";
+                                                let closeIndent = "}"
+                                                let openArray = "[";
+                                                let closeArray = "]";
+                                            %>
+
+                                            <% let tabIndentCount = 0; %>
+                                            <% lines.forEach((line, lineIndex) => { %>
+                                                <!-- ===================================================== -->
+                                                <!-- Increase Tab Indent on every "{" character encounter. -->
+                                                <!-- Decrease Tab Indent on every "}" character encounter. -->
+                                                <% 
+                                                    if (line.includes(closeIndent) || line.includes(closeArray))
+                                                        tabIndentCount = (tabIndentCount === 0) ? 0 : (tabIndentCount - 1);
+                                                %>
+                                                <!-- ===================================================== -->
+                                                <p class="code-text m-0 p-0">
+                                                    <% for (let i = 0; i < tabIndentCount; ++i) { %>
+                                                        <span class="whitespace-pre-wrap">    </span>
+                                                    <% } %>
+                                                    <%= line %>
+                                                </p>
+                                                <%
+                                                    if (line.includes(openIndent) || line.includes(openArray))
+                                                        ++tabIndentCount;
+                                                %>
+                                            <%
+                                                    }); 
+                                                }
+                                            %>
+                                        </div>
+                                    </li>
+                                    <%- (index < endpoint_success_responses.length - 1) ? '<hr class="my-5 border-[#000000]" />' : '' %>
+                                <% }); %>
+                            </ol>
                         </td>
                     </tr>
                 </tbody>
@@ -35,11 +97,13 @@
             <table class="align-top border-collapse border border-slate-400">
                 <tbody class="align-top">
                     <tr>
-                        <td class="border border-slate-300 px-6 py-3">
+                        <td class="border border-slate-300 px-6 py-3 w-screen">
                             <ol class="list-decimal list-inside">
                                 <% endpoint_failed_responses.forEach((response, index)=> { %>
                                     <li>
-                                        <span class="text-red-500"><%= response.name %> (<%= response.code %>)</span>
+                                        <span class="text-red-500">
+                                            <%= response.name %> (<span class="font-bold"><%= response.code_message %></span>)
+                                        </span>
 
                                         <br />
 
@@ -47,7 +111,38 @@
 
                                         <br />
 
-                                        <code class="whitespace-none"><%= response.json_response %></code>
+                                        <div class="code-container">
+                                            <% const lines = response.json_response.split(/\r?\n/).map((line) => line.trim()); %>
+
+                                            <% 
+                                                let openIndent = "{";
+                                                let closeIndent = "}";
+                                            %>
+
+                                            <% let tabIndentCount = 0; %>
+                                            <% lines.forEach((line, lineIndex) => { %>
+                                                <!-- ===================================================== -->
+                                                <!-- Increase Tab Indent on every "{" character encounter. -->
+                                                <!-- Decrease Tab Indent on every "}" character encounter. -->
+                                                <% 
+                                                    if (line.includes(closeIndent)) {
+                                                        tabIndentCount = (tabIndentCount === 0) ? 0 : (tabIndentCount - 1);
+                                                    }
+                                                %>
+                                                <!-- ===================================================== -->
+                                                <p class="code-text m-0 p-0">
+                                                    <% for (let i = 0; i < tabIndentCount; ++i) { %>
+                                                        <span class="whitespace-pre-wrap">    </span>
+                                                    <% } %>
+                                                    <%= line %>
+                                                </p>
+                                                <%
+                                                    if (line.includes(openIndent)) {
+                                                        ++tabIndentCount;
+                                                    } 
+                                                %>
+                                            <% }); %>
+                                        </div>
                                     </li>
                                     <%- (index < endpoint_failed_responses.length - 1) ? '<hr class="my-5 border-[#000000]" />' : '' %>
                                 <% }); %>

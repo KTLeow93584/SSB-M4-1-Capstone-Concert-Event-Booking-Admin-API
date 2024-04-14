@@ -90,7 +90,7 @@ const profileRoutes = require("./apis/profile_api.js");
 app.use("/", profileRoutes);
 
 // Booking Appointment Endpoints.
-const bookingRoutes = require("./apis/booking_api.js");
+const bookingRoutes = require("./apis/events_api.js");
 app.use("/", bookingRoutes);
 
 // Administrative Data Pooling Endpoints.
