@@ -11,7 +11,8 @@
     <!-- ======================================= -->
     <!-- Navigation + Side Panel + Body -->
     <div class="w-full">
-        <%- include('../../components/nav_side_panel') %>
+        <%- include('../../partials/nav_panel', { has_side_bar: true }) %>
+        <%- include('../../partials/side_bar_code_doc') %>
 
         <div class="p-4 sm:ml-64">
             <div class="mt-16">
@@ -22,10 +23,10 @@
                     <div class="w-full">
                         <ul class="list-disc list-inside">
                             <!-- Events Listing (Consumers) API -->
-                            <%- include('../../components/code_doc_section', {
+                            <%- include('../../partials/code_doc_section', {
                                 title: 'Events Listing (Consumers)',
                                 description: '',
-                                endpoint_url: '/events/user',
+                                endpoint_url: 'api/events/user',
                                 endpoint_type: 'GET',
                                 endpoint_parameters: null,
                                 endpoint_success_responses: [
@@ -95,10 +96,10 @@
                                 ]
                             }) %>
                             <!-- Events Listing (Staffs) API -->
-                            <%- include('../../components/code_doc_section', {
+                            <%- include('../../partials/code_doc_section', {
                                 title: 'Events Listing (Administration)',
                                 description: '',
-                                endpoint_url: '/events/staff',
+                                endpoint_url: 'api/events/staff',
                                 endpoint_type: 'GET',
                                 endpoint_parameters: null,
                                 endpoint_success_responses: [
@@ -168,10 +169,10 @@
                                 ]
                             }) %>
                             <!-- Event Overview API -->
-                            <%- include('../../components/code_doc_section', {
+                            <%- include('../../partials/code_doc_section', {
                                 title: 'Event Detailed Overview (Consumers)',
                                 description: 'Retrieving all the info about an event where the requesting user is the organizer.',
-                                endpoint_url: '/event/:id',
+                                endpoint_url: 'api/event/:id',
                                 endpoint_type: 'GET',
                                 endpoint_parameters: {
                                     id: 1
@@ -225,10 +226,10 @@
                                 ]
                             }) %>
                             <!-- Creating a New Event API -->
-                            <%- include('../../components/code_doc_section', {
+                            <%- include('../../partials/code_doc_section', {
                                 title: 'New Event Endpoint',
                                 description: '',
-                                endpoint_url: '/event',
+                                endpoint_url: 'api/event',
                                 endpoint_type: 'POST',
                                 endpoint_parameters: {
                                     event_venue_id: 1,
@@ -318,10 +319,10 @@
                                 ]
                             }) %>
                             <!-- Modifying an Existing Event API -->
-                            <%- include('../../components/code_doc_section', {
+                            <%- include('../../partials/code_doc_section', {
                                 title: 'Modify Existing Event Endpoint',
                                 description: '',
-                                endpoint_url: '/event',
+                                endpoint_url: 'api/event',
                                 endpoint_type: 'PUT',
                                 endpoint_parameters: {
                                     event_id: 1,
@@ -389,10 +390,10 @@
                                 ]
                             }) %>
                             <!-- Delete an Existing Event API -->
-                            <%- include('../../components/code_doc_section', {
+                            <%- include('../../partials/code_doc_section', {
                                 title: 'Delete Existing Event Endpoint',
                                 description: '',
-                                endpoint_url: '/event',
+                                endpoint_url: 'api/event',
                                 endpoint_type: 'DELETE',
                                 endpoint_parameters: {
                                     event_id: 1
@@ -441,10 +442,10 @@
                                 ]
                             }) %>
                             <!-- Approve an Existing Event API -->
-                            <%- include('../../components/code_doc_section', {
+                            <%- include('../../partials/code_doc_section', {
                                 title: 'Approve an Existing Event Endpoint',
                                 description: '',
-                                endpoint_url: '/event/approve',
+                                endpoint_url: 'api/event/approve',
                                 endpoint_type: 'POST',
                                 endpoint_parameters: {
                                     event_id: 1

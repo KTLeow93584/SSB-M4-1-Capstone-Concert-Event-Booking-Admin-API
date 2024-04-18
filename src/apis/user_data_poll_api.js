@@ -18,7 +18,7 @@ const {
   createJSONSuccessResponseToClient, createJSONErrorResponseToClient
 } = require('../services/middlewares.js');
 // =======================================
-router.get('/events', [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
+router.get('/api/events', [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -87,7 +87,7 @@ router.get('/events', [authenticateCustomJWToken, authenticateFirebaseJWToken], 
   }
 });
 
-router.get('/event/:id', [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
+router.get('/api/event/:id', [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
   const client = await pool.connect();
 
   try {

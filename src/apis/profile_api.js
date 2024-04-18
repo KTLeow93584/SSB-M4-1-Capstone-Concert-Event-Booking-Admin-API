@@ -21,7 +21,7 @@ const {
 } = require("../services/middlewares.js");
 // =======================================
 // Retrieve Profile Information
-router.get("/profile", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
+router.get("/api/profile", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
     const client = await pool.connect();
 
     try {
@@ -84,7 +84,7 @@ router.get("/profile", [authenticateCustomJWToken, authenticateFirebaseJWToken],
 );
 
 // Update Profile
-router.put("/profile", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
+router.put("/api/profile", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
     const client = await pool.connect();
 
     try {

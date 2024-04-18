@@ -6,7 +6,10 @@ const cors = require("cors");
 const result = require("dotenv").config();
 
 const { Pool } = require("pg");
-const { DATABASE_URL } = process.env;
+const {
+  DATABASE_URL,
+  CACHE_SECRET, CACHE_TTL_DURATION, CACHE_PRUNE_AFTER_DURATION
+} = process.env;
 // ======================================
 let app = express();
 app.use(cors());
@@ -19,11 +22,60 @@ const pool = new Pool({
   }
 });
 // =======================================
+var bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({ extended: true }));
+// =======================================
+// Express Session Setup
+const session = require("express-session");
+
+// Express Session with PostgreSQL Cache DB Setup (Neon Tech)
+/*
+const PGSession = require('connect-pg-simple')(session);
+
+const postgresCacheDBSession = new PGSession({
+  // Insert connect-pg-simple options here
+  pool: pool,
+  tableName: "user_sessions"
+});
+
+app.use(session({
+  store: postgresCacheDBSession,
+  secret: CACHE_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: parseInt(CACHE_TTL_DURATION),
+    secure: false
+  }
+}));
+*/
+
+// Express Session with Memory Storage
+const MemoryStore = require('memorystore')(session)
+
+app.use(session({
+    store: new MemoryStore({
+      // Prune expired entries every 5 seconds (5000 milliseconds)
+      checkPeriod: CACHE_PRUNE_AFTER_DURATION
+    }),
+    secret: CACHE_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      // Time to Live for Cookies = Environment Variable (milliseconds)
+      maxAge: parseInt(CACHE_TTL_DURATION),
+      secure: false
+    }
+}));
+
+// For Caching to prevent data loss after server down:
+//https://www.npmjs.com/package/memory-cache-node
+// ======================================
 // Sets the view engine to ejs
 app.set("view engine", 'ejs');
 app.set("views", path.join(__dirname, "/views"));
 // =======================================
-// Expose Static Asset Definitions Folder (base_dir/public)
+// Expose Static Asset Definitions Folder (%PROJECT_BASE_PATH%/public)
 app.use(express.static(path.join(__dirname, "/../public")));
 // ======================================
 async function getPostgresVersion() {
@@ -42,71 +94,125 @@ async function getPostgresVersion() {
 
 getPostgresVersion();
 // =======================================
-// Homepage.
-app.get("/", (req, res) => {
-  res.render("index");
-});
-
-app.get("/login", (req, res) => {
-  res.render("./pages/login");
-});
-
-app.get("/api/doc", (req, res) => {
-  res.render("./pages/api_documentations/index");
-});
-
-app.get("/api/doc/auth_user", (req, res) => {
-  res.render("pages/api_documentations/authentication_users_api_doc");
-});
-
-app.get("/api/doc/events", (req, res) => {
-  res.render("pages/api_documentations/events_api_doc");
-});
-
-app.get("/api/doc/profile", (req, res) => {
-  res.render("pages/api_documentations/profile_api_doc");
-});
-
-app.get("/api/doc/auth_admins", (req, res) => {
-  res.render("pages/api_documentations/authentication_admins_api_doc");
-});
-
-app.get("/api/doc/admin_poll", (req, res) => {
-  res.render("pages/api_documentations/admin_poll_api_doc");
-});
-// =======================================
 // Phone Verification - Telesign
 const telesignServices = require("./services/phone_verify_telesign.js");
 
 //telesignServices.verifyPhoneNumberIdentity("60175845732");
 //telesignServices.sendOTPSMSToPhoneNumber("60175845732");
-// ===============
+// =======================================
+// APIs (Staffs/Admins/Developers - Back-End Domain)
+
 // Authentication Endpoints. (Login/Registration/etc.)
-const authRoutes = require("./apis/auth_api.js");
-app.use("/", authRoutes);
+const { router: adminAuthAPIRouter } = require("./apis/auth_admin_api.js");
+const { verifyPasswordRequestToken } = require("./apis/auth_admin_api.js");
+app.use("/", adminAuthAPIRouter);
+
+// Data Pooling Endpoints.
+const adminPollAPIRouter = require("./apis/admin_data_poll_api.js");
+app.use("/", adminPollAPIRouter);
+// =================
+// APIs (End-Users)
+
+// Authentication Endpoints. (Login/Registration/etc.)
+const userAuthAPIRouter = require("./apis/auth_user_api.js");
+app.use("/", userAuthAPIRouter);
 
 // Profile Endpoints.
-const profileRoutes = require("./apis/profile_api.js");
-app.use("/", profileRoutes);
+const profileAPIRouter = require("./apis/profile_api.js");
+app.use("/", profileAPIRouter);
 
-// Booking Appointment Endpoints.
-const bookingRoutes = require("./apis/events_api.js");
-app.use("/", bookingRoutes);
+// Event Endpoints.
+const eventAPIRouter = require("./apis/events_api.js");
+app.use("/", eventAPIRouter);
 
-// Administrative Data Pooling Endpoints.
-const adminRoutes = require("./apis/admin_data_poll_api.js");
-app.use("/", adminRoutes);
-
-// User Data Polling Endpoints.
-const userRoutes = require("./apis/user_data_poll_api.js");
-app.use("/", userRoutes);
+// Data Polling Endpoints.
+const userPollAPIRouter = require("./apis/user_data_poll_api.js");
+app.use("/", userPollAPIRouter);
 
 // Venue Endpoints.
-const venueRoutes = require("./apis/venues_api.js");
-app.use("/", venueRoutes);
+const venueAPIRouter = require("./apis/venues_api.js");
+app.use("/", venueAPIRouter);
+// =======================================
+// Global Middlewares (Used in every API call)
+app.use((req, res, next) => {
+  req.page_response = {};
+
+  req.page_response = {
+    form_data: req.session.formData ?? null,
+    info_message: req.session.infoMessage ?? null,
+    error_message: req.session.errorMessage ?? null
+  }
+  
+  // Clear the data from session after displaying it.
+  delete req.session.infoMessage;
+  delete req.session.errorMessage;
+  delete req.session.formData;
+
+  next();
+});
+// =======================================
+// Web Pages.
+app.get("/", async (req, res) => {
+    res.redirect(req.session.user ? "/dashboard" : "/login");
+});
+
+app.get("/login", async (req, res) => {
+  res.render("./pages/login", { form_api_url: "/web/api/login", ...req.page_response });
+});
+
+app.get("/password/forget", async (req, res) => {
+  res.render("./pages/password_forget", { form_api_url: "/web/api/password/forget", ...req.page_response });
+});
+
+app.get("/password/reset/:token", async (req, res) => {
+  const result = await verifyPasswordRequestToken(req, res, req.params["token"]);
+
+  res.render("./pages/password_reset", { form_api_url: `/web/api/password/reset/${req.params["token"]}`, is_valid: result, ...req.page_response });
+});
+
+app.get("/logout", async (req, res) => {
+  console.log("Log out Process.", req.session.user);
+  //res.render("./pages/logout");
+});
+
+app.get("/dashboard", async (req, res) => {
+  res.render("./pages/dashboard");
+});
+
+app.get("/profile", async (req, res) => {
+  res.render("./pages/profile");
+});
+
+app.get("/api-doc", async (req, res) => {
+  res.render("./pages/api_documentations/index");
+});
+
+app.get("/api-doc/auth_user", async (req, res) => {
+  res.render("pages/api_documentations/authentication_users_api_doc");
+});
+
+app.get("/api-doc/events", async (req, res) => {
+  res.render("pages/api_documentations/events_api_doc");
+});
+
+app.get("/api-doc/profile", async (req, res) => {
+  res.render("pages/api_documentations/profile_api_doc");
+});
+
+app.get("/api-doc/auth_admin",async (req, res) => {
+  res.render("pages/api_documentations/authentication_admins_api_doc");
+});
+
+app.get("/api-doc/admin_poll", async (req, res) => {
+  res.render("pages/api_documentations/admin_poll_api_doc");
+});
 // =======================================
 // Error Page. (After all APIs and pages have been exhausted)
 app.use((req, res) => {
+  res.status(404).sendFile(path.join(__dirname, "./views/pages/error_page.html"));
+});
+
+app.use("/server-error", (req, res) => {
   res.status(404).sendFile(path.join(__dirname, "./views/pages/error_page.html"));
 });
 // =======================================

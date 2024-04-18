@@ -1,7 +1,5 @@
 // =======================================
 let express = require('express');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 
 const { Pool } = require('pg');
 const { DATABASE_URL, SECRET_KEY } = process.env;
@@ -21,7 +19,7 @@ const {
 } = require('../services/middlewares.js');
 // =======================================
 // GET all available venues.
-router.get('/venues', [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
+router.get('/api/venues', [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
   const client = await pool.connect();
   
   try {

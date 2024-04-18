@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concert Event Hosting Services (Republic of Rock) Login Page</title>
+    <link rel="stylesheet" href="/css/style-tailwind.css" type="text/css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+</head>
+
+<body>
+    <!-- ======================================= -->
+    <!-- Navigation + Side Panel + Body -->
+    <div class="w-full">
+        <%- include('../partials/nav_panel', { has_side_bar: false }) %>
+
+        <form class="mt-32 max-w-sm mx-auto" action="<%= form_api_url %>" method="POST">
+            <p class="text-3xl mb-5 text-center font-bold">
+                Login Page
+            </p>
+            <div class="mb-5">
+                <label for="email-form" class="block mb-2 text-sm text-gray-900 dark:text-white">Your email</label>
+                <input name="email" type="email" id="email-form"
+                    value="<%= form_data && form_data.email ? form_data.email : "" %>"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    autocomplete="true"
+                    placeholder="Your Email"
+                    required />
+            </div>
+            <div class="mb-5">
+                <label for="password-form" class="block mb-2 text-sm text-gray-900 dark:text-white">Your password</label>
+                <div class="flex items-center pe-3 block bg-gray-50 rounded-lg border border-solid border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus-within:ring-1 focus-within:ring-blue-500 focus-within:border-blue-500 dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                    <input name="password" type="password" id="password-form"
+                        value="<%= form_data && form_data.password ? form_data.password : "" %>"
+                        class="text-gray-900 text-sm bg-transparent border-none block w-full p-2.5 focus:ring-0 rounded-lg dark:placeholder-gray-400 dark:text-white"
+                        placeholder="Your Password"
+                        autocomplete="true"
+                        required />
+                    <input type="checkbox" 
+                        class="w-4 h-4 border border-black rounded bg-white focus:ring-0 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-0"
+                    onclick="Toggle()">
+                </div>
+            </div>
+            <div class="flex items-start mb-5">
+                <div class="flex items-center h-5">
+                    <input name="remember_toggle" id="remember_toggle" type="checkbox"
+                        class="w-4 h-4 border border-black rounded bg-white focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800"
+                        <% (form_data && form_data.remember_toggle) ? "checked" : "" %>
+                    />
+                </div>
+                <label for="remember_toggle" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                    Remember Me
+                </label>
+                <a href="/password/forget" class="text-sm ms-auto text-blue-600 font-medium hover:underline"">
+                    Forgot your password?
+                </a>
+            </div>
+            <!-- ======================================= -->
+            <!-- Display information from previous page's successful query -->
+            <% if (info_message) { %>
+                <p class="text-green-500 mb-5 mx-0 p-0">
+                    <%= info_message %>
+                </p>
+            <% } %>
+            <!-- ======================================= -->
+            <!-- Display Error Messages -->
+            <% if (error_message) { %>
+                <p class="text-red-500 mb-5 mx-0 p-0">
+                    <%= error_message %>
+                </p>
+            <% } %>
+            <!-- ======================================= -->
+            <button type="submit"
+                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                Submit
+            </button>
+        </form>
+    </div>
+    <!-- ======================================= -->
+    <script>
+        // Change the type of input to password or text
+        function Toggle() {
+            let temp = document.getElementById("password-form");
+            temp.type = temp.type === "password" ? "text" : "password";
+        }
+    </script>
+    <!-- ======================================= -->
+</body>
+
+</html>

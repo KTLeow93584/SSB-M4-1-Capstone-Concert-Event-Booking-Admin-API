@@ -9,6 +9,7 @@ const {
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+
 // Guide on "pseudorandom" tokens:
 // https://gist.github.com/joepie91/7105003c3b26e65efcea63f3db82dfba
 const { v4: uuidv4 } = require("uuid");
@@ -20,7 +21,8 @@ const {
   ACCESS_TOKEN_EXPIRY,
   REFRESH_TOKEN_EXPIRY,
   FORGET_PASSWORD_TOKEN_EXPIRY,
-  PASSWORD_HASH_AMOUNT
+  PASSWORD_HASH_AMOUNT,
+  CLIENT_URL
 } = process.env;
 
 const pool = new Pool({
@@ -38,7 +40,7 @@ const {
 } = require("../services/middlewares.js");
 // =======================================
 // Registration.
-router.post("/register", async (req, res) => {
+router.post("/api/register", async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -168,7 +170,7 @@ router.post("/register", async (req, res) => {
         name: body.name, 
         link: CLIENT_URL + "/verify/" + verificationToken
       },
-      "../services/mail/templates/user_verify_email.ejs",
+      path.join(__dirname, "../services/mail/templates/user_verify_email.ejs")
     );
     // =======================
     return createJSONSuccessResponseToClient(res, 201);
@@ -185,7 +187,7 @@ router.post("/register", async (req, res) => {
 });
 
 // Login.
-router.post("/login", async (req, res) => {
+router.post("/api/login", async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -200,9 +202,6 @@ router.post("/login", async (req, res) => {
       social_access_token: req.body.social_access_token,
       social_refresh_token: req.body.social_refresh_token
     };
-
-    // Debug
-    //console.log("[On Login] Body.", body);
 
     let user = null;
     let query = null;
@@ -224,8 +223,8 @@ router.post("/login", async (req, res) => {
     `;
 
     // Debug
-    //console.log("[Login] Via Social Platform Flag: ", isViaSocials);
-    //console.log("[Login] Body: ", body);
+    //console.log("[On Login - User] Via Social Platform Flag: ", isViaSocials);
+    //console.log("[On Login - User] Body.", body);
 
     // Logged in with socials (Google, Facebook)
     if (isViaSocials) {
@@ -302,7 +301,7 @@ router.post("/login", async (req, res) => {
 });
 
 // Logout.
-router.post("/logout", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
+router.post("/api/logout", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
   const client = await pool.connect();
   
   try {
@@ -329,7 +328,7 @@ router.post("/logout", [authenticateCustomJWToken, authenticateFirebaseJWToken],
 });
 
 // Request Forgot Password.
-router.post("/password/forget", async (req, res) => {
+router.post("/api/password/forget", async (req, res) => {
   const client = await pool.connect();
   try {
     const { email } = req.body;
@@ -394,7 +393,7 @@ router.post("/password/forget", async (req, res) => {
         name: user.name,
         link: CLIENT_URL + "/password/reset/" + requestToken
       },
-      "../services/mail/templates/forgot_password.ejs",
+      path.join(__dirname, "../services/mail/templates/forgot_password.ejs")
     );
 
     return createJSONSuccessResponseToClient(res, 201);
@@ -411,7 +410,7 @@ router.post("/password/forget", async (req, res) => {
 });
 
 // Verify Password Reset Request (Sanity-check).
-router.post("/password/reset/verify", async (req, res) => {
+router.post("/api/password/reset/verify", async (req, res) => {
   const client = await pool.connect();
   try {
     const { token } = req.body;
@@ -434,7 +433,7 @@ router.post("/password/reset/verify", async (req, res) => {
 });
 
 // Request Forgot Password.
-router.post("/password/reset", async (req, res) => {
+router.post("/api/password/reset", async (req, res) => {
   const client = await pool.connect();
   try {
     const { password, token } = req.body;
@@ -443,6 +442,13 @@ router.post("/password/reset", async (req, res) => {
     
     if (!result.success)
       return result.resultResponse;
+
+    const pass = password.length >= 8 & regexUpperLetters.test(password) &
+        regexLowerLetters.test(password) & regexNumbers.test(password) &
+        regexSymbols.test(password);
+    
+    if (!pass)
+      return createJSONErrorResponseToClient(res, 200, 405, "incorrect-password-format");
 
     let query = `
       UPDATE users SET
@@ -477,7 +483,7 @@ router.post("/password/reset", async (req, res) => {
 });
 
 // User verifies account's email.
-router.post("/verify", async (req, res) => {
+router.post("/api/verify", async (req, res) => {
   const client = await pool.connect();
   try {
     const { token } = req.body;
@@ -524,7 +530,7 @@ router.post("/verify", async (req, res) => {
       user.email,
       `Welcome to Republic of Rock, ${user.name}`,
       { name: user.name },
-      "../services/mail/templates/welcome.ejs",
+      path.join(__dirname, "../services/mail/templates/welcome.ejs")
     );
     
     return createJSONSuccessResponseToClient(res, 201);
@@ -541,7 +547,7 @@ router.post("/verify", async (req, res) => {
 });
 
 // Identity Verification.
-router.get("/whoami", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
+router.get("/api/whoami", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
   const client = await pool.connect();
 
   try {

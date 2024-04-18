@@ -19,7 +19,7 @@ const {
 } = require("../services/middlewares.js");
 // =======================================
 // Retrieve All Events from a specific user (Must be Logged In) Endpoint.
-router.get("/events/user", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
+router.get("/api/events/user", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -57,7 +57,7 @@ router.get("/events/user", [authenticateCustomJWToken, authenticateFirebaseJWTok
 });
 
 // Retrieve All Events from a specific staff/administrator User (Must be Logged In) Endpoint.
-router.get("/events/staff", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
+router.get("/api/events/staff", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -95,7 +95,7 @@ router.get("/events/staff", [authenticateCustomJWToken, authenticateFirebaseJWTo
 });
 
 // Retrieve an event's details.
-router.get("/event/:id", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
+router.get("/api/event/:id", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -131,7 +131,7 @@ router.get("/event/:id", [authenticateCustomJWToken, authenticateFirebaseJWToken
 });
 
 // Create a new Event Endpoint.
-router.post("/event", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
+router.post("/api/event", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -245,7 +245,7 @@ router.post("/event", [authenticateCustomJWToken, authenticateFirebaseJWToken], 
 });
 
 // Modify an Existing Event Endpoint.
-router.put("/event", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
+router.put("/api/event", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -305,7 +305,7 @@ router.put("/event", [authenticateCustomJWToken, authenticateFirebaseJWToken], a
 });
 
 // Delete an Existing Event Endpoint.
-router.delete("/event", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
+router.delete("/api/event", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -354,7 +354,7 @@ router.delete("/event", [authenticateCustomJWToken, authenticateFirebaseJWToken]
 });
 
 // Approve an existing Event Endpoint. (Must come from staff/admin)
-router.post("/event/approve", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
+router.post("/api/event/approve", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
   const client = await pool.connect();
 
   try {

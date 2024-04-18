@@ -26,7 +26,7 @@ const fs = require("fs");
 const ejs = require("ejs");
 
 function sendMailToRecipientHTML(senderEmail, recipientEmail, subject, userData, htmlPath) {
-  const emailTemplate = fs.readFileSync("./" + htmlPath, "utf8");
+  const emailTemplate = fs.readFileSync(htmlPath, "utf8");
 
   // Render the template with dynamic data
   const renderedEmailHTML = ejs.render(emailTemplate, userData);

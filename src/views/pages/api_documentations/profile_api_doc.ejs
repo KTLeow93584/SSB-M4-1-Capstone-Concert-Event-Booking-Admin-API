@@ -11,7 +11,8 @@
     <!-- ======================================= -->
     <!-- Navigation + Side Panel + Body -->
     <div class="w-full">
-        <%- include('../../components/nav_side_panel') %>
+        <%- include('../../partials/nav_panel', { has_side_bar: true }) %>
+        <%- include('../../partials/side_bar_code_doc') %>
 
             <div class="p-4 sm:ml-64">
                 <div class="mt-16">
@@ -22,10 +23,10 @@
                         <div class="w-full">
                             <ul class="list-disc list-inside">
                                 <!-- Get User Profile Information API -->
-                                <%- include('../../components/code_doc_section', {
+                                <%- include('../../partials/code_doc_section', {
                                     title: 'Get User Profile Information',
                                     description: '',
-                                    endpoint_url: '/profile',
+                                    endpoint_url: 'api/profile',
                                     endpoint_type: 'GET',
                                     endpoint_parameters: null,
                                     endpoint_success_responses: [
@@ -92,10 +93,10 @@
                                     ]
                                 }) %>
                                 <!-- Update User Profile API -->
-                                <%- include('../../components/code_doc_section', {
+                                <%- include('../../partials/code_doc_section', {
                                     title: 'Update User Profile Information',
                                     description: '',
-                                    endpoint_url: '/profile',
+                                    endpoint_url: 'api/profile',
                                     endpoint_type: 'PUT',
                                     endpoint_parameters: {
                                         name: '...',

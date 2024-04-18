@@ -11,7 +11,8 @@
     <!-- ======================================= -->
     <!-- Navigation + Side Panel + Body -->
     <div class="w-full">
-        <%- include('../../components/nav_side_panel') %>
+        <%- include('../../partials/nav_panel', { has_side_bar: true }) %>
+        <%- include('../../partials/side_bar_code_doc') %>
 
         <div class="p-4 sm:ml-64">
             <div class="mt-16">
@@ -22,11 +23,23 @@
                     <div class="w-full">
                         <ul class="list-disc list-inside">
                             <!-- Registration API -->
-                            <%- include('../../components/code_doc_section', {
+                            <%- include('../../partials/code_doc_section', {
                                 title: 'Registration',
                                 description: 'Has two variants: Registration via Social Platforms (Google, Facebook) or Registration via Email & Password Combinations. Also can register either as an individual or an organization.',
-                                endpoint_url: '/register',
-                                endpoint_type: 'GET',
+                                endpoint_url: 'api/register',
+                                endpoint_type: 'POST',
+                                endpoint_parameters: {
+                                    email: '...@some-email.com',
+                                    country_id: 1,
+                                    contact_number: '123456789',
+                                    password: '...',
+                                    social_provider: 'facebook',
+                                    social_uid: '123456789',
+                                    name: '...',
+                                    nric: '...',
+                                    organization_name: '...',
+                                    organization_registration_number: '...'
+                                },
                                 endpoint_success_responses: [
                                     {
                                         name: 'Success. (Code: 201)',
@@ -108,11 +121,19 @@
                                 ]
                             }) %>
                             <!-- Login API -->
-                            <%- include('../../components/code_doc_section', {
+                            <%- include('../../partials/code_doc_section', {
                                 title: 'Login',
                                 description: 'Has two variants: Logging in via Social Platforms (Google, Facebook) or Logging in via Email & Password Combinations.',
-                                endpoint_url: '/login',
-                                endpoint_type: 'GET',
+                                endpoint_url: 'api/login',
+                                endpoint_type: 'POST',
+                                endpoint_parameters: {
+                                    email: '...@some-email.com',
+                                    password: '...',
+                                    social_provider: 'facebook',
+                                    social_uid: '123456789',
+                                    social_access_token: '...',
+                                    social_refresh_token: '...',
+                                },
                                 endpoint_success_responses: [
                                     {
                                         name: 'Success. (With Results)',
@@ -173,11 +194,12 @@
                                 ]
                             }) %>
                             <!-- Logout API -->
-                            <%- include('../../components/code_doc_section', {
+                            <%- include('../../partials/code_doc_section', {
                                 title: 'Logout',
                                 description: 'In the event the login fails, do nothing for the back-end side. Front-end app, however should clear the cached token.',
-                                endpoint_url: '/logout',
+                                endpoint_url: 'api/logout',
                                 endpoint_type: 'POST',
+                                endpoint_parameters: null,
                                 endpoint_success_responses: [
                                     {
                                         name: 'Success. (Code: 201)',
@@ -203,11 +225,12 @@
                                 ]
                             }) %>
                             <!-- Forget Password API -->
-                            <%- include('../../components/code_doc_section', {
+                            <%- include('../../partials/code_doc_section', {
                                 title: 'Forget Password',
                                 description: '',
-                                endpoint_url: '/password/forget',
+                                endpoint_url: 'api/password/forget',
                                 endpoint_type: 'POST',
+                                endpoint_parameters: null,
                                 endpoint_success_responses: [
                                     {
                                         name: 'Success. (Code: 201)',
@@ -247,11 +270,14 @@
                                 ]
                             }) %>
                             <!-- Verify Password Reset API -->
-                            <%- include('../../components/code_doc_section', {
+                            <%- include('../../partials/code_doc_section', {
                                 title: 'Verify Password Reset Request',
                                 description: 'Sanity check from the front-end app to test if the request tallied is valid.',
-                                endpoint_url: '/password/reset/verify',
+                                endpoint_url: 'api/password/reset/verify',
                                 endpoint_type: 'POST',
+                                endpoint_parameters: {
+                                    token: '...'
+                                },
                                 endpoint_success_responses: [
                                     {
                                         name: 'Success. (Code: 201)',
@@ -277,11 +303,15 @@
                                 ]
                             }) %>
                             <!-- Perform Password Reset API -->
-                            <%- include('../../components/code_doc_section', {
+                            <%- include('../../partials/code_doc_section', {
                                 title: 'Perform Password Reset Request',
                                 description: 'Execute the request.',
-                                endpoint_url: '/password/reset',
+                                endpoint_url: 'api/password/reset',
                                 endpoint_type: 'POST',
+                                endpoint_parameters: {
+                                    password: '...',
+                                    token: '...'
+                                },
                                 endpoint_success_responses: [
                                     {
                                         name: 'Success. (Code: 201)',
