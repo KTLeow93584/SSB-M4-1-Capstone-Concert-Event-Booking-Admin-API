@@ -8,7 +8,8 @@ const result = require("dotenv").config();
 const { Pool } = require("pg");
 const {
   DATABASE_URL,
-  CACHE_SECRET, CACHE_TTL_DURATION, CACHE_PRUNE_AFTER_DURATION
+  CACHE_SECRET, CACHE_PRUNE_AFTER_DURATION,
+  MAX_PAGE_RANGE
 } = process.env;
 // ======================================
 let app = express();
@@ -21,9 +22,6 @@ const pool = new Pool({
     require: true
   }
 });
-// =======================================
-var bodyParser = require('body-parser');
-app.use(bodyParser.urlencoded({ extended: true }));
 // =======================================
 // Express Session Setup
 const session = require("express-session");
@@ -63,14 +61,36 @@ app.use(session({
     saveUninitialized: false,
     cookie: {
       // Time to Live for Cookies = Environment Variable (milliseconds)
-      maxAge: parseInt(CACHE_TTL_DURATION),
+      // Set after user logs in.
       secure: false
     }
 }));
 
+const { isUserAuthorized } = require('./services/middlewares-server');
+
+// Custom middleware to update maxAge of session cookie if not expired
+app.use((req, res, next) => {
+    if (req.session && req.session.cookie && req.session.cookie.expires) {
+      // Debug
+      //console.log("Cookie.", req.session.cookie);
+      //console.log("Cookie Expires.", req.session.cookie.expires);
+
+        // Calculate time remaining until cookie expiration
+        const remainingTime = req.session.cookie.expires.getTime() - Date.now();
+        if (remainingTime > 0) {
+            // Update maxAge to remaining time
+            req.session.cookie.maxAge = remainingTime;
+        }
+    }
+    next();
+});
+
 // For Caching to prevent data loss after server down:
 //https://www.npmjs.com/package/memory-cache-node
 // ======================================
+var bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({ extended: true }));
+// =======================================
 // Sets the view engine to ejs
 app.set("view engine", 'ejs');
 app.set("views", path.join(__dirname, "/views"));
@@ -104,11 +124,10 @@ const telesignServices = require("./services/phone_verify_telesign.js");
 
 // Authentication Endpoints. (Login/Registration/etc.)
 const { router: adminAuthAPIRouter } = require("./apis/auth_admin_api.js");
-const { verifyPasswordRequestToken } = require("./apis/auth_admin_api.js");
 app.use("/", adminAuthAPIRouter);
 
 // Data Pooling Endpoints.
-const adminPollAPIRouter = require("./apis/admin_data_poll_api.js");
+const { router: adminPollAPIRouter } = require("./apis/admin_data_poll_api.js");
 app.use("/", adminPollAPIRouter);
 // =================
 // APIs (End-Users)
@@ -144,72 +163,173 @@ app.use((req, res, next) => {
   }
   
   // Clear the data from session after displaying it.
+  delete req.session.formData;
   delete req.session.infoMessage;
   delete req.session.errorMessage;
-  delete req.session.formData;
 
   next();
 });
 // =======================================
 // Web Pages.
 app.get("/", async (req, res) => {
-    res.redirect(req.session.user ? "/dashboard" : "/login");
+  res.redirect(req.session.user ? "/dashboard" : "/login");
 });
 
 app.get("/login", async (req, res) => {
-  res.render("./pages/login", { form_api_url: "/web/api/login", ...req.page_response });
+  res.render("./pages/login", {
+      form_api_url: "/web/api/login",
+      user: req.session && req.session.user ? req.session.user : null,
+    ...req.page_response
+  });
 });
 
 app.get("/password/forget", async (req, res) => {
-  res.render("./pages/password_forget", { form_api_url: "/web/api/password/forget", ...req.page_response });
+  res.render("./pages/password_forget", {
+      form_api_url: "/web/api/password/forget",
+      user: req.session && req.session.user ? req.session.user : null,
+    ...req.page_response
+  });
 });
 
+const { verifyPasswordRequestToken } = require("./apis/auth_admin_api.js");
 app.get("/password/reset/:token", async (req, res) => {
   const result = await verifyPasswordRequestToken(req, res, req.params["token"]);
 
-  res.render("./pages/password_reset", { form_api_url: `/web/api/password/reset/${req.params["token"]}`, is_valid: result, ...req.page_response });
+  res.render("./pages/password_reset", {
+    form_api_url: `/web/api/password/reset/${req.params["token"]}`,
+    is_valid: result,
+    user: req.session && req.session.user ? req.session.user : null,
+    ...req.page_response
+  });
 });
 
-app.get("/logout", async (req, res) => {
-  console.log("Log out Process.", req.session.user);
-  //res.render("./pages/logout");
+app.get("/dashboard", isUserAuthorized, async (req, res) => {
+  res.render("./pages/dashboard", {
+    user: req.session.user
+  });
 });
 
-app.get("/dashboard", async (req, res) => {
-  res.render("./pages/dashboard");
+app.get("/profile", isUserAuthorized, async (req, res) => {
+  res.render("./pages/profile", {
+    user: req.session.user
+  });
 });
 
-app.get("/profile", async (req, res) => {
-  res.render("./pages/profile");
+const { getUsers } = require("./apis/admin_data_poll_api.js");
+app.get("/users", isUserAuthorized, async (req, res) => {
+  const queries = req.query;
+  let currentPageNo = queries.page ? parseInt(queries.page) : 1;
+  currentPageNo = isNaN(currentPageNo) ? 1 : currentPageNo;
+
+  // Debug
+  //console.log("[Get Users] Queries.", queries);
+  
+  const result = await getUsers(req, res);
+
+  // Debug
+  //console.log("[Get Users] Result.", result);
+
+  if (result.out_of_page_bounds) {
+    // Debug
+    //console.log("Redirecting to Page: " + result.page_redirect_no);
+
+    return res.redirect('/users?page=' + result.page_redirect_no);
+  }
+  
+  const pageRange = parseInt(MAX_PAGE_RANGE);
+
+  const floorPageOffset = parseInt(currentPageNo - 1) - pageRange;
+  const ceilingPageOffset = parseInt(currentPageNo - 1) + pageRange;
+
+  // E.g. (Offset Ceiling to the Right)
+  // Current Page: 2, Max Page Range: +4/-4, Total Number of Pages: 12
+  // Floor Offset: -2
+  // Floor Ceiling: 6
+  // Start:
+  // = 0
+  // End: 
+  // = Current Page + Max Page Range - (Floor Offset excess negative beyond 0)
+  // = (2 + 4 - (-2)) = 6 + 2 = 8
+  
+  // E.g. (Offset Ceiling to the Left)
+  // Current Page: 10, Max Page Range: +4/-4, Total Number of Pages: 12
+  // Floor Offset: 6
+  // Floor Ceiling: 14
+  // Start:
+  // = Current Page - Max Page Range - (Ceiling Offset excess positive)
+  // = 10 - 4 - 2
+  // = 4
+  // End: 
+  // = 12 (Cap at 12), excess +2.
+  let startPageNumber = Math.max(currentPageNo - pageRange - Math.max(ceilingPageOffset - result.totalPageCount, 0), 1);
+  let endPageNumber = Math.min(currentPageNo + pageRange - Math.min(floorPageOffset, 0), result.totalPageCount);
+
+  // Debug
+  //console.log("[Users Dashboard] Result.", result.users);
+  //console.log("[Users Dashboard] Page Indices (Active, Start, End): ", [parseInt(currentPageNo) - 1, startPageNumber, endPageNumber]);
+  //console.log("[Users Dashboard] Page Indices (Floor Page Offset, Ceiling Page Offset, Total Count)", [floorPageOffset, ceilingPageOffset, result.totalPageCount]);
+  
+  // Debug
+  console.log("Page's Original Form Data.", req.query);
+  
+  res.render("./pages/users/index", {
+    users: result.users,
+    active_page_no: parseInt(currentPageNo),
+    start_page_no: parseInt(startPageNumber),
+    end_page_no: parseInt(endPageNumber),
+    total_page_count: parseInt(result.totalPageCount),
+    user: req.session && req.session.user ? req.session.user : null,
+    form_data: {...req.query }
+  });
 });
 
-app.get("/api-doc", async (req, res) => {
-  res.render("./pages/api_documentations/index");
+app.get("/events", isUserAuthorized, async (req, res) => {
+  res.render("./pages/events/index", {
+    user: req.session && req.session.user ? req.session.user : null
+  });
 });
 
-app.get("/api-doc/auth_user", async (req, res) => {
-  res.render("pages/api_documentations/authentication_users_api_doc");
+app.get("/api_doc", isUserAuthorized, async (req, res) => {
+  res.render("./pages/api_documentations/index", {
+    user: req.session && req.session.user ? req.session.user : null
+  });
 });
 
-app.get("/api-doc/events", async (req, res) => {
-  res.render("pages/api_documentations/events_api_doc");
+app.get("/api_doc/auth_user", isUserAuthorized, async (req, res) => {
+  res.render("pages/api_documentations/authentication_users_api_doc", {
+    user: req.session && req.session.user ? req.session.user : null
+  });
 });
 
-app.get("/api-doc/profile", async (req, res) => {
-  res.render("pages/api_documentations/profile_api_doc");
+app.get("/api_doc/events", isUserAuthorized, async (req, res) => {
+  res.render("pages/api_documentations/events_api_doc", {
+    user: req.session && req.session.user ? req.session.user : null
+  });
 });
 
-app.get("/api-doc/auth_admin",async (req, res) => {
-  res.render("pages/api_documentations/authentication_admins_api_doc");
+app.get("/api_doc/profile", isUserAuthorized, async (req, res) => {
+  res.render("pages/api_documentations/profile_api_doc", {
+    user: req.session && req.session.user ? req.session.user : null
+  });
 });
 
-app.get("/api-doc/admin_poll", async (req, res) => {
-  res.render("pages/api_documentations/admin_poll_api_doc");
+app.get("/api_doc/auth_admin", isUserAuthorized, async (req, res) => {
+  res.render("pages/api_documentations/authentication_admins_api_doc", {
+    user: req.session && req.session.user ? req.session.user : null
+  });
+});
+
+app.get("/api_doc/admin_poll", isUserAuthorized, async (req, res) => {
+  res.render("pages/api_documentations/admin_poll_api_doc", {
+    user: req.session && req.session.user ? req.session.user : null
+  });
 });
 // =======================================
 // Error Page. (After all APIs and pages have been exhausted)
 app.use((req, res) => {
-  res.status(404).sendFile(path.join(__dirname, "./views/pages/error_page.html"));
+  res.render(path.join(__dirname, "./views/pages/error_page"), {
+    user: req.session && req.session.user ? req.session.user : null
+  });
 });
 
 app.use("/server-error", (req, res) => {

@@ -22,7 +22,9 @@ const {
   REFRESH_TOKEN_EXPIRY,
   FORGET_PASSWORD_TOKEN_EXPIRY,
   PASSWORD_HASH_AMOUNT,
-  SERVER_URL
+  SERVER_URL,
+  CACHE_TTL_DURATION,
+  CACHE_TTL_REMEMBER_ME_DURATION
 } = process.env;
 
 const pool = new Pool({
@@ -33,13 +35,10 @@ const router = express.Router();
 
 // Middlewares.
 const {
-  authenticateCustomJWToken,
-  authenticateFirebaseJWToken,
-  createJSONSuccessResponseToClient,
-  createJSONErrorResponseToClient,
+  isUserAuthorized,
   sendInfoToRedirectedPage,
   sendErrorResponseToRedirectedPage
-} = require("../services/middlewares.js");
+} = require("../services/middlewares-server.js");
 // =======================================
 // Login.
 router.post("/web/api/login", async (req, res) => {
@@ -51,7 +50,8 @@ router.post("/web/api/login", async (req, res) => {
 
     const body = {
       email: req.body.email.toLowerCase(),
-      password: req.body.password ? req.body.password : null
+      password: req.body.password ? req.body.password : null,
+      remember_toggle: req.body.remember_toggle === undefined ? false : true
     };
 
     let query = `
@@ -61,7 +61,8 @@ router.post("/web/api/login", async (req, res) => {
         u.email, 
         u.password,
         u.role,
-        u.social_provider 
+        u.social_provider,
+        u.profile_picture
       FROM users u
       LEFT JOIN individuals i ON i.user_id = u.id
       LEFT JOIN organizations o ON o.user_id = u.id
@@ -109,8 +110,18 @@ router.post("/web/api/login", async (req, res) => {
     `;
     await client.query(query, [ refreshToken, body.email ]);
 
+    // Debug
+    //console.log("[Login] User.", user);
+
+    // Session Cookie Debug
+    //console.log("[Login] Cookie.", req.session.cookie);
+    //console.log("[Login] Cookie Expires.", req.session.cookie.expires);
+
     // Save into session
-    //console.log("User.", user);
+    req.session.user = user;
+    
+    // User won't have to log in again based on 2 durations (depending if the "Remember Me" checkbox is set to "true" or "false").
+    req.session.cookie.maxAge = body.remember_toggle ? parseInt(CACHE_TTL_REMEMBER_ME_DURATION) : parseInt(CACHE_TTL_DURATION);
 
     return sendInfoToRedirectedPage(req, res, "/dashboard");
   }
@@ -129,30 +140,18 @@ router.post("/web/api/login", async (req, res) => {
 });
 
 // Logout.
-router.post("/web/api/logout", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
-  const client = await pool.connect();
-  
-  try {
-    const email = req.email;
-    const query = `
-      UPDATE users SET 
-        device_id = null, 
-        refresh_token = null
-      WHERE email = $1;
-    `;
-    await client.query(query, [email]);
-
-    return createJSONSuccessResponseToClient(res, 201);
-  }
-  catch (error) {
-    // Debug
-    console.error(error.stack);
-
-    return createJSONErrorResponseToClient(res, 200, 500, "server-error");
-  }
-  finally {
-    client.release();
-  }
+router.post("/web/api/logout", [isUserAuthorized], async (req, res) => {
+  // Clear Session's User Data.
+  req.session.user = null;
+  req.session.save(function (err) {
+    // Regenerate the session, which is good practice to help guard against forms of session fixation
+    // https://expressjs.com/en/resources/middleware/session.html
+    req.session.regenerate(function (err) {
+      if (err)
+        console.error("Error while regenerating new session.", err);
+      res.redirect('/')
+    })
+  })
 });
 
 // Request Forgot Password.

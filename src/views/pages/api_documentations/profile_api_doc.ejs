@@ -8,167 +8,167 @@
 </head>
 
 <body>
-    <!-- ======================================= -->
-    <!-- Navigation + Side Panel + Body -->
-    <div class="w-full">
+    <div class="w-full flex flex-col min-h-screen">
         <%- include('../../partials/nav_panel', { has_side_bar: true }) %>
         <%- include('../../partials/side_bar_code_doc') %>
 
-            <div class="p-4 sm:ml-64">
-                <div class="mt-16">
-                    <p class="text-2xl font-bold">
-                        Category: User Profile
-                    </p>
-                    <div class="mt-5 mx-8">
-                        <div class="w-full">
-                            <ul class="list-disc list-inside">
-                                <!-- Get User Profile Information API -->
-                                <%- include('../../partials/code_doc_section', {
-                                    title: 'Get User Profile Information',
-                                    description: '',
-                                    endpoint_url: 'api/profile',
-                                    endpoint_type: 'GET',
-                                    endpoint_parameters: null,
-                                    endpoint_success_responses: [
-                                        {
-                                            name: 'Success. (With Results)' ,
-                                            description: '',
-                                            json_response: `
-                                                user: {
-                                                    id: 1,
-                                                    email: '...@some-email.com',
-                                                    name: '...',
-                                                    profile_picture: INSERT_URL_HERE,
-                                                    country_id: 1,
-                                                    contact_number: '...',
-                                                    type: 'individual' or 'organization',
-                                                    registration_number: '...' (Can be NRIC or company registration number)
+        <div class="w-full p-4 sm:ml-64 flex-1">
+            <div class="mt-16">
+                <p class="text-2xl font-bold">
+                    Category: User Profile
+                </p>
+                <div class="mt-5 mx-8">
+                    <div class="w-full">
+                        <ul class="list-disc list-inside">
+                            <!-- Get User Profile Information API -->
+                            <%- include('../../partials/code_doc_section', {
+                                title: 'Get User Profile Information',
+                                description: '',
+                                endpoint_url: 'api/profile',
+                                endpoint_type: 'GET',
+                                endpoint_parameters: null,
+                                endpoint_success_responses: [
+                                    {
+                                        name: 'Success. (With Results)' ,
+                                        description: '',
+                                        json_response: `
+                                            user: {
+                                                id: 1,
+                                                email: '...@some-email.com',
+                                                name: '...',
+                                                profile_picture: INSERT_URL_HERE,
+                                                country_id: 1,
+                                                contact_number: '...',
+                                                type: 'individual' or 'organization',
+                                                registration_number: '...' (Can be NRIC or company registration number)
+                                            }
+                                        `
+                                    }
+                                ], 
+                                endpoint_failed_responses: [
+                                    {
+                                        name: 'User Not Found.' ,
+                                        description: '',
+                                        code_message: '404',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: "user-not-found",
+                                                    code: 404
                                                 }
-                                            `
-                                        }
-                                    ], 
-                                    endpoint_failed_responses: [
-                                        {
-                                            name: 'User Not Found.' ,
-                                            description: '',
-                                            code_message: '404',
-                                            json_response: `
-                                                {
-                                                    success: false,
-                                                    error: {
-                                                        status: "user-not-found",
-                                                        code: 404
-                                                    }
-                                                }
-                                            `
-                                        },
-                                        {
-                                            name: 'Invalid User Format' ,
-                                            description: 'Occurs when user is both an individual and organization or neither.',
-                                            code_message: '404',
-                                            json_response: `
-                                                {
-                                                    success: false,
-                                                    error: {
-                                                        status: "invalid-user-format",
-                                                        code: 404
-                                                    }
-                                                }
-                                            `
-                                        },
-                                        {
-                                            name: 'Server Codebase Error.' ,
-                                            description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
-                                            code_message: '500',
-                                            json_response: `
-                                                {
-                                                    success: false,
-                                                    error: {
-                                                        status: "server-error",
-                                                        code: 500
-                                                    }
-                                                }
-                                            `
-                                        }
-                                    ]
-                                }) %>
-                                <!-- Update User Profile API -->
-                                <%- include('../../partials/code_doc_section', {
-                                    title: 'Update User Profile Information',
-                                    description: '',
-                                    endpoint_url: 'api/profile',
-                                    endpoint_type: 'PUT',
-                                    endpoint_parameters: {
-                                        name: '...',
-                                        country_id: 1,
-                                        contact_number: '123456789',
-                                        profile_picture: '...'
+                                            }
+                                        `
                                     },
-                                    endpoint_success_responses: [
-                                        {
-                                            name: 'Success.',
-                                            description: '',
-                                            json_response: `
-                                                user: {
-                                                        id: 1,
-                                                        country_id: 1,
-                                                        contact_number: "...",
-                                                        profile_picture: INSERT_URL_HERE,
-                                                        name: "..."
+                                    {
+                                        name: 'Invalid User Format' ,
+                                        description: 'Occurs when user is both an individual and organization or neither.',
+                                        code_message: '404',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: "invalid-user-format",
+                                                    code: 404
                                                 }
-                                            `
-                                        }
-                                    ],
-                                    endpoint_failed_responses: [
-                                        {
-                                            name: 'Empty Form',
-                                            description: '', 
-                                            code_message: '405',
-                                            json_response: `
-                                                {
-                                                    success: false,
-                                                    error: {
-                                                        status: "empty-form",
-                                                        code: 405
-                                                    }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Server Codebase Error.' ,
+                                        description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
+                                        code_message: '500',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: "server-error",
+                                                    code: 500
                                                 }
-                                            `
-                                        },
-                                        {
-                                            name: 'No User Found.' ,
-                                            description: '',
-                                            code_message: '404',
-                                            json_response: `
-                                                {
-                                                    success: false,
-                                                    error: {
-                                                        status: "no-user-found",
-                                                        code: 404
-                                                    }
+                                            }
+                                        `
+                                    }
+                                ]
+                            }) %>
+                            <!-- Update User Profile API -->
+                            <%- include('../../partials/code_doc_section', {
+                                title: 'Update User Profile Information',
+                                description: '',
+                                endpoint_url: 'api/profile',
+                                endpoint_type: 'PUT',
+                                endpoint_parameters: {
+                                    name: '...',
+                                    country_id: 1,
+                                    contact_number: '123456789',
+                                    profile_picture: '...'
+                                },
+                                endpoint_success_responses: [
+                                    {
+                                        name: 'Success.',
+                                        description: '',
+                                        json_response: `
+                                            user: {
+                                                    id: 1,
+                                                    country_id: 1,
+                                                    contact_number: "...",
+                                                    profile_picture: INSERT_URL_HERE,
+                                                    name: "..."
+                                            }
+                                        `
+                                    }
+                                ],
+                                endpoint_failed_responses: [
+                                    {
+                                        name: 'Empty Form',
+                                        description: '', 
+                                        code_message: '405',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: "empty-form",
+                                                    code: 405
                                                 }
-                                            `
-                                        },
-                                        {
-                                            name: 'Server Codebase Error.' ,
-                                            description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
-                                            code_message: '500',
-                                            json_response: `
-                                                {
-                                                    success: false,
-                                                    error: {
-                                                        status: "server-error",
-                                                        code: 500
-                                                    }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'No User Found.' ,
+                                        description: '',
+                                        code_message: '404',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: "no-user-found",
+                                                    code: 404
                                                 }
-                                            `
-                                        }
-                                    ]
-                                }) %>
-                            </ul>
-                        </div>
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Server Codebase Error.' ,
+                                        description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
+                                        code_message: '500',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: "server-error",
+                                                    code: 500
+                                                }
+                                            }
+                                        `
+                                    }
+                                ]
+                            }) %>
+                        </ul>
                     </div>
                 </div>
             </div>
+        </div>
+        
+        <%- include('../../partials/footer') %>
     </div>
     <!-- ======================================= -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>

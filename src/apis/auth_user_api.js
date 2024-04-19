@@ -37,7 +37,7 @@ const {
   authenticateFirebaseJWToken,
   createJSONSuccessResponseToClient,
   createJSONErrorResponseToClient
-} = require("../services/middlewares.js");
+} = require("../services/middlewares-client.js");
 // =======================================
 // Registration.
 router.post("/api/register", async (req, res) => {

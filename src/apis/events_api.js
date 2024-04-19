@@ -16,7 +16,7 @@ const {
   authenticateFirebaseJWToken,
   createJSONSuccessResponseToClient,
   createJSONErrorResponseToClient
-} = require("../services/middlewares.js");
+} = require("../services/middlewares-client.js");
 // =======================================
 // Retrieve All Events from a specific user (Must be Logged In) Endpoint.
 router.get("/api/events/user", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {

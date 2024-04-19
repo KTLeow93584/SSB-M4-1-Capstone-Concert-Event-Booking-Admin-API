@@ -16,7 +16,7 @@ const router = express.Router();
 const {
   authenticateCustomJWToken, authenticateFirebaseJWToken,
   createJSONSuccessResponseToClient, createJSONErrorResponseToClient
-} = require('../services/middlewares.js');
+} = require('../services/middlewares-client.js');
 // =======================================
 // GET all available venues.
 router.get('/api/venues', [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {

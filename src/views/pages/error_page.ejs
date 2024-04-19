@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>404 Not Found</title>
+
+  <link rel="stylesheet" href="/css/style-tailwind.css" type="text/css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+</head>
+<body>
+  <div class="w-full flex flex-col min-h-screen">
+    <%- include('../partials/nav_panel', { has_side_bar: false }) %>
+    
+    <div class="mt-32 flex flex-col justify-center items-center w-full flex-1">
+        <h1 class="font-sans text-5xl">404</h1>
+        <p class="font-sans text-2xl">Sorry, the page you are trying to reach cannot be found.</p>
+    </div>
+
+    <%- include('../partials/footer') %>
+  </div>
+</body>
+</html>

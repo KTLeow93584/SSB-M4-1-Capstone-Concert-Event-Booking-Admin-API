@@ -16,7 +16,7 @@ const router = express.Router();
 const {
   authenticateCustomJWToken, authenticateFirebaseJWToken,
   createJSONSuccessResponseToClient, createJSONErrorResponseToClient
-} = require('../services/middlewares.js');
+} = require('../services/middlewares-client.js');
 // =======================================
 router.get('/api/events', [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
   const client = await pool.connect();

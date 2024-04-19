@@ -1,4 +1,4 @@
-<nav class="fixed top-0 z-50 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+<nav class="fixed flex-none top-0 z-50 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
     <div class="px-3 py-3 lg:px-5 lg:pl-3">
         <div class="flex items-center justify-between">
             <div class="flex items-center justify-start rtl:justify-end">
@@ -21,24 +21,22 @@
             </div>
             <div class="flex items-center">
                 <div class="flex items-center ms-3">
-                    <% const useObj = (typeof user === "object" ? user : null)%>
-                    <% if (useObj) { %>
-                        <a href="/pages/profile" class="flex items-center">
-                            <img class="w-8 h-8 rounded-full" src="user.profile_picture" alt="User Profile Picture">
-                            <p role="button" class="hover:underline text-sm text-gray-900 dark:text-white font-bold" role="none">
-                                <%= userObj.name %>
-                            </p>
-                        </a>
-                        <a role="button" href="/pages/logout"
-                            class="hover:underline text-sm text-gray-900 dark:text-white font-bold">
-                            Logout
-                        </a>
+                    <% const userObj = (typeof user === "object" ? user : null); %>
+                    <a href="<%= userObj ? '/pages/profile' : '/login' %>" class="flex items-center me-3">
+                        <img class="w-8 h-8 rounded-full me-2"
+                            src="<%= userObj && userObj.profile_picture ? userObj.profile_picture : '../../../img/user-profile-default.webp' %>"
+                            alt="User Profile Picture">
+                        <p role="button" class="hover:underline text-sm text-gray-900 dark:text-white font-bold" role="none">
+                            <%= userObj ? userObj.name : 'Guest' %>
+                        </p>
+                    </a>
+                    <% if (userObj) { %>
+                        <form action="/web/api/logout" method="post">
+                            <button type="submit" class="hover:underline text-sm text-gray-900 dark:text-white font-bold">Logout</button>
+                        </form>
                     <% } else { %>
-                        <a href="/pages/login" class="flex items-center">
-                            <img class="w-8 h-8 rounded-full me-2" src="../../../img/user-profile-default.webp" alt="User Profile Picture">
-                            <p class="hover:underline text-sm text-gray-900 dark:text-white font-bold me-2" role="none">
-                                Guest
-                            </p>
+                        <a href="<%= userObj ? '/logout' : '/login' %>" class="hover:underline text-sm text-gray-900 dark:text-white font-bold">
+                            <%= userObj ? 'Logout' : 'Login' %>
                         </a>
                     <% } %>
                     <!-- Login/Sign Out Section (User Portrait)-->
@@ -46,32 +44,25 @@
                         id="dropdown-user">
                         <div class="px-4 py-3" role="none">
                             <p class="text-sm text-gray-900 dark:text-white" role="none">
-                                Neil Sims
-                            </p>
-                            <p class="text-sm font-medium text-gray-900 truncate dark:text-gray-300" role="none">
-                                neil.sims@flowbite.com
+                                <%= userObj ? userObj.name : 'Guest' %>
                             </p>
                         </div>
                         <ul class="py-1" role="none">
+                            <% if (userObj) { %>
+                                <li>
+                                    <a href="/dashboard"
+                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
+                                        role="menuitem">
+                                        Dashboard
+                                    </a>
+                                </li>
+                            <% } %>
                             <li>
                                 <a href="#"
                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
-                                    role="menuitem">Dashboard</a>
-                            </li>
-                            <li>
-                                <a href="#"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
-                                    role="menuitem">Settings</a>
-                            </li>
-                            <li>
-                                <a href="#"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
-                                    role="menuitem">Earnings</a>
-                            </li>
-                            <li>
-                                <a href="#"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
-                                    role="menuitem">Sign out</a>
+                                    role="menuitem">
+                                    <%= userObj ? 'Logout' : 'Login' %>
+                                </a>
                             </li>
                         </ul>
                     </div>

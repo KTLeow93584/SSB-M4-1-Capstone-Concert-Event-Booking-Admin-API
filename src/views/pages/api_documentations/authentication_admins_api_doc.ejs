@@ -8,13 +8,11 @@
 </head>
 
 <body>
-    <!-- ======================================= -->
-    <!-- Navigation + Side Panel + Body -->
-    <div class="w-full">
+    <div class="w-full flex flex-col min-h-screen">
         <%- include('../../partials/nav_panel', { has_side_bar: true }) %>
         <%- include('../../partials/side_bar_code_doc') %>
-
-        <div class="p-4 sm:ml-64">
+        
+        <div class="w-full p-4 sm:ml-64 flex-1">
             <div class="mt-16">
                 <p class="text-2xl font-bold">
                     Category: Authentication (Consumers)
@@ -341,6 +339,8 @@
                 </div>
             </div>
         </div>
+
+        <%- include('../../partials/footer') %>
     </div>
     <!-- ======================================= -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>

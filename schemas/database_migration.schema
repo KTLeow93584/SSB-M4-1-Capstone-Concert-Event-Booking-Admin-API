@@ -1,50 +1,57 @@
 -- Schema to reset the database's tables.
 DO $$
+DECLARE
+    table_catalog_name TEXT := 'ror_event_host_dev';
 BEGIN
 -- Drop all tables from child to parent, in that specific order, to not trigger foreign key constraint blocker.
   
   -- Promotions Table
-  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = 'ror_event_host' AND table_name = 'promotions') THEN
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = table_catalog_name AND table_name = 'promotions') THEN
     DROP TABLE promotions;
   END IF;
   
   -- Events Table
-  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = 'ror_event_host' AND table_name = 'events') THEN
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = table_catalog_name AND table_name = 'events') THEN
     DROP TABLE events;
   END IF;
   
   -- Venues Table
-  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = 'ror_event_host' AND table_name = 'venues') THEN
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = table_catalog_name AND table_name = 'venues') THEN
     DROP TABLE venues;
   END IF;
   
   -- User Verifications Table
-  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = 'ror_event_host' AND table_name = 'user_verifications') THEN
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = table_catalog_name AND table_name = 'user_verifications') THEN
     DROP TABLE user_verifications;
   END IF;
   
   -- Individuals Table
-  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = 'ror_event_host' AND table_name = 'individuals') THEN
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = table_catalog_name AND table_name = 'individuals') THEN
     DROP TABLE individuals;
   END IF;
   
   -- Organizations Table
-  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = 'ror_event_host' AND table_name = 'organizations') THEN
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = table_catalog_name AND table_name = 'organizations') THEN
     DROP TABLE organizations;
   END IF;
   
   -- Password Reset Requests Table
-  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = 'ror_event_host' AND table_name = 'password_requests') THEN
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = table_catalog_name AND table_name = 'password_requests') THEN
     DROP TABLE password_requests;
   END IF;
   
+  -- User Sessions Table
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = table_catalog_name AND table_name = 'user_sessions') THEN
+    DROP TABLE user_sessions;
+  END IF;
+  
   -- Users Table
-  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = 'ror_event_host' AND table_name = 'users') THEN
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = table_catalog_name AND table_name = 'users') THEN
     DROP TABLE users;
   END IF;
   
   -- Countries Table
-  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = 'ror_event_host' AND table_name = 'countries') THEN
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = table_catalog_name AND table_name = 'countries') THEN
     DROP TABLE countries;
   END IF;
   
@@ -75,6 +82,16 @@ BEGIN
     FOREIGN KEY (country_id) REFERENCES countries(id) ON DELETE SET NULL
   );
   
+  -- User Sessions Table
+  CREATE TABLE user_sessions (
+    sid VARCHAR NOT NULL COLLATE "default" PRIMARY KEY,
+    sess JSON NOT NULL,
+    expire timestamp(6) NOT NULL
+  );
+  
+  -- Create index on expire column
+  CREATE INDEX "IDX_user_sessions_expire" ON "user_sessions" ("expire");
+
   -- Password Requests Table
   CREATE TABLE password_requests (
     id SERIAL PRIMARY KEY,
@@ -163,77 +180,204 @@ BEGIN
   
   -- Create dummy users in the 'users' table.
   INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('admin@admin.com', 1, '11-1111111', crypt('123456', gen_salt('bf')), 'admin', null);
+  VALUES('admin@admin.com', 1, '111111111', crypt('123456', gen_salt('bf')), 'admin', null);
   
   INSERT INTO individuals (user_id, name, nric) 
   VALUES(1, 'admin nimda', '990505051111');
   
   INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('staff1@staff.com', 1, '11-1111111', crypt('111111', gen_salt('bf')), 'staff', null);
+  VALUES('staff1@staff.com', 1, '111111111', crypt('111111', gen_salt('bf')), 'staff', null);
   
   INSERT INTO individuals (user_id, name, nric) 
   VALUES(2, 'Dummy Staff 1', '910505052222');
   
   INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('staff2@staff.com', 2, '11-1111111', crypt('222222', gen_salt('bf')), 'staff', null);
+  VALUES('staff2@staff.com', 2, '111111111', crypt('222222', gen_salt('bf')), 'staff', null);
   
   INSERT INTO individuals (user_id, name, nric) 
   VALUES(3, 'Dummy Staff 2', '920505052222');
   
   INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('staff3@staff.com', 3, '11-1111111', crypt('333333', gen_salt('bf')), 'staff', null);
+  VALUES('staff3@staff.com', 3, '111111111', crypt('333333', gen_salt('bf')), 'staff', null);
   
   INSERT INTO individuals (user_id, name, nric) 
   VALUES(4, 'Dummy Staff 3', '930505052222');
   
   INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('user1@user.com', 1, '11-1111111', crypt('111', gen_salt('bf')), 'user', null);
+  VALUES('user1@user.com', 1, '111111111', crypt('111', gen_salt('bf')), 'user', null);
   
   INSERT INTO individuals (user_id, name, nric) 
   VALUES(5, 'Dummy User 1', '910505053333');
   
   INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('user2@user.com', 1, '11-1111111', crypt('222', gen_salt('bf')), 'user', null);
+  VALUES('user2@user.com', 1, '111111111', crypt('222', gen_salt('bf')), 'user', null);
   
   INSERT INTO individuals (user_id, name, nric) 
   VALUES(6, 'Dummy User 2', '920505053333');
   
   INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('user3@user.com', 2, '11-1111111', crypt('333', gen_salt('bf')), 'user', null);
+  VALUES('user3@user.com', 2, '111111111', crypt('333', gen_salt('bf')), 'user', null);
   
   INSERT INTO individuals (user_id, name, nric) 
   VALUES(7, 'Dummy User 3', '930505053333');
   
   INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('user4@user.com', 2, '11-1111111', crypt('444', gen_salt('bf')), 'user', null);
+  VALUES('user4@user.com', 2, '111111111', crypt('444', gen_salt('bf')), 'user', null);
   
   INSERT INTO individuals (user_id, name, nric) 
   VALUES(8, 'Dummy User 4', '940505053333');
   
   INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('user5@user.com', 3, '11-1111111', crypt('555', gen_salt('bf')), 'user', null);
+  VALUES('user5@user.com', 3, '111111111', crypt('555', gen_salt('bf')), 'user', null);
   
   INSERT INTO individuals (user_id, name, nric) 
   VALUES(9, 'Dummy User 5', '950505053333');
   
   INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('user6@user.com', 3, '11-1111111', crypt('666', gen_salt('bf')), 'user', null);
+  VALUES('user6@user.com', 3, '111111111', crypt('666', gen_salt('bf')), 'user', null);
   
   INSERT INTO individuals (user_id, name, nric) 
   VALUES(10, 'Dummy User 6', '960505053333');
   
   INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('user7@user.com', 4, '11-1111111', crypt('777', gen_salt('bf')), 'user', null);
+  VALUES('user7@user.com', 4, '111111111', crypt('777', gen_salt('bf')), 'user', null);
   
   INSERT INTO individuals (user_id, name, nric) 
   VALUES(11, 'Dummy User 7', '970505053333');
   
   INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('user8@user.com', 4, '11-1111111', crypt('888', gen_salt('bf')), 'user', null);
+  VALUES('user8@user.com', 4, '111111111', crypt('888', gen_salt('bf')), 'user', null);
   
   INSERT INTO individuals (user_id, name, nric) 
-  VALUES(12, 'Dummy User 8', '980505053333');
+  VALUES(12, 'Dummy User 8', '970505053223');
   
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
+  VALUES('user9@user.com', 4, '111111111', crypt('999', gen_salt('bf')), 'user', null);
+  
+  INSERT INTO individuals (user_id, name, nric) 
+  VALUES(13, 'Dummy User 9', '980505053553');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
+  VALUES('user10@user.com', 4, '111111111', crypt('101010', gen_salt('bf')), 'user', null);
+  
+  INSERT INTO individuals (user_id, name, nric) 
+  VALUES(14, 'Dummy User 10', '980505056663');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
+  VALUES('org1@user.com', 5, '111111111', crypt('111111', gen_salt('bf')), 'user', null);
+  
+  INSERT INTO organizations (user_id, name, registration_number) 
+  VALUES(15, 'Dummy Org 1', '111155553');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
+  VALUES('org2@user.com', 3, '111111111', crypt('222222', gen_salt('bf')), 'user', null);
+  
+  INSERT INTO organizations (user_id, name, registration_number) 
+  VALUES(16, 'Dummy Org 2', '123456789');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
+  VALUES('org3@user.com', 2, '111111111', crypt('333333', gen_salt('bf')), 'user', null);
+  
+  INSERT INTO organizations (user_id, name, registration_number) 
+  VALUES(17, 'Dummy Org 3', '444666555');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
+  VALUES('org4@user.com', 6, '111111111', crypt('444444', gen_salt('bf')), 'user', null);
+  
+  INSERT INTO organizations (user_id, name, registration_number) 
+  VALUES(18, 'Dummy Org 4', '987654321');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
+  VALUES('org5@user.com', 2, '111111111', crypt('555555', gen_salt('bf')), 'user', null);
+  
+  INSERT INTO organizations (user_id, name, registration_number) 
+  VALUES(19, 'Dummy Org 5', '222333222');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
+  VALUES('org6@user.com', 6, '111111111', crypt('666666', gen_salt('bf')), 'user', null);
+  
+  INSERT INTO organizations (user_id, name, registration_number) 
+  VALUES(20, 'Dummy Org 6', '333222333');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
+  VALUES('org7@user.com', 2, '111111111', crypt('777777', gen_salt('bf')), 'user', null);
+  
+  INSERT INTO organizations (user_id, name, registration_number) 
+  VALUES(21, 'Dummy Org 7', '444553241');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
+  VALUES('org8@user.com', 6, '111111111', crypt('888888', gen_salt('bf')), 'user', null);
+  
+  INSERT INTO organizations (user_id, name, registration_number) 
+  VALUES(22, 'Dummy Org 8', '654314432');
+  
+  -- Automatically verify some users.
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(1, uuid_in(md5(random()::text || random()::text)::cstring), NULL);
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(2, uuid_in(md5(random()::text || random()::text)::cstring), NOW());
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(3, uuid_in(md5(random()::text || random()::text)::cstring), NOW());
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(4, uuid_in(md5(random()::text || random()::text)::cstring), NOW());
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(5, uuid_in(md5(random()::text || random()::text)::cstring), NOW());
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(6, uuid_in(md5(random()::text || random()::text)::cstring), NOW());
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(7, uuid_in(md5(random()::text || random()::text)::cstring), NULL);
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(8, uuid_in(md5(random()::text || random()::text)::cstring), NOW());
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(9, uuid_in(md5(random()::text || random()::text)::cstring), NULL);
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(10, uuid_in(md5(random()::text || random()::text)::cstring), NOW());
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(11, uuid_in(md5(random()::text || random()::text)::cstring), NOW());
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(12, uuid_in(md5(random()::text || random()::text)::cstring), NULL);
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(13, uuid_in(md5(random()::text || random()::text)::cstring), NULL);
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(14, uuid_in(md5(random()::text || random()::text)::cstring), NOW());
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(15, uuid_in(md5(random()::text || random()::text)::cstring), NOW());
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(16, uuid_in(md5(random()::text || random()::text)::cstring), NOW());
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(17, uuid_in(md5(random()::text || random()::text)::cstring), NOW());
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(18, uuid_in(md5(random()::text || random()::text)::cstring), NULL);
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(19, uuid_in(md5(random()::text || random()::text)::cstring), NOW());
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(20, uuid_in(md5(random()::text || random()::text)::cstring), NOW());
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(21, uuid_in(md5(random()::text || random()::text)::cstring), NULL);
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(22, uuid_in(md5(random()::text || random()::text)::cstring), NOW());
+    
   -- Create dummy venues.
   INSERT INTO venues (address, state, catalogues, remarks) 
   VALUES('1147 Bartlett Avenue, Royal Oak', 'Michigan', 
