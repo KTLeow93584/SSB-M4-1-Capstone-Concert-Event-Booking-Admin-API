@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Concert Event Hosting Services (Republic of Rock) Users (Modify) Page</title>
+
+    <link rel="stylesheet" href="/css/style-tailwind.css" type="text/css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+</head>
+
+<body>
+    <!-- ======================================= -->
+    <div class="w-full flex flex-col min-h-screen">
+        <!-- ======================================= -->
+        <!-- Navigation Panel -->
+        <%- include('../../partials/nav_panel', { has_side_bar: false }); %>
+        <!-- ======================================= -->
+        <!-- Body -->
+        <div class="mt-20 flex flex-col ">
+            <div id="user_form" class="max-w-5xl w-full mx-auto">
+                <!-- ============================== -->
+                <div class="flex items-center justify-center mb-5">
+                    <p class="text-center text-3xl font-bold me-5">
+                        Edit User Profile
+                    </p>
+                    <a class="text-blue-600 font-medium hover:underline" href="<%= '/user/view/' + target_user.id %>" role="button">
+                        Move to View Mode
+                    </a>
+                </div>
+                <!-- ============================== -->
+                <!-- Email Address -->
+                <div class="mb-5">
+                    <label for="email" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Email Address
+                    </label>
+                    <input type="email" id="email" name="email" value="<%= target_user.email %>"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="Email (E.g. abc@gmail.com)" required />
+                </div>
+                <!-- ============================== -->
+                <!-- Name -->
+                <div class="mb-5">
+                    <label for="name" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Name
+                    </label>
+                    <input type="text" id="name" name="name" value="<%= target_user.name %>"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="Name (E.g. John/Jane)" required />
+                </div>
+                <!-- ============================== -->
+                <!-- Profile Picture -->
+                <div class="mb-5">
+                    <label for="profile_picture" class="block mb-2 text-md font-bold text-gray-900 dark:text-white" for="user_avatar">
+                        Upload File (Profile Picture)
+                    </label>
+                    <input id="profile_picture" name="profile_picture"
+                        class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                        aria-describedby="user_avatar_help" id="user_avatar" type="file">
+                        
+                    <div class="flex items-center justify-center w-full mt-8">
+                        <img src="<%= target_user.profile_picture ? target_user.profile_picture : '/img/user-profile-default.webp' %>"
+                            alt="Profile Picture (Large)"
+                            id="display_profile_lg" class="me-3"
+                            style="min-width:96px; min-height:96px; max-width:128px; max-height:128px; width:100%; height:auto;" />
+                        <img src="<%= target_user.profile_picture ? target_user.profile_picture : '/img/user-profile-default.webp' %>"
+                            alt="Profile Picture (Medium)"
+                            id="display_profile_md" class="me-3"
+                            style="min-width:64px; min-height:64px; max-width:96px; max-height:96px; width:100%; height:auto;" />
+                        <img src="<%= target_user.profile_picture ? target_user.profile_picture : '/img/user-profile-default.webp' %>"
+                            alt="Profile Picture (Small)"
+                            id="display_profile_sm"
+                            style="min-width:32px; min-height:32px; max-width:64px; max-height:64px; width:100%; height:auto;" />
+                    </div>
+                    <div class="flex flex-col rounded-lg mb-2 px-2 py-1">
+                        <p class="font-bold">Requirements for profile picture setup: </p>
+                        <p class="fw-normal">1. Must not exceed 128kb. </p>
+                        <p class="fw-normal">2. Equal Width and Height Dimensions. </p>
+                    </div>
+                </div>
+                <!-- ============================== -->
+                <!-- Role -->
+                <div class="mb-5">
+                    <label for="role" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Role
+                    </label>
+                    <% if (target_user.id === user.id) { %>
+                        <input type="text" id="role" aria-label="role_disabled" name="role"
+                            class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            value="<%= target_user.role.substring(0, 1).toUpperCase() + target_user.role.substring(1).toLowerCase() %>" disabled>
+                    <% } else { %>
+                        <select role="button" id="role" name="role"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                            <option value="admin" <%= (target_user.role.toLowerCase() === "admin") ? "selected" : "" %>>
+                                Admin
+                            </option>
+                            <option value="staff" <%= (target_user.role.toLowerCase() === "staff") ? "selected" : "" %>>
+                                Staff
+                            </option>
+                            <option value="user" <%= (target_user.role.toLowerCase() === "user") ? "selected" : "" %>>
+                                User
+                            </option>
+                        </select>
+                    <% } %>
+                </div>
+                <!-- ============================== -->
+                <!-- Country Name -->
+                <div class="mb-5">
+                    <label for="country_name" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Country
+                    </label>
+                    <select role="button" id="country_name" name="country_name"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <%
+                            for (let i = 0; i < countries.length; ++i) {
+                                const country = countries[i];
+                        %>
+                            <option value="<%= JSON.stringify(country) %>" "<%= target_user.country_name === country.name ? 'selected' : '' %>"><%= country.name %></option>
+                        <% } %>
+                    </select>
+                </div>
+                <!-- ============================== -->
+                <!-- Contact Number (+ Country Number) -->
+                <div class="mb-5">
+                    <label for="contact_number" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Contact Number
+                    </label>
+                    <div class="flex">
+                        <input type="text" id="country_code" aria-label="country_code_disabled" name="country_code"
+                            class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            value="<%= target_user.country_code %>" disabled>
+                        <input type="tel" id="contact_number" name="contact_number" value="<%= target_user.contact_number %>"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            placeholder="Phone Number (E.g. 01234567)" required />
+                    </div>
+                </div>
+                <!-- ============================== -->
+                <!-- User Type (Individual or Organization) -->
+                <div class="mb-5">
+                    <label for="user_type" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        User Type
+                    </label>
+                    <select role="button" id="user_type" name="user_type"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                            <option value="Individual" "<%= target_user.type === 'Individual' ? 'selected' : '' %>">
+                                Individual
+                            </option>
+                            <option value="Organization" "<%= target_user.type === 'Organization' ? 'selected' : '' %>">
+                                Organization
+                            </option>
+                    </select>
+                </div>
+                <!-- ============================== -->
+                <!-- Identification Number (NRIC or Organization Registration Number, Read-Only) -->
+                <div class="mb-5">
+                    <label for="id_number" id="id_number_label" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        <%= target_user.type === 'Individual' ? 'NRIC' : 'Registration Number' %>
+                    </label>
+                    <div>
+                        <input type="text" id="id_number" aria-label="id_number" name="id_number"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            value="<%= target_user.identification_number %>" required>
+                    </div>
+                </div>
+                <!-- ============================== -->
+                <!-- Joined Date (Account Created Date, Read-Only) -->
+                <div class="mb-5">
+                    <label for="join_date" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Joined us at
+                    </label>
+                    <div>
+                        <input type="date" id="join_date" aria-label="join_date_disabled"
+                            class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            value="<%= target_user.account_creation_date.toISOString().split('T')[0] %>" disabled>
+                    </div>
+                </div>
+                <!-- ============================== -->
+                <div class="flex justify-evenly mb-5">
+                    <button
+                        data-modal-target="modify_user_modal"
+                        data-modal-toggle="modify_user_modal"
+                        class="text-white max-w-48 w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        Save Changes
+                    </button>
+                    <button
+                        data-modal-target="exit_modal"
+                        data-modal-toggle="exit_modal"
+                        class="text-white max-w-48 w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        Return To List
+                    </button>
+                    <!-- User Modification Confirmation Modal -->
+                    <%-
+                        include('../../partials/confirmation_modal', {
+                            modal_id: 'modify_user_modal',
+                            modal_title: 'Modifying User Information',
+                            modal_body: 'Confirm decision to save and commit changes?',
+                            modal_context_name: 'modify_user_modal',
+                            modal_api_body: {
+                                id: target_user.id,
+                                email: target_user.email,
+                                name: target_user.name,
+                                role: target_user.role,
+                                profile_picture: target_user.profile_picture,
+                                country_name: target_user.country_name,
+                                contact_number: target_user.contact_number,
+                                type: target_user.type,
+                                identification_number: target_user.identification_number,
+                            }
+                        });
+                    %>
+                    <!-- Return to Listing Page Modal -->
+                    <%-
+                        include('../../partials/confirmation_modal', {
+                            modal_id: 'exit_modal',
+                            modal_title: 'Return To Listing Page',
+                            modal_body: 'Confirm decision to return? All unsaved changes will be lost.',
+                            modal_context_name: 'exit_modal',
+                            modal_api_body: null
+                        });
+                    %>
+                </div>
+                <!-- ============================== -->
+            </div>
+        </div>
+        <!-- ======================================= -->
+        <!-- Footer -->
+        <%- include('../../partials/footer') %>
+        <!-- ======================================= -->
+    </div>
+    <!-- ======================================= -->
+    <script>
+        // =====================
+        // Profile Picture Display HTML elements.
+        const display_lg = document.getElementById('display_profile_lg');
+        const display_md = document.getElementById('display_profile_md');
+        const display_sm = document.getElementById('display_profile_sm');
+
+        document.getElementById('profile_picture').addEventListener('change', (event) => {
+            const file = event.target.files.length > 0 ? event.target.files[0] : null;
+
+            // Debug
+            //console.log("[On Profile Picture Uploaded] File.", file);
+            
+            if (!file) 
+                return;
+
+            // Debug
+            //console.log("[On Profile Picture Upload] Size.", file.size);
+
+            const fileReader = new FileReader();
+            fileReader.readAsDataURL(file);
+            fileReader.addEventListener("load", () => {
+                const url = fileReader.result;
+
+                // Test for width and height
+                const testImg = new window.Image();
+                testImg.onload = () => {
+                    const width = testImg.width;
+                    const height = testImg.height;
+
+                    // Debug
+                    //console.log("[On Profile Picture Upload] Width: " + width + ", Height: " + height);
+
+                    const isValid = width === height & file.size <= 128000;
+                    if (isValid) {
+                        display_lg.src = url;
+                        display_md.src = url;
+                        display_sm.src = url;
+                    }
+                }
+                testImg.src = url;
+            });
+        });
+        // =====================
+        // Email Address HTML element.
+        const email = document.getElementById('email');
+        // =====================
+        // Name HTML element.
+        const name = document.getElementById('name');
+        // =====================
+        // Profile Picture HTML element.
+        const profile_picture = document.getElementById('profile_picture');
+        // =====================
+        // Country HTML elements.
+        
+        // Country Code element.
+        const phone_code = document.getElementById('country_code');
+
+        // Country Name element.
+        const country_name = document.getElementById('country_name');
+        
+        // Selection element.
+        country_name.addEventListener('change', (event) => {
+            const country_obj = JSON.parse(event.target.value);
+            phone_code.value = country_obj.phone_code;
+        });
+        // =====================
+        // Role HTML element.
+        const role  = document.getElementById('role');
+        // =====================
+        // Contact Number HTML element.
+        const contact_number = document.getElementById('contact_number');
+        // =====================
+        // User Type HTML Element
+        const user_type = document.getElementById('user_type');
+        user_type.addEventListener('change', (event) => {
+            id_number_label.innerHTML  = event.target.value === 'Individual' ? 'NRIC' : 'Registration Number';
+        });
+        // =====================
+        // Identification Number HTML element.
+        const id_number = document.getElementById('id_number');
+        
+        // Identification Number Label HTML element.
+        const id_number_label = document.getElementById('id_number_label');
+        // =====================
+        // Submit Changes to server API.
+        function onModalAccepted(context_name, body) {
+            // Debug
+            //console.log("[On Modal Prompted - Accept] Context: " + context_name);
+
+            switch (context_name) {
+                case 'modify_user_modal':
+                    body = JSON.parse(body);
+
+                    // Debug
+                    //console.log("[Input] Body: ", body);
+
+                    const countryObj = JSON.parse(country_name.value);
+
+                    const requestBody = {
+                        user_id: body.id,
+                        email: (email.value === body.email) ? null : email.value,
+                        name: (name.value === body.name && user_type.value === body.type) ? null : name.value,
+                        profile_picture: (display_profile_lg.src === body.profile_picture) ? null : display_profile_lg.src,
+                        country_name: (countryObj.name === body.country_name) ? null : countryObj.name,
+                        role: (role.value.toLowerCase() === body.role.toLowerCase()) ? null : role.value.toLowerCase(),
+                        contact_number: (contact_number.value === body.contact_number) ? null : contact_number.value,
+                        type: (user_type.value === body.type) ? null : user_type.value,
+                        id_number: (id_number.value === body.identification_number && user_type.value === body.type) ? null : id_number.value
+                    };
+
+                    // Debug
+                    //console.log("[Output] Body: ", requestBody);
+                    //console.log("[Output] Body 2: ", role.value);
+                    //console.log("[Output] Body 3: ", body.role);
+
+                    fetch('/web/api/user/edit', {
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        method: 'PUT',
+                        body: JSON.stringify(requestBody)
+                    })
+                    .then((response) => response.json())
+                    .then((result) => {
+                        // Debug
+                        //console.log("Result.", result);
+
+                        if (result.success) {
+                            alert('User successfully modified!');
+                            window.location.href = "/user/view/" + result.client_data.user.user_id;
+                        }
+                        else {
+                            switch (result.error.code) {
+                                case 'not-permitted-to-modify-user-account':
+                                    alert('You are not permitted to modify another user of the same role or above.');
+                                    break;
+                                case 'not-authorized-to-change-self-role':
+                                    alert('You are not permitted to modify your own role.');
+                                    break;
+                                default:
+                                    alert('Something unexpected went wrong with the deletion process! Please check the logs.');
+                            }
+                        }
+                    });
+                    break;
+                case 'exit_modal':
+                    window.location.href = '/users?page=1';
+                    break;
+                default:
+            }
+        }
+
+        function onModalRejected(context_name) {
+            // Debug
+            //console.log("[On Modal Prompted - Reject] Context: " + context_name);
+        }
+        // =====================
+    </script>
+    <!-- ======================================= -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+    <!-- ======================================= -->
+</body>
+
+</html>

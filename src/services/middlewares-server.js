@@ -1,10 +1,10 @@
 // =======================================
 // Check if user (and role) is authorized to view the  page.
 function isUserAuthorized(req, res, next) {
-    if (req.session.user)
-        return next();
-    else
-        res.redirect('/login');
+  if (req.session.user)
+      return next();
+  else
+      res.redirect('/login');
 }
 // =======================================
 // Print Informative Message On Web Page after a Successful API Response

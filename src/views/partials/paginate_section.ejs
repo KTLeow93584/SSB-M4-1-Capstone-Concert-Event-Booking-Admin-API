@@ -1,32 +1,32 @@
 <nav class="w-fit max-w-5xl flex justify-center" aria-label="Page navigation example">
     <ul class="inline-flex -space-x-px text-sm">
-    <% if (active_page_no > 1) { %>
-    <li>
-        <a href="/users?page=<%= (parseInt(active_page_no) - 1).toString() %>"
-        class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
-        Previous
-        </a>
-    </li>
+    <% if (active_page_number > 1) { %>
+        <li>
+            <button onclick="onRefreshPageResult('<%= active_page_number - 1 %>')"
+                class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                Previous
+            </button>
+        </li>
     <% } %>
 
     <%
-    for (let i = 0; i < (end_page_no - start_page_no) + 1; ++i) {
-        const page_no = start_page_no + i;
+    for (let i = 0; i < (end_page_number - start_page_number) + 1; ++i) {
+        const page_number = start_page_number + i;
     %>
-    <li>
-        <a href="/users?page=<%= page_no %>" aria-current="<%= (page_no === active_page_no) ? 'page' : '' %>"
-        class="flex items-center justify-center px-3 h-8 leading-tight <%= (page_no === active_page_no) ? 'paginate-button-current' : 'paginate-button' %>">
-        <%= page_no %>
-        </a>
-    </li>
+        <li>
+            <button onclick="onRefreshPageResult('<%= page_number %>')"
+                class="flex items-center justify-center px-3 h-8 leading-tight <%= (page_number === active_page_number) ? 'paginate-button-current' : 'paginate-button' %>">
+                <%= page_number %>
+            </button>
+        </li>
     <% } %>
-    <% if (active_page_no < total_page_count) { %>
-    <li>
-        <a href="/users?page=<%= (parseInt(active_page_no) + 1).toString() %>"
-        class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
-        Next
-        </a>
-    </li>
+    <% if (active_page_number < total_page_count) { %>
+        <li>
+            <button onclick="onRefreshPageResult('<%= active_page_number + 1 %>')"
+                class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                Next
+            </button>
+        </li>
     <% } %>
     </ul>
 </nav>

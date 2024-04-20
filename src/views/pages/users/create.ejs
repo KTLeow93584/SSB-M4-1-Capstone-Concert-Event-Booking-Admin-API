@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Concert Event Hosting Services (Republic of Rock) Users (Modify) Page</title>
+
+    <link rel="stylesheet" href="/css/style-tailwind.css" type="text/css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+</head>
+
+<body>
+    <!-- ======================================= -->
+    <div class="w-full flex flex-col min-h-screen">
+        <!-- ======================================= -->
+        <!-- Navigation Panel -->
+        <%- include('../../partials/nav_panel', { has_side_bar: false }); %>
+        <!-- ======================================= -->
+        <!-- Body -->
+        <div class="mt-20 flex flex-col ">
+            <div id="user_form" class="max-w-5xl w-full mx-auto">
+                <!-- ============================== -->
+                <div class="flex items-center justify-center mb-5">
+                    <p class="text-center text-3xl font-bold me-5">
+                        Add New User
+                    </p>
+                </div>
+                <!-- ============================== -->
+                <!-- Email Address -->
+                <div class="mb-5">
+                    <label for="email" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Email Address
+                    </label>
+                    <input type="email" id="email" name="email"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="Email (E.g. abc@gmail.com)" required />
+                </div>
+                <!-- ============================== -->
+                <!-- Password -->
+                <div class="mb-5">
+                    <label for="password" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Password
+                    </label>
+                    <div class="flex items-center pe-3 block bg-gray-50 rounded-lg border border-solid border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus-within:ring-1 focus-within:ring-blue-500 focus-within:border-blue-500 dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <input name="password" type="password" id="password"
+                            class="text-gray-900 text-sm bg-transparent border-none block w-full p-2.5 focus:ring-0 rounded-lg dark:placeholder-gray-400 dark:text-white"
+                            placeholder="Your Password"
+                            autocomplete="true"
+                            required />
+                        <input type="checkbox" name="password_flag"
+                            class="w-4 h-4 border border-black rounded bg-white focus:ring-0 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-0"
+                            onclick="Toggle('password')">
+                    </div>
+                </div>
+
+                <!-- Password Confirmation-->
+                <div class="mb-5">
+                    <label for="password_confirmation" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Confirm Password
+                    </label>
+                    <div class="flex items-center pe-3 block bg-gray-50 rounded-lg border border-solid border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus-within:ring-1 focus-within:ring-blue-500 focus-within:border-blue-500 dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <input name="password_confirmation" type="password" id="password_confirmation"
+                            class="text-gray-900 text-sm bg-transparent border-none block w-full p-2.5 focus:ring-0 rounded-lg dark:placeholder-gray-400 dark:text-white"
+                            placeholder="Confirm Your Password"
+                            autocomplete="true"
+                            required />
+                        <input type="checkbox" name="password_confirmation_flag"
+                            class="w-4 h-4 border border-black rounded bg-white focus:ring-0 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-0"
+                        onclick="Toggle('password_confirmation')">
+                    </div>
+                </div>
+                <!-- Password Criteria -->
+                <div class="flex flex-col rounded border border-solid border-gray-300 mb-5 ps-2 pe-5 pt-2 pb-3">
+                    <p class="font-bold text-sm text-gray-900">Requirements for password: </p>
+                    <p class="text-sm text-gray-900">1. 8 characters long.</p>
+                    <p class="text-sm text-gray-900">2. Must contain 1 symbol, 1 number, 1 lower and 1 uppercase letter.</p>
+                </div>
+                <!-- ============================== -->
+                <!-- Name -->
+                <div class="mb-5">
+                    <label for="name" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Name
+                    </label>
+                    <input type="text" id="name" name="name"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="Name (E.g. John/Jane)" required />
+                </div>
+                <!-- ============================== -->
+                <!-- Profile Picture -->
+                <div class="mb-5">
+                    <label for="profile_picture" class="block mb-2 text-md font-bold text-gray-900 dark:text-white"
+                        for="user_avatar">
+                        Upload File (Profile Picture)
+                    </label>
+                    <input id="profile_picture" name="profile_picture"
+                        class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                        aria-describedby="user_avatar_help" id="user_avatar" type="file"/>
+
+                    <div class="flex items-center justify-center w-full mt-8">
+                        <img src="/img/user-profile-default.webp"
+                            alt="Profile Picture (Large)"
+                            id="display_profile_lg" class="me-3"
+                            style="min-width:96px; min-height:96px; max-width:128px; max-height:128px; width:100%; height:auto;" />
+                        <img src="/img/user-profile-default.webp"
+                            alt="Profile Picture (Medium)"
+                            id="display_profile_md" class="me-3"
+                            style="min-width:64px; min-height:64px; max-width:96px; max-height:96px; width:100%; height:auto;" />
+                        <img src="/img/user-profile-default.webp"
+                            alt="Profile Picture (Small)"
+                            id="display_profile_sm"
+                            style="min-width:32px; min-height:32px; max-width:64px; max-height:64px; width:100%; height:auto;" />
+                    </div>
+                    <div class="flex flex-col rounded-lg mb-2 px-2 py-1">
+                        <p class="font-bold">Requirements for profile picture setup: </p>
+                        <p class="fw-normal">1. Must not exceed 128kb. </p>
+                        <p class="fw-normal">2. Equal Width and Height Dimensions. </p>
+                    </div>
+                </div>
+                <!-- ============================== -->
+                <!-- Role -->
+                <div class="mb-5">
+                    <label for="role" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Role
+                    </label>
+                    <select role="button" id="role" name="role"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <option value="admin">
+                            Admin
+                        </option>
+                        <option value="staff">
+                            Staff
+                        </option>
+                        <option value="user" "selected">
+                            User
+                        </option>
+                    </select>
+                </div>
+                <!-- ============================== -->
+                <!-- Country Name -->
+                <div class="mb-5">
+                    <label for="country_name" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Country
+                    </label>
+                    <select role="button" id="country_name" name="country_name"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <%
+                            for (let i = 0; i < countries.length; ++i) {
+                                const country=countries[i];
+                        %>
+                            <option value="<%= JSON.stringify(country) %>"
+                                "<%= (i === 0)  ? 'selected' : '' %>">
+                                <%= country.name %>
+                            </option>
+                        <% } %>
+                    </select>
+                </div>
+                <!-- ============================== -->
+                <!-- Contact Number (+ Country Number) -->
+                <div class="mb-5">
+                    <label for="contact_number" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Contact Number
+                    </label>
+                    <div class="flex">
+                        <input type="text" id="country_code" aria-label="country_code_disabled" name="country_code"
+                            class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            value="<%= countries[0].phone_code %>" disabled>
+                        <input type="tel" id="contact_number" name="contact_number"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            placeholder="Phone Number (E.g. 01234567)" required />
+                    </div>
+                </div>
+                <!-- ============================== -->
+                <!-- User Type (Individual or Organization) -->
+                <div class="mb-5">
+                    <label for="user_type" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        User Type
+                    </label>
+                    <select role="button" id="user_type" name="user_type"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <option value="Individual" "selected">
+                            Individual
+                        </option>
+                        <option value="Organization">
+                            Organization
+                        </option>
+                    </select>
+                </div>
+                <!-- ============================== -->
+                <!-- Identification Number (NRIC or Organization Registration Number, Read-Only) -->
+                <div class="mb-5">
+                    <label for="id_number" id="id_number_label"
+                        class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        NRIC
+                    </label>
+                    <div>
+                        <input type="text" id="id_number" aria-label="id_number" name="id_number"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            required>
+                    </div>
+                </div>
+                <!-- ============================== -->
+                <div class="flex justify-evenly mb-5">
+                    <button data-modal-target="create_user_modal" data-modal-toggle="create_user_modal"
+                        class="text-white max-w-48 w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        Create New User
+                    </button>
+                    <button data-modal-target="exit_modal" data-modal-toggle="exit_modal"
+                        class="text-white max-w-48 w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        Return To List
+                    </button>
+                    
+                    <!-- User Modification Confirmation Modal -->
+                    <%-
+                        include('../../partials/confirmation_modal', {
+                            modal_id: 'create_user_modal',
+                            modal_title: 'Creating New User',
+                            modal_body: 'Confirm decision to create the new user?',
+                            modal_context_name: 'create_user_modal',
+                            modal_api_body: null
+                        });
+                    %>
+                    <!-- Return to Listing Page Modal -->
+                    <%- 
+                        include('../../partials/confirmation_modal', {
+                            modal_id: 'exit_modal',
+                            modal_title: 'Return To Listing Page',
+                            modal_body: 'Confirm decision to return? All unsaved changes will be lost.',
+                            modal_context_name: 'exit_modal',
+                            modal_api_body: null
+                        });
+                    %>
+                </div>
+                <!-- ============================== -->
+            </div>
+        </div>
+        <!-- ======================================= -->
+        <!-- Footer -->
+        <%- include('../../partials/footer') %>
+        <!-- ======================================= -->
+    </div>
+    <!-- ======================================= -->
+    <script>
+        // =====================
+        // Change the type of input to password or text
+        function Toggle(id) {
+            let temp = document.getElementById(id);
+            temp.type = temp.type === "password" ? "text" : "password";
+        }
+        // =====================
+        // Profile Picture Display HTML elements.
+        const profile_picture = document.getElementById('profile_picture');
+
+        profile_picture.addEventListener('change', (event) => {
+            const file = event.target.files.length > 0 ? event.target.files[0] : null;
+
+            // Debug
+            //console.log("[On Profile Picture Uploaded] File.", file);
+
+            if (!file)
+                return;
+
+            // Debug
+            //console.log("[On Profile Picture Upload] Size.", file.size);
+
+            const fileReader = new FileReader();
+            fileReader.readAsDataURL(file);
+            fileReader.addEventListener("load", () => {
+                const url = fileReader.result;
+
+                // Test for width and height
+                const testImg = new window.Image();
+                testImg.onload = () => {
+                    const width = testImg.width;
+                    const height = testImg.height;
+
+                    // Debug
+                    //console.log("[On Profile Picture Upload] Width: " + width + ", Height: " + height);
+
+                    const isValid = width === height & file.size <= 128000;
+                    if (isValid) {
+                        display_lg.src = url;
+                        display_md.src = url;
+                        display_sm.src = url;
+                    }
+                }
+                testImg.src = url;
+            });
+        });
+
+        const display_lg = document.getElementById('display_profile_lg');
+        const display_md = document.getElementById('display_profile_md');
+        const display_sm = document.getElementById('display_profile_sm');
+        // =====================
+        // Email Address HTML element.
+        const email = document.getElementById('email');
+        // =====================
+        // Password HTML element.
+        const password = document.getElementById('password');
+        // =====================
+        // Password Confirmation HTML element.
+        const password_confirmation = document.getElementById('password_confirmation')
+        // =====================
+        // Name HTML element.
+        const name = document.getElementById('name');
+        // =====================
+        // Country HTML elements.
+
+        // Country Code element.
+        const phone_code = document.getElementById('country_code');
+
+        // Country Name element.
+        const country_name = document.getElementById('country_name');
+
+        // Selection element.
+        country_name.addEventListener('change', (event) => {
+            const country_obj = JSON.parse(event.target.value);
+            phone_code.value = country_obj.phone_code;
+        });
+        // =====================
+        // Role HTML element.
+        const role = document.getElementById('role');
+        // =====================
+        // Contact Number HTML element.
+        const contact_number = document.getElementById('contact_number');
+        // =====================
+        // User Type HTML Element
+        const user_type = document.getElementById('user_type');
+        user_type.addEventListener('change', (event) => {
+            id_number_label.innerHTML = event.target.value === 'Individual' ? 'NRIC' : 'Registration Number';
+        });
+        // =====================
+        // Identification Number HTML element.
+        const id_number = document.getElementById('id_number');
+
+        // Identification Number Label HTML element.
+        const id_number_label = document.getElementById('id_number_label');
+        // =====================
+        // Submit Changes to server API.
+        function onModalAccepted(context_name) {
+            // Debug
+            //console.log("[On Modal Prompted - Accept] Context: " + context_name);
+
+            switch (context_name) {
+                case 'create_user_modal':
+                    // Debug
+                    //console.log("[Input] Body: ", body);
+
+                    const countryObj = JSON.parse(country_name.value);
+                    
+                    const requestBody = {
+                        email: email.value,
+                        password: password.value,
+                        password_confirmation: password_confirmation.value,
+                        name: name.value,
+                        profile_picture: (profile_picture.files && profile_picture.files.length > 0) ? display_profile_lg.src : null,
+                        country_name: countryObj.name,
+                        role: role.value.toLowerCase(),
+                        contact_number: contact_number.value,
+                        type: user_type.value,
+                        id_number: id_number.value
+                    };
+
+                    // Debug
+                    console.log("[Output] Body: ", requestBody);
+
+                    fetch('/web/api/user/create', {
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        method: 'POST',
+                        body: JSON.stringify(requestBody)
+                    })
+                        .then((response) => response.json())
+                        .then((result) => {
+                            // Debug
+                            console.log("Result.", result);
+
+                            if (result.success) {
+                                alert('User successfully created!');
+                                window.location.href = "/user/view/" + result.client_data.user.user_id;
+                            }
+                            else {
+                                switch (result.error.code) {
+                                    case 'incomplete-form-field':
+                                        alert('Some of the input fields are missing. Please check before submitting again.');
+                                        break;
+                                    case 'mismatched-password':
+                                        alert('Your password does not match the confirmation field. Please check before submitting again.');
+                                        break;
+                                    case 'incorrect-password-format':
+                                        alert('Your password does not match the requirements. Please re-verify before submitting again.');
+                                        break;
+                                    default:
+                                        alert('Something unexpected went wrong with the deletion process! Please check the logs.');
+                                }
+                            }
+                        });
+                    break;
+                case 'exit_modal':
+                    window.location.href = '/users?page=1';
+                    break;
+                default:
+            }
+        }
+
+        function onModalRejected(context_name) {
+            // Debug
+            //console.log("[On Modal Prompted - Reject] Context: " + context_name);
+        }
+        // =====================
+    </script>
+    <!-- ======================================= -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+    <!-- ======================================= -->
+</body>
+
+</html>

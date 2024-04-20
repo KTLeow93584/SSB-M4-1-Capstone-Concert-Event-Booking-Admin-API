@@ -121,13 +121,13 @@ router.put("/api/profile", [authenticateCustomJWToken, authenticateFirebaseJWTok
       sql = `
         WITH updated_individuals AS (
             UPDATE individuals
-            SET name = COALESCE($1, name)
+              SET name = COALESCE($1, name)
             WHERE id = $2
             RETURNING id, name
         ),
         updated_organizations AS (
             UPDATE organizations
-            SET name = COALESCE($1, name)
+              SET name = COALESCE($1, name)
             WHERE id = $2
             RETURNING id, name
         )

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Concert Event Hosting Services (Republic of Rock) Users (View) Page</title>
+
+    <link rel="stylesheet" href="/css/style-tailwind.css" type="text/css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+</head>
+
+<body>
+    <!-- ======================================= -->
+    <div class="w-full flex flex-col min-h-screen">
+        <!-- ======================================= -->
+        <!-- Navigation Panel -->
+        <%- include('../../partials/nav_panel', { has_side_bar: false }); %>
+        <!-- ======================================= -->
+        <!-- Body -->
+        <div class="mt-20 flex flex-col ">
+            <div id="user_form" class="max-w-5xl w-full mx-auto">
+                <!-- ============================== -->
+                <div class="flex items-center justify-center mb-5">
+                    <p class="text-center text-3xl font-bold me-5">
+                        View User Profile
+                    </p>
+                    <% if (user.role_permission_level > target_user.role_permission_level || user.id === target_user.id) { %>
+                        <a class="text-blue-600 font-medium hover:underline" href="<%= '/user/edit/' + target_user.id %>" role="button">
+                            Move to Edit Mode
+                        </a>
+                    <% } %>
+                </div>
+                <!-- ============================== -->
+                <!-- Email Address -->
+                <div class="mb-5">
+                    <label for="email" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Email Address
+                    </label>
+                    <input type="email" id="email" name="email" value="<%= target_user.email %>"
+                            class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="Email (E.g. abc@gmail.com)" disabled />
+                </div>
+                <!-- ============================== -->
+                <!-- Name -->
+                <div class="mb-5">
+                    <label for="name" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Name
+                    </label>
+                    <input type="text" id="name" name="name" value="<%= target_user.name %>"
+                        class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="Name (E.g. John/Jane)" disabled />
+                </div>
+                <!-- ============================== -->
+                <!-- Profile Picture -->
+                <div class="mb-5">
+                    <label for="profile_picture" class="block mb-2 text-md font-bold text-gray-900 dark:text-white" for="user_avatar">
+                        Upload File (Profile Picture)
+                    </label>
+                    <div id="profile_picture" class="flex items-center justify-center w-full mt-8">
+                        <img src="<%= target_user.profile_picture ? target_user.profile_picture : '/img/user-profile-default.webp' %>"
+                            alt="Profile Picture (Large)"
+                            id="display_profile_lg" class="me-3"
+                            style="min-width:96px; min-height:96px; max-width:128px; max-height:128px; width:100%; height:auto;" />
+                        <img src="<%= target_user.profile_picture ? target_user.profile_picture : '/img/user-profile-default.webp' %>"
+                            alt="Profile Picture (Medium)"
+                            id="display_profile_md" class="me-3"
+                            style="min-width:64px; min-height:64px; max-width:96px; max-height:96px; width:100%; height:auto;" />
+                        <img src="<%= target_user.profile_picture ? target_user.profile_picture : '/img/user-profile-default.webp' %>"
+                            alt="Profile Picture (Small)"
+                            id="display_profile_sm"
+                            style="min-width:32px; min-height:32px; max-width:64px; max-height:64px; width:100%; height:auto;" />
+                    </div>
+                </div>
+                <!-- ============================== -->
+                <!-- Role -->
+                <div class="mb-5">
+                    <label for="role" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Role
+                    </label>
+                    <div>
+                        <input type="text" id="role" aria-label="role"
+                            class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            value="<%= target_user.role.substring(0, 1).toUpperCase() + target_user.role.substring(1).toLowerCase() %>" disabled>
+                    </div>
+                </div>
+                <!-- ============================== -->
+                <!-- Country Name -->
+                <div class="mb-5">
+                    <label for="country_name" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Country
+                    </label>
+                    <div>
+                        <input type="text" id="country_name" aria-label="country_name"
+                            class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            value="<%= target_user.country_name %>" disabled>
+                    </div>
+                </div>
+                <!-- ============================== -->
+                <!-- Contact Number (+ Country Number) -->
+                <div class="mb-5">
+                    <label for="contact_number" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Contact Number
+                    </label>
+                    <div class="flex">
+                        <input type="text" id="country_code" aria-label="country_code" name="country_code"
+                            class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            value="<%= target_user.country_code %>" disabled>
+                        <input type="tel" id="contact_number" value="<%= target_user.contact_number %>"
+                            class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            placeholder="Phone Number (E.g. 01234567)" disabled />
+                    </div>
+                </div>
+                <!-- ============================== -->
+                <!-- User Type (Individual or Organization) -->
+                <div class="mb-5">
+                    <label for="user_type" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        User Type
+                    </label>
+                    <div>
+                        <input type="text" id="user_type" aria-label="user_type"
+                            class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            value="<%= target_user.type %>" disabled>
+                    </div>
+                </div>
+                <!-- ============================== -->
+                <!-- Identification Number (NRIC or Organization Registration Number, Read-Only) -->
+                <div class="mb-5">
+                    <label for="id_number" id="id_number_label" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        <%= target_user.type === 'Individual' ? 'NRIC' : 'Registration Number' %>
+                    </label>
+                    <div>
+                        <input type="text" id="id_number" aria-label="id_number"
+                            class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            value="<%= target_user.identification_number %>" disabled>
+                    </div>
+                </div>
+                <!-- ============================== -->
+                <!-- Joined Date (Account Created Date, Read-Only) -->
+                <div class="mb-5">
+                    <label for="join_date" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Joined us at
+                    </label>
+                    <div>
+                        <input type="date" id="join_date" aria-label="join_date"
+                            class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            value="<%= target_user.account_creation_date.toISOString().split('T')[0] %>" disabled>
+                    </div>
+                </div>
+                <!-- ============================== -->
+                <div class="flex justify-evenly mb-5">
+                    <button onclick="onReturnToListPage()"
+                        class="text-white max-w-48 w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        Return To List
+                    </button>
+                </div>
+                <!-- ============================== -->
+            </div>
+        </div>
+        <!-- ======================================= -->
+        <!-- Footer -->
+        <%- include('../../partials/footer') %>
+        <!-- ======================================= -->
+    </div>
+    <!-- ======================================= -->
+    <script>
+        // Submit Changes to server API.
+        function onReturnToListPage() {
+            window.location.href = '/users?page=1';
+        }
+    </script>
+    <!-- ======================================= -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+    <!-- ======================================= -->
+</body>
+
+</html>

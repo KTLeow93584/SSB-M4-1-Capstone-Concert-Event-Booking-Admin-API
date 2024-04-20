@@ -36,15 +36,16 @@
             <div class="mb-5">
                 <label for="password-form" class="block mb-2 text-sm text-gray-900 dark:text-white">Your password</label>
                 <div class="flex items-center pe-3 block bg-gray-50 rounded-lg border border-solid border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus-within:ring-1 focus-within:ring-blue-500 focus-within:border-blue-500 dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                    <input name="password" type="password" id="password-form"
+                    <input name="password" type="password" id="password_form"
                         value="<%= form_data && form_data.password ? form_data.password : '' %>"
                         class="text-gray-900 text-sm bg-transparent border-none block w-full p-2.5 focus:ring-0 rounded-lg dark:placeholder-gray-400 dark:text-white"
                         placeholder="Your Password"
                         autocomplete="true"
                         required />
-                    <input type="checkbox" 
+                    <label for="forget_password_form" class="hidden me-3">Forget Password Visibility Toggle</label>
+                    <input type="checkbox" id="forget_password_form" name="forget_password"
                         class="w-4 h-4 border border-black rounded bg-white focus:ring-0 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-0"
-                    onclick="Toggle()">
+                        onclick="Toggle()" />
                 </div>
             </div>
             <div class="flex items-start mb-5">
@@ -57,7 +58,7 @@
                 <label for="remember_toggle" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
                     Remember Me
                 </label>
-                <a href="/password/forget" class="text-sm ms-auto text-blue-600 font-medium hover:underline"">
+                <a href="/password/forget" class="text-sm ms-auto text-blue-600 font-medium hover:underline">
                     Forgot your password?
                 </a>
             </div>

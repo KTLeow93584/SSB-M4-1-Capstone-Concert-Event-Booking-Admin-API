@@ -1,4 +1,4 @@
-<nav class="fixed flex-none top-0 z-50 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+<nav class="fixed flex-none top-0 z-50 w-full bg-gray-200 border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
     <div class="px-3 py-3 lg:px-5 lg:pl-3">
         <div class="flex items-center justify-between">
             <div class="flex items-center justify-start rtl:justify-end">
@@ -22,9 +22,9 @@
             <div class="flex items-center">
                 <div class="flex items-center ms-3">
                     <% const userObj = (typeof user === "object" ? user : null); %>
-                    <a href="<%= userObj ? '/pages/profile' : '/login' %>" class="flex items-center me-3">
+                    <a href="<%= userObj ? ('/user/view/' + user.id) : '/login' %>" class="flex items-center me-3">
                         <img class="w-8 h-8 rounded-full me-2"
-                            src="<%= userObj && userObj.profile_picture ? userObj.profile_picture : '../../../img/user-profile-default.webp' %>"
+                            src="<%= userObj && userObj.profile_picture ? userObj.profile_picture : '/img/user-profile-default.webp' %>"
                             alt="User Profile Picture">
                         <p role="button" class="hover:underline text-sm text-gray-900 dark:text-white font-bold" role="none">
                             <%= userObj ? userObj.name : 'Guest' %>

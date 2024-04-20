@@ -1,11 +1,11 @@
 <!-- Search Filter -->
 <div class="flex items-center">
-    <label for="dropdown-<%= name %>" class="text-sm font-medium text-gray-900 dark:text-white mb-2">
+    <label for="search_<%= name %>" class="text-sm font-medium text-gray-900 dark:text-white mb-2">
         Search By <%= category %>: 
     </label>
     <div class="relative ms-auto me-5">
         <!-- Dropdown menu -->
-        <select name="<%= name %>" id="dropdown-<%= name %>" 
+        <select name="<%= name %>" id="search_<%= name %>" 
             class="z-10 text-sm bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
             <%
                 for (let i = 0; i < choices.length; ++i) {

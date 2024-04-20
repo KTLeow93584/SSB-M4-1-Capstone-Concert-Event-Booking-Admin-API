@@ -17,90 +17,105 @@
   <div class="w-full flex flex-col min-h-screen">
     <!-- ======================================= -->
     <!-- Navigation Panel -->
-    <%- include('../../partials/nav_panel', { has_side_bar: false }) %>
+    <%- include('../../partials/nav_panel', { has_side_bar: false }); %>
     <!-- ======================================= -->
     <!-- Body -->
-    <div class="mt-16 flex flex-col w-full flex-1">
+    <div class="mt-20 flex flex-col w-full flex-1">
+      <div class="mb-8 w-full flex flex-col items-center">
+        <p class="text-2xl font-bold">
+          Search Filters
+        </p>
+      </div>
+
       <!-- Search Filter Inputs -->
-      <form id="filter-form" class="w-full mx-auto my-5">
+      <div class="grid md:grid-cols-2 sm:grid-cols-2 gap-auto gap-y-3 mx-8 mb-5">
+        <!-- User ID Search Filter -->
+        <%-
+          include('../../partials/search_input', {
+            category: 'User ID',
+            name: 'user_id', 
+            default_value: form_data && form_data.user_id ? form_data.user_id : null
+          });
+        %>
 
-        <div class="grid md:grid-cols-2 sm:grid-cols-2 gap-auto gap-y-3 mx-8 mb-5">
-          <!-- User ID Search Filter -->
-          <%-
-            include('../../partials/search_input', {
-              category: 'User ID',
-              name: 'user_id', 
-              default_value: form_data && form_data.user_id ? form_data.user_id : null
-            });
-          %>
+        <!-- User Name Search Filter -->
+        <%-
+          include('../../partials/search_input', {
+            category: 'User Name',
+            name: 'name', 
+            default_value: form_data && form_data.name ? form_data.name : null 
+          });
+        %>
 
-          <!-- User Name Search Filter -->
-          <%-
-            include('../../partials/search_input', {
-              category: 'User Name',
-              name: 'name', 
-              default_value: form_data && form_data.name ? form_data.name : null 
-            });
-          %>
+        <!-- Email Search Filter -->
+        <%-
+          include('../../partials/search_input', {
+            category: 'Email Address',
+            name: 'email', 
+            default_value: form_data && form_data.email ? form_data.email : null 
+          });
+        %>
 
-          <!-- Email Search Filter -->
-          <%-
-            include('../../partials/search_input', {
-              category: 'Email Address',
-              name: 'email', 
-              default_value: form_data && form_data.email ? form_data.email : null 
-            });
-          %>
+        <!-- Contact Number Search Filter -->
+        <%-
+          include('../../partials/search_input', {
+            category: 'Contact Number',
+            name: 'contact_number', 
+            default_value: form_data && form_data.contact_number ? form_data.contact_number : null
+          });
+        %>
+        
+        <!-- Country Name Search Filter -->
+        <%- include('../../partials/search_input', { category: 'Country Name' , name: 'country_name' , default_value: form_data
+          && form_data.country_name ? form_data.country_name : null }); %>
 
-          <!-- Country Name Search Filter -->
-          <%-
-            include('../../partials/search_input', {
-              category: 'Country Name',
-              name: 'country_name', 
-              default_value: form_data && form_data.country_name ? form_data.country_name : null
-            });
-          %>
+        <!-- Type Filter (Dropdown) -->
+        <%-
+          include('../../partials/search_input_dropdown', {
+            category: 'Type',
+            name: 'user_type', 
+            choices: [ 'None', 'Individual', 'Organization' ],
+            default_value: form_data && form_data.user_type ? form_data.user_type : null 
+          });
+        %>
 
-          <!-- Type Filter (Dropdown) -->
-          <%-
-            include('../../partials/search_input_dropdown', {
-              category: 'Type',
-              name: 'user_type', 
-              choices: [ 'Individual', 'Organization' ],
-              default_value: form_data && form_data.user_type ? form_data.user_type : null 
-            });
-          %>
+        <!-- NRIC/Registration Number Filter -->
+        <%-
+          include('../../partials/search_input', {
+            category: 'NRIC/Registration Number',
+            name: 'id_number', 
+            default_value: form_data && form_data.id_number ? form_data.id_number : null
+          });
+        %>
+      </div>
 
-          <!-- NRIC/Registration Number Filter -->
-          <%-
-            include('../../partials/search_input', {
-              category: 'NRIC/Registration Number',
-              name: 'id_number', 
-              default_value: form_data && form_data.id_number ? form_data.id_number : null
-            });
-          %>
-        </div>
+      <div class="flex justify-center">
+        <button onclick="onRefreshPageResult()"
+          class="text-white max-w-md w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+          Search
+        </button>
+      </div>
 
-        <div class="flex justify-center">
-          <button type="submit"
-            class="text-white max-w-md w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-            Search
-          </button>
-        </div>
-      </form>
+      <hr class="my-8"/>
 
-      <hr class="mb-8 "/>
-
+      <div class="flex justify-center mb-8">
+        <button onclick="onMoveToAccountCreationPage()"
+          class="text-white max-w-md w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+          Create a New User Account
+        </button>
+      </div>
       <!-- Results Table -->
-      <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+      <div class="relative overflow-x-auto shadow-md sm:rounded-lg flex-1">
         <table class="w-full text-sm text-center rtl:text-right text-gray-500 dark:text-gray-400">
           <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
               <th scope="col" class="px-6 py-3">
                 ID
+              </th><th scope="col" class="px-6 py-3">
+                Name
               </th>
               <th scope="col" class="px-6 py-3">
-                Name
+                Email
               </th>
               <th scope="col" class="px-6 py-3">
                 Country
@@ -123,65 +138,96 @@
             </tr>
           </thead>
           <% for (let i = 0; i < users.length; ++i) { %>
-            <% const user = users[i] %>
+            <% const currentUser = users[i] %>
             <tbody>
               <tr class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
                 <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                  <%= user.id %>
+                  <%= currentUser.id %>
                 </th>
+
+                <td class="px-6 py-4">
+                  <%= currentUser.name %> <%= (user.id === currentUser.id) ? '(You)' : '' %>
+                </td>
+
+                <td class="px-6 py-4">
+                  <%= currentUser.email %>
+                </td>
+
+                <td class="px-6 py-4">
+                  <%= currentUser.country_name %>
+                </td>
                 
                 <td class="px-6 py-4">
-                  <%= user.name %>
+                  <%= "+" + currentUser.country_code + currentUser.contact_number %>
                 </td>
 
                 <td class="px-6 py-4">
-                  <%= user.country_name %>
-                </td>
-                
-                <td class="px-6 py-4">
-                  <%= "+" + user.country_code + user.contact_number %>
+                  <%= currentUser.type %>
                 </td>
 
                 <td class="px-6 py-4">
-                  <%= user.type %>
+                  <%= currentUser.identification_number %>
                 </td>
 
                 <td class="px-6 py-4">
-                  <%= user.identification_number %>
-                </td>
-
-                <td class="px-6 py-4">
-                  <% if (user.verified) { %>
-                    <span type="button" data-tooltip-target="tooltip-default-<%= i %>" class="inline-block bg-green-300 h-5 w-5" style="border-radius:50%;">
+                  <% if (currentUser.verified) { %>
+                    <span type="button" data-tooltip-target="tooltip_default_<%= i %>" class="inline-block bg-green-300 h-5 w-5" style="border-radius:50%;">
                     </span>
                   <% } else { %>
-                    <span data-tooltip-target="tooltip-default-<%= i %>" class="inline-block bg-red-700 h-5 w-5" style="border-radius:50%;">
+                    <span data-tooltip-target="tooltip_default_<%= i %>" class="inline-block bg-red-700 h-5 w-5" style="border-radius:50%;">
                     </span>
                   <% } %>
                   <!-- Tooltip for the circle shape indicators for verification -->
-                  <div id="tooltip-default-<%= i %>" role="tooltip"
+                  <div id="tooltip_default_<%= i %>" role="tooltip"
                     class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                    <%= user.verified ? 'Verified' : 'Not Verified' %>
+                    <%= currentUser.verified ? 'Verified' : 'Not Verified' %>
                     <div class="tooltip-arrow" data-popper-arrow></div>
                   </div>
                 </td>
 
                 <td class="px-6 py-4">
+                  <!-- View User -->
                   <div class="w-full flex flex-col items-center mb-3">
-                    <a href="#" role="button" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                    <a href="/user/view/<%= currentUser.id %>" role="button" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
                       View
                     </a>
                   </div>
-                  <div class="w-full flex flex-col items-center mb-3">
-                    <a href="#" role="button" class="rounded-lg font-medium text-blue-600 dark:text-blue-500 hover:underline">
-                      Edit
-                    </a>
-                  </div>
-                  <div class="w-full flex flex-col items-center">
-                    <a href="#" role="button" class="rounded-lg font-medium text-blue-600 dark:text-blue-500 hover:underline">
-                      Delete
-                    </a>
-                  </div>
+
+                  <% 
+                    if ((user.id !== currentUser.id && user.role_permission_level > currentUser.role_permission_level) || 
+                    (user.id === currentUser.id)) {
+                  %>
+                    <!-- Edit User -->
+                    <div class="w-full flex flex-col items-center mb-3">
+                      <a href="/user/edit/<%= currentUser.id %>" role="button"
+                        class="rounded-lg font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                        Edit
+                      </a>
+                    </div>
+                  <% } %>
+                  <% if (user.id !== currentUser.id && user.role_permission_level > currentUser.role_permission_level) { %>
+                    <!-- Delete User -->
+                    <div class="w-full flex flex-col items-center"
+                      data-modal-target="delete_user_modal_<%= currentUser.name %>"
+                      data-modal-toggle="delete_user_modal_<%= currentUser.name %>">
+                      <button class="rounded-lg font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                        Delete
+                      </button>
+                    </div>
+
+                    <!-- Delete Confirmation Modal (Tied to specific user) -->
+                    <%-
+                      include('../../partials/confirmation_modal', {
+                        modal_id: 'delete_user_modal_' + currentUser.name,
+                        modal_title: 'Deleting User (' + currentUser.name + ')',
+                        modal_body: 'Are you sure you want to proceed with this? This action is irreversible.',
+                        modal_context_name: 'delete_user_' +  currentUser.name,
+                        modal_api_body: {
+                          user_id: currentUser.id
+                        }
+                      });
+                    %>
+                  <% } %>
                 </td>
               </tr>
             </tbody>
@@ -189,14 +235,16 @@
         </table>
       </div>
 
-        <!-- Paginate Section -->
-      <div class="mt-32 flex flex-col items-center w-full mt-auto my-3">
-        <%- include('../../partials/paginate_section', {
-            active_page_no: active_page_no,
-            start_page_no: start_page_no,
-            end_page_no: end_page_no,
+      <!-- Paginate Section -->
+      <div class="flex flex-col items-center w-full mt-auto mt-5 mb-5">
+        <%-
+          include('../../partials/paginate_section', {
+            action_url: '/web/api/users',
+            active_page_number: active_page_number,
+            start_page_number: start_page_number,
+            end_page_number: end_page_number,
             total_page_count: total_page_count
-          })
+          });
         %>
       </div>
     </div>
@@ -205,6 +253,79 @@
     <%- include('../../partials/footer') %>
     <!-- ======================================= -->
   </div>
+  <!-- ======================================= -->
+  <script>
+    function onMoveToAccountCreationPage() {
+      window.location.href = '/user/create';
+    }
+    function onRefreshPageResult(pageNumber = null) {
+      let queryString = '?page=' + (pageNumber ? pageNumber : '1');
+      
+      queryString += appendFormValueToPageSearch('search_name', 'name');
+      queryString += appendFormValueToPageSearch('search_email', 'email');
+      queryString += appendFormValueToPageSearch('search_contact_number', 'contact_number');
+      queryString += appendFormValueToPageSearch('search_country_name', 'country_name');
+
+      // Client side handling.
+      let user_type = appendFormValueToPageSearch('search_user_type', 'user_type');
+      if (!user_type.includes("None"))
+        queryString += user_type;
+        
+      queryString += appendFormValueToPageSearch('search_id_number', 'id_number');
+
+      window.location.search = queryString;
+    }
+
+    function appendFormValueToPageSearch(form_name, prefix, append_ampersand = true) {
+      const form = document.getElementById(form_name);
+
+      if (form && form.value && form.value.trim().length > 0)
+        return ((append_ampersand ? '&' : '') + prefix + "=" + form.value);
+
+      return '';
+    }
+
+    function onModalAccepted(server_url, context_name, body) {
+      // Debug
+      //console.log("[On Modal Prompted - Accept] Context: " + context_name);
+
+      if (context_name.includes('delete_user')) {
+        // Debug
+        //console.log("URL: " + (server_url + '/web/api/user/delete'));
+        //console.log("Body: ", body);
+
+        fetch(server_url + '/web/api/user/delete', {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          method: 'DELETE',
+          body: body
+        })
+        .then((response) => response.json())
+        .then((result) => {
+          // Debug
+          //console.log("Result.", result);
+
+          if (result.success) {
+            alert('User successfully deleted!');
+            window.location.reload();
+          }
+          else {
+            if (result.error.code === 'not-permitted-to-delete-self')
+              alert('You are not allowed to delete your own account via this page.');
+            else
+              alert('Something unexpected went wrong with the deletion process! Please check the logs.');
+          }
+        });
+      }
+    }
+
+    function onModalRejected(context_name) {
+      // Debug
+      //console.log("[On Modal Prompted - Reject] Context: " + context_name);
+    }
+  </script>
   <!-- ======================================= -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
   <!-- ======================================= -->

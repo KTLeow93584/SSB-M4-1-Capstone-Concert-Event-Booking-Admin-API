@@ -9,7 +9,7 @@
                     <a href="<%= listElement.url %>"
                         class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                         <% if (listElement.iconURL !== null) { %>
-                            <%- include(listElement.iconURL) %>
+                            <img src="<%= listElement.iconURL %>" class="h-7">
                         <% } %>
                         <span class="ms-3"><%= listElement.name %></span>
                     </a>

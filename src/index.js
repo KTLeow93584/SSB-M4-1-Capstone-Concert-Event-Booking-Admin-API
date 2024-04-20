@@ -8,8 +8,7 @@ const result = require("dotenv").config();
 const { Pool } = require("pg");
 const {
   DATABASE_URL,
-  CACHE_SECRET, CACHE_PRUNE_AFTER_DURATION,
-  MAX_PAGE_RANGE
+  CACHE_SECRET, CACHE_PRUNE_AFTER_DURATION
 } = process.env;
 // ======================================
 let app = express();
@@ -183,6 +182,16 @@ app.get("/login", async (req, res) => {
   });
 });
 
+const { verifyPasswordRequestToken, verifyAccountEmail } = require("./apis/auth_admin_api.js");
+app.get("/verify/:token", async (req, res) => {
+  const result = await verifyAccountEmail(req, res);
+
+  return res.render("./pages/email_verify", {
+    is_valid: result.success,
+    is_already_verified: result.is_already_verified
+  });
+});
+
 app.get("/password/forget", async (req, res) => {
   res.render("./pages/password_forget", {
       form_api_url: "/web/api/password/forget",
@@ -191,7 +200,6 @@ app.get("/password/forget", async (req, res) => {
   });
 });
 
-const { verifyPasswordRequestToken } = require("./apis/auth_admin_api.js");
 app.get("/password/reset/:token", async (req, res) => {
   const result = await verifyPasswordRequestToken(req, res, req.params["token"]);
 
@@ -215,71 +223,52 @@ app.get("/profile", isUserAuthorized, async (req, res) => {
   });
 });
 
-const { getUsers } = require("./apis/admin_data_poll_api.js");
+const { getUsers, getUserInfo, getCountriesInfo } = require("./apis/admin_data_poll_api.js");
 app.get("/users", isUserAuthorized, async (req, res) => {
-  const queries = req.query;
-  let currentPageNo = queries.page ? parseInt(queries.page) : 1;
-  currentPageNo = isNaN(currentPageNo) ? 1 : currentPageNo;
-
-  // Debug
-  //console.log("[Get Users] Queries.", queries);
-  
   const result = await getUsers(req, res);
 
   // Debug
-  //console.log("[Get Users] Result.", result);
-
-  if (result.out_of_page_bounds) {
-    // Debug
-    //console.log("Redirecting to Page: " + result.page_redirect_no);
-
-    return res.redirect('/users?page=' + result.page_redirect_no);
-  }
+  //console.log("Result.", result);
   
-  const pageRange = parseInt(MAX_PAGE_RANGE);
+  res.render("./pages/users/index", { ...result });
+});
 
-  const floorPageOffset = parseInt(currentPageNo - 1) - pageRange;
-  const ceilingPageOffset = parseInt(currentPageNo - 1) + pageRange;
-
-  // E.g. (Offset Ceiling to the Right)
-  // Current Page: 2, Max Page Range: +4/-4, Total Number of Pages: 12
-  // Floor Offset: -2
-  // Floor Ceiling: 6
-  // Start:
-  // = 0
-  // End: 
-  // = Current Page + Max Page Range - (Floor Offset excess negative beyond 0)
-  // = (2 + 4 - (-2)) = 6 + 2 = 8
-  
-  // E.g. (Offset Ceiling to the Left)
-  // Current Page: 10, Max Page Range: +4/-4, Total Number of Pages: 12
-  // Floor Offset: 6
-  // Floor Ceiling: 14
-  // Start:
-  // = Current Page - Max Page Range - (Ceiling Offset excess positive)
-  // = 10 - 4 - 2
-  // = 4
-  // End: 
-  // = 12 (Cap at 12), excess +2.
-  let startPageNumber = Math.max(currentPageNo - pageRange - Math.max(ceilingPageOffset - result.totalPageCount, 0), 1);
-  let endPageNumber = Math.min(currentPageNo + pageRange - Math.min(floorPageOffset, 0), result.totalPageCount);
+app.get("/user/view/:id", isUserAuthorized, async (req, res) => {
+  const result = await getUserInfo(req, res);
 
   // Debug
-  //console.log("[Users Dashboard] Result.", result.users);
-  //console.log("[Users Dashboard] Page Indices (Active, Start, End): ", [parseInt(currentPageNo) - 1, startPageNumber, endPageNumber]);
-  //console.log("[Users Dashboard] Page Indices (Floor Page Offset, Ceiling Page Offset, Total Count)", [floorPageOffset, ceilingPageOffset, result.totalPageCount]);
+  //console.log("Result.", result);
   
-  // Debug
-  console.log("Page's Original Form Data.", req.query);
-  
-  res.render("./pages/users/index", {
-    users: result.users,
-    active_page_no: parseInt(currentPageNo),
-    start_page_no: parseInt(startPageNumber),
-    end_page_no: parseInt(endPageNumber),
-    total_page_count: parseInt(result.totalPageCount),
+  res.render("./pages/users/view", { 
     user: req.session && req.session.user ? req.session.user : null,
-    form_data: {...req.query }
+    target_user: { ...result.user }
+  });
+});
+
+app.get("/user/create", isUserAuthorized, async (req, res) => {
+  const result = await getCountriesInfo(req, res);
+
+  res.render("./pages/users/create", { 
+    user: req.session && req.session.user ? req.session.user : null,
+    countries: [ ...result.countries ]
+  });
+});
+
+app.get("/user/edit/:id", isUserAuthorized, async (req, res) => {
+  const result = await getUserInfo(req, res);
+
+  // Must be above target user's permission level, if not SELF.
+  if (req.session.user.role_permission_level <= result.user.role_permission_level && 
+    req.session.user.id !== result.user.id)
+    return res.redirect("/unauthorized");
+  
+  // Debug
+  //console.log("Result.", result);
+  
+  res.render("./pages/users/edit", { 
+    user: req.session && req.session.user ? req.session.user : null,
+    target_user: { ...result.user },
+    countries: [ ...result.countries ]
   });
 });
 
@@ -325,15 +314,24 @@ app.get("/api_doc/admin_poll", isUserAuthorized, async (req, res) => {
   });
 });
 // =======================================
-// Error Page. (After all APIs and pages have been exhausted)
-app.use((req, res) => {
-  res.render(path.join(__dirname, "./views/pages/error_page"), {
+// Error Pages.
+app.use("/server-error", (req, res) => {
+  res.render(path.join(__dirname, "./views/pages/server_error_page"), {
     user: req.session && req.session.user ? req.session.user : null
   });
 });
 
-app.use("/server-error", (req, res) => {
-  res.status(404).sendFile(path.join(__dirname, "./views/pages/error_page.html"));
+app.use("/unauthorized", (req, res) => {
+  res.render(path.join(__dirname, "./views/pages/unauthorized_page"), {
+    user: req.session && req.session.user ? req.session.user : null
+  });
+});
+
+// Default Error Page. (After all APIs and pages have been exhausted)
+app.use((req, res) => {
+  res.render(path.join(__dirname, "./views/pages/missing_page"), {
+    user: req.session && req.session.user ? req.session.user : null
+  });
 });
 // =======================================
 app.listen(3000, () => {

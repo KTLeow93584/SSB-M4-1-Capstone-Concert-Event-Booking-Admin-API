@@ -40,10 +40,15 @@ BEGIN
     DROP TABLE password_requests;
   END IF;
   
-  -- User Sessions Table
-  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = table_catalog_name AND table_name = 'user_sessions') THEN
-    DROP TABLE user_sessions;
+  -- Account Edits Accountability Table
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = table_catalog_name AND table_name = 'user_edits') THEN
+    DROP TABLE user_edits;
   END IF;
+  
+  -- User Sessions Table
+  --IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = table_catalog_name AND table_name = 'user_sessions') THEN
+    --DROP TABLE user_sessions;
+  --END IF;
   
   -- Users Table
   IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = table_catalog_name AND table_name = 'users') THEN
@@ -82,16 +87,26 @@ BEGIN
     FOREIGN KEY (country_id) REFERENCES countries(id) ON DELETE SET NULL
   );
   
-  -- User Sessions Table
-  CREATE TABLE user_sessions (
-    sid VARCHAR NOT NULL COLLATE "default" PRIMARY KEY,
-    sess JSON NOT NULL,
-    expire timestamp(6) NOT NULL
-  );
+  -- User Sessions Table (Create only if using PostgreSQL from Neon to store session)
+  --CREATE TABLE user_sessions (
+    --sid VARCHAR NOT NULL COLLATE "default" PRIMARY KEY,
+    --sess JSON NOT NULL,
+    --expire timestamp(6) NOT NULL
+  --);
   
   -- Create index on expire column
-  CREATE INDEX "IDX_user_sessions_expire" ON "user_sessions" ("expire");
+  --CREATE INDEX "IDX_user_sessions_expire" ON "user_sessions" ("expire");
 
+  -- Account Edits Accountability Table
+  CREATE TABLE user_edits (
+    id SERIAL PRIMARY KEY,
+    modified_user_id INTEGER,
+    accountable_user_id INTEGER,
+    remark TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (accountable_user_id) REFERENCES users(id) ON DELETE SET NULL
+  );
+  
   -- Password Requests Table
   CREATE TABLE password_requests (
     id SERIAL PRIMARY KEY,
@@ -185,20 +200,20 @@ BEGIN
   INSERT INTO individuals (user_id, name, nric) 
   VALUES(1, 'admin nimda', '990505051111');
   
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('staff1@staff.com', 1, '111111111', crypt('111111', gen_salt('bf')), 'staff', null);
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider, profile_picture) 
+  VALUES('staff1@staff.com', 1, '111111111', crypt('111111', gen_salt('bf')), 'staff', null, 'https://ik.imagekit.io/projkazcade/staff.webp');
   
   INSERT INTO individuals (user_id, name, nric) 
   VALUES(2, 'Dummy Staff 1', '910505052222');
   
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('staff2@staff.com', 2, '111111111', crypt('222222', gen_salt('bf')), 'staff', null);
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider, profile_picture) 
+  VALUES('staff2@staff.com', 2, '111111111', crypt('222222', gen_salt('bf')), 'staff', null, 'https://ik.imagekit.io/projkazcade/staff.webp');
   
   INSERT INTO individuals (user_id, name, nric) 
   VALUES(3, 'Dummy Staff 2', '920505052222');
   
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('staff3@staff.com', 3, '111111111', crypt('333333', gen_salt('bf')), 'staff', null);
+  INSERT INTO users (email, country_id, contact_number, password, role, social_provider, profile_picture) 
+  VALUES('staff3@staff.com', 3, '111111111', crypt('333333', gen_salt('bf')), 'staff', null, 'https://ik.imagekit.io/projkazcade/staff.webp');
   
   INSERT INTO individuals (user_id, name, nric) 
   VALUES(4, 'Dummy Staff 3', '930505052222');

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concert Event Hosting Services (Republic of Rock) Login Page</title>
+    <link rel="stylesheet" href="/css/style-tailwind.css" type="text/css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+</head>
+
+<body>
+    <!-- ======================================= -->
+    <!-- Navigation + Side Panel + Body -->
+    <div class="w-full flex flex-col min-h-screen">
+        <%- include('../partials/nav_panel', { has_side_bar: false }) %>
+
+        <div class="flex-1">
+            <div class="mt-32">
+                <p class="text-3xl mb-5 text-center font-bold">
+                    Email Verification Page
+                </p>
+            </div>
+            <div class="flex flex-col items-center">
+            <% if (is_valid) { %>
+                <img src="/img/auth/checked.gif" style="min-width: 128px; min-height: 128px; max-width: 256px; max-height: 256px; width: 100; height: auto;" />
+                <p class="text-xl text-center">
+                    <% if (is_already_verified) { %>
+                        <span>Your account has already been verified! Do head on over to the </span>
+                        <a href="/login" class="text-blue-600 font-medium hover:underline">login</a>
+                        <span> page to gain full access of the dashboard.</span>
+                        <br />
+                        <span><b>Rock On!</b></span>
+                    <% } else { %>
+                        <span>Thank you for verifying your email with us! You may now </span>
+                        <a href="/login" class="text-blue-600 font-medium hover:underline">login</a>
+                        <span> to gain full access of the dashboard.</span>
+                        <br />
+                        <span><b>Rock On!</b></span>
+                    <% } %>
+                </p>
+            <% } else { %>
+                <img src="/img/auth/crossed.gif" style="min-width: 128px; min-height: 128px; max-width: 256px; max-height: 256px; width: 100; height: auto;" />
+                <p class="text-xl text-red-300">
+                    This is an invalid email verification request.
+                </p>
+        <% } %>
+            </div>
+        </div>
+        <%- include('../partials/footer') %>
+    </div>
+    <!-- ======================================= -->
+    <script>
+        // Change the type of input to password or text
+        function Toggle(id) {
+            let temp = document.getElementById(id);
+            temp.type = temp.type === "password" ? "text" : "password";
+        }
+    </script>
+    <!-- ======================================= -->
+</body>
+
+</html>

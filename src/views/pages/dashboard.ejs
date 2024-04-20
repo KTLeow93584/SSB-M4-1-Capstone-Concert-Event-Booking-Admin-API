@@ -22,10 +22,38 @@
     <!-- Body -->
     <div class="mt-32 flex justify-center items-start w-full flex-1">
       <div class="grid grid-cols-2 gap-7">
-        <%- include('../partials/dashboard_card', { card_link_redirect_url: "/users", card_title: "Users", card_description: "View, Create, Update, Delete Users" }) %>
-        <%- include('../partials/dashboard_card', { card_link_redirect_url: "/events", card_title: "Events", card_description: "View, Create, Approve, Update, Delete Events" }) %>
-        <%- include('../partials/dashboard_card', { card_link_redirect_url: "/api_doc", card_title: "API Documentations", card_description: "View API Endpoints" }) %>
-        <%- include('../partials/dashboard_card', { card_link_redirect_url: "/logs", card_title: "Logs", card_description: "Access Logs for Debugging Purposes" }) %>
+        <%-
+          include('../partials/dashboard_card', {
+            page_url: '/users?page=1',
+            api_body: JSON.stringify({ page: 1 }),
+            card_title: 'Users',
+            card_description: 'View, Create, Update, Delete Users',
+          });
+        %>
+        <%-
+          include('../partials/dashboard_card', {
+            page_url: '/events',
+            api_body: null,
+            card_title: 'Events',
+            card_description: 'View, Create, Approve, Update, Delete Events'
+          });
+        %>
+        <%-
+          include('../partials/dashboard_card', {
+            page_url: '/api_doc',
+            api_body: null,
+            card_title: 'API Documentations',
+            card_description: 'View API Endpoints'
+          });
+        %>
+        <%-
+          include('../partials/dashboard_card', {
+            page_url: '/events',
+            api_body: null,
+            card_title: 'Logs',
+            card_description: 'Access Logs for Debugging Purposes'
+          });
+        %>
       </div>
     </div>
     <!-- ======================================= -->
@@ -35,6 +63,7 @@
   </div>
   <!-- ======================================= -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+  <!-- ======================================= -->
 </body>
 
 </html>
