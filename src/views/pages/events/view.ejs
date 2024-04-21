@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Concert Event Hosting Services (Republic of Rock) Events (View) Page</title>
+
+    <link rel="stylesheet" href="/css/style-tailwind.css" type="text/css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+</head>
+
+<body>
+    <!-- ======================================= -->
+    <div class="w-full flex flex-col min-h-screen">
+        <!-- ======================================= -->
+        <!-- Navigation Panel -->
+        <%- include('../../partials/nav_panel', { has_side_bar: false }); %>
+        <!-- ======================================= -->
+        <!-- Body -->
+        <div class="mt-20 flex flex-col ">
+            <div id="event_form" class="max-w-5xl w-full mx-auto">
+                <!-- ============================== -->
+                <div class="flex items-center justify-center mb-5">
+                    <p class="text-center text-3xl font-bold me-5">
+                        View Event Information
+                    </p>
+                    <a class="text-blue-600 font-medium hover:underline"
+                        href="<%= '/event/edit/' + target_event.id %>" role="button">
+                        Move to Edit Mode
+                    </a>
+                </div>
+                <!-- ============================== -->
+                <!-- Event Name -->
+                <div class="mb-5">
+                    <label for="name" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Event Name
+                    </label>
+                    <input type="text" id="name" name="name"
+                        class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        value="<%= target_event.name %>" disabled />
+                </div>
+                <!-- ============================== -->
+                <!-- Organiser -->
+                <div class="mb-5">
+                    <label for="organiser" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Organiser
+                    </label>
+                    <input type="text" id="organiser" name="organiser"
+                        class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        value="<%= (target_event.organiser_name + ' (' + target_event.organiser_email + ')') %>"
+                        disabled />
+                </div>
+                <!-- ============================== -->
+                <!-- Staff Name -->
+                <div class="mb-5">
+                    <label for="staff" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Staff
+                    </label>
+                    <input type="text" id="staff" name="staff"
+                        class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        value="<%= (target_event.staff_name + ' (' + target_event.staff_email + ')') %>"
+                        disabled />
+                </div>
+                <!-- ============================== -->
+                <!-- Event Promotional Image -->
+                <div class="mb-5">
+                    <label for="promo_image" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Promotional Image
+                    </label>
+                    <div id="promo_image" name="promo_image" class="flex items-center justify-center w-full mt-8">
+                        <img src="<%= target_event.promo_image ? target_event.promo_image : '/img/event-default.webp' %>"
+                            alt="Profile Picture (Large)" id="display_profile_lg" class="me-3"
+                            style="min-width:96px; min-height:96px; max-width:128px; max-height:128px; width:100%; height:auto;" />
+                        <img src="<%= target_event.promo_image ? target_event.promo_image : '/img/event-default.webp' %>"
+                            alt="Profile Picture (Medium)" id="display_profile_md" class="me-3"
+                            style="min-width:64px; min-height:64px; max-width:96px; max-height:96px; width:100%; height:auto;" />
+                        <img src="<%= target_event.promo_image ? target_event.promo_image : '/img/event-default.webp' %>"
+                            alt="Profile Picture (Small)" id="display_profile_sm"
+                            style="min-width:32px; min-height:32px; max-width:64px; max-height:64px; width:100%; height:auto;" />
+                    </div>
+                </div>
+                <!-- ============================== -->
+                <!-- Venue -->
+                <div class="mb-5">
+                    <label for="venue" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Venue
+                    </label>
+                    <input type="text" id="event_start_datetime" name="event_start_datetime"
+                        class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        value="<%= (target_event.venue_address + ' (' + target_event.venue_state + ')') %>"
+                        disabled />
+                </div>
+                <!-- ============================== -->
+                <!-- Start/End DateTime (Timestamp) Parse Into Local Timezone ISO String -->
+                <% 
+                    const getTimezoneOffset = date => {
+                        const tzOffset = -date.getTimezoneOffset();
+                        const diff = tzOffset >= 0 ? '+' : '-';
+
+                        const result = diff + (tzOffset / 60).toString().padStart(2, "0") + ':' + (tzOffset % 60).toString().padStart(2, "0");
+                        return result;
+                    };
+
+                    const toLocalTimezoneISOString = (date) => {
+                        date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+
+                        return date.getFullYear() +
+                            '-' + (date.getMonth() + 1).toString().padStart(2, "0") +
+                            '-' + (date.getDate()).toString().padStart(2, "0") +
+                            'T' + (date.getHours()).toString().padStart(2, "0") +
+                            ':' + (date.getMinutes()).toString().padStart(2, "0") +
+                            ':' + (date.getSeconds()).toString().padStart(2, "0");
+                    };
+
+                    const getTimeISOString = (input) => {
+                        const time = new Date(input);
+
+                        // Debug
+                        //console.log("Timezone:", time.getTimezoneOffset());
+
+                        // Debug
+                        //console.log("Input:", input);
+
+                        const time_iso = toLocalTimezoneISOString(time);
+
+                        // Debug
+                        //console.log("New Value:", time_iso);
+                        return time_iso;
+                    };
+                    
+                    const start_time = getTimeISOString(target_event.event_start_datetime);
+                    const end_time = getTimeISOString(target_event.event_end_datetime);
+                %>
+                <!-- ============================== -->
+                <!-- Scheduled Start Date -->
+                <div class="mb-5">
+                    <label for="event_start_datetime" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Start Date & Time
+                    </label>
+                    <input type="datetime-local" id="event_start_datetime" name="event_start_datetime"
+                        class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        value="<%= start_time %>" disabled />
+                </div>
+                <!-- ============================== -->
+                <!-- Scheduled End Date -->
+                <div class="mb-5">
+                    <label for="end_datetime" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        End Date & Time
+                    </label>
+                    <input type="datetime-local" id="event_end_datetime" name="event_end_datetime"
+                        class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        value="<%= end_time %>" disabled />
+                </div>
+                <!-- ============================== -->
+                <!-- Remarks -->
+                <div class="mb-5">
+                    <label for="remarks" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Remarks
+                    </label>
+                    <input type="text" as="textarea" id="remarks" name="remarks" value="<%= target_event.remarks %>"
+                        class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="Insert any remarks here." disabled />
+                </div>
+                <!-- ============================== -->
+                <div class="flex justify-evenly mb-5">
+                    <button onclick="onReturnToListPage()"
+                        class="text-white max-w-48 w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        Return To Event List
+                    </button>
+                </div>
+                <!-- ============================== -->
+            </div>
+        </div>
+        <!-- ======================================= -->
+        <!-- Footer -->
+        <%- include('../../partials/footer') %>
+        <!-- ======================================= -->
+    </div>
+    <!-- ======================================= -->
+    <script>
+        function onReturnToListPage() {
+            window.location.href = '/events?page=1';
+        }
+    </script>
+    <!-- ======================================= -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+    <!-- ======================================= -->
+</body>
+
+</html>

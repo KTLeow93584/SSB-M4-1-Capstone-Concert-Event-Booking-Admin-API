@@ -17,19 +17,319 @@
   <div class="w-full flex flex-col min-h-screen">
     <!-- ======================================= -->
     <!-- Navigation Panel -->
-    <%- include('../partials/nav_panel', { has_side_bar: false }) %>
+    <%- include('../../partials/nav_panel', { has_side_bar: false }); %>
     <!-- ======================================= -->
     <!-- Body -->
-    <div class="mt-32 flex justify-center items-start w-full flex-1">
-        <p>Hello World</p>
+    <div class="mt-20 flex flex-col w-full flex-1">
+      <div class="w-full flex flex-col items-center">
+        <p class="text-5xl font-bold">
+          Events Glossary
+        </p>
+      </div>
+
+      <hr class="my-8" />
+
+      <div class="mb-8 w-full flex flex-col items-center">
+        <p class="text-2xl font-bold">
+          Search Filters
+        </p>
+      </div>
+
+      <!-- Search Filter Inputs -->
+      <div class="grid md:grid-cols-2 sm:grid-cols-2 gap-auto gap-y-3 mx-8 mb-5">
+        <!-- Event ID Search Filter -->
+        <%-
+          include('../../partials/search_input', {
+            category: 'Event ID',
+            name: 'event_id', 
+            default_value: form_data && form_data.event_id ? form_data.event_id : null
+          });
+        %>
+
+        <!-- Event Name Filter (Dropdown) -->
+        <%-
+          include('../../partials/search_input', {
+            category: 'Event Name',
+            name: 'event_name', 
+            default_value: form_data && form_data.event_name ? form_data.event_name : null 
+          });
+        %>
+
+        <!-- Organiser's Email Search Filter -->
+        <%-
+          include('../../partials/search_input', {
+            category: 'Organiser Email',
+            name: 'organiser_email', 
+            default_value: form_data && form_data.organiser_email ? form_data.organiser_email : null
+          });
+        %>
+
+        <!-- Organiser's Name Search Filter -->
+        <%-
+          include('../../partials/search_input', {
+            category: 'Organiser Name',
+            name: 'organiser_name', 
+            default_value: form_data && form_data.organiser_name ? form_data.organiser_name : null 
+          });
+        %>
+
+        <!-- Staff's Email Search Filter -->
+        <%-
+          include('../../partials/search_input', {
+            category: 'Staff Email',
+            name: 'staff_email', 
+            default_value: form_data && form_data.staff_email ? form_data.staff_email : null 
+          });
+        %>
+
+        <!-- Staff's Name Search Filter -->
+        <%-
+          include('../../partials/search_input', {
+            category: 'Staff Name',
+            name: 'staff_name', 
+            default_value: form_data && form_data.staff_name ? form_data.staff_name : null
+          });
+        %>
+        
+        <!-- Venue Address Search Filter -->
+        <%-
+          include('../../partials/search_input', {
+            category: 'Venue Address',
+            name: 'venue_address',
+            default_value: form_data && form_data.venue_address ? form_data.venue_address : null 
+          });
+        %>
+      </div>
+
+      <div class="flex justify-center">
+        <button onclick="onRefreshPageResult()"
+          class="text-white max-w-md w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+          Search
+        </button>
+      </div>
+
+      <hr class="my-8"/>
+
+      <div class="flex justify-center mb-8">
+        <button onclick="onMoveToEventCreationPage()"
+          class="text-white max-w-md w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+          Create a New Event
+        </button>
+      </div>
+      <!-- Results Table -->
+      <div class="relative overflow-x-auto shadow-md sm:rounded-lg flex-1">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+          <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <th scope="col" class="px-6 py-3">
+                Event ID
+              </th>
+              <th scope="col" class="px-6 py-3">
+                Event Name
+              </th>
+              <th scope="col" class="px-6 py-3">
+                Organiser Name
+              </th>
+              <th scope="col" class="px-6 py-3">
+                Organiser Email
+              </th>
+              <th scope="col" class="px-6 py-3">
+                Staff Name
+              </th>
+              <th scope="col" class="px-6 py-3">
+                Staff Email
+              </th>
+              <th scope="col" class="px-6 py-3">
+                Venue Address
+              </th>
+              <th scope="col" class="px-6 py-3">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <% for (let i = 0; i < events.length; ++i) { %>
+            <% const currentEvent = events[i] %>
+            <tbody>
+              <tr class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
+                <td scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                  <%= currentEvent.id %>
+                </td>
+
+                <td class="px-6 py-4">
+                  <%= currentEvent.name %>
+                </td>
+
+                <td class="px-6 py-4">
+                  <a href="user/view/<%= currentEvent.organiser_id %>" target="_blank"
+                    class="rounded-lg font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                    <%= currentEvent.organiser_name %>
+                  </a>
+                </td>
+
+                <td class="px-6 py-4">
+                  <a href="user/view/<%= currentEvent.organiser_id %>" target="_blank"
+                    class="rounded-lg font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                    <%= currentEvent.organiser_email %>
+                  </a>
+                </td>
+
+                <td class="px-6 py-4">
+                  <a href="user/view/<%= currentEvent.staff_id %>" target="_blank"
+                    class="rounded-lg font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                    <%= currentEvent.staff_name %>
+                  </a>
+                </td>
+                
+                <td class="px-6 py-4">
+                  <a href="user/view/<%= currentEvent.staff_id %>" target="_blank"
+                    class="rounded-lg font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                    <%= currentEvent.staff_email %>
+                  </a>
+                </td>
+
+                <td class="px-6 py-4">
+                  <%= currentEvent.venue_address %>
+                </td>
+
+                <td class="px-6 py-4">
+                  <!-- View Event -->
+                  <div class="w-full flex flex-col mb-3">
+                    <a href="/event/view/<%= currentEvent.id %>" role="button" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                      View
+                    </a>
+                  </div>
+                  <% 
+                    if (!currentEvent.staff_id || (currentEvent.staff_id && 
+                      (user.id === currentEvent.staff_id || user.role_permission_level > currentEvent.staff_role_permission_level))) {
+                  %>
+                    <!-- Edit Event -->
+                    <div class="w-full flex flex-col mb-3">
+                      <a href="/event/edit/<%= currentEvent.id %>" role="button"
+                        class="rounded-lg font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                        Edit
+                      </a>
+                    </div>
+
+                    <!-- Delete Event -->
+                    <div class="w-full flex flex-col"
+                      data-modal-target="delete_event_modal_<%= currentEvent.name %>"
+                      data-modal-toggle="delete_event_modal_<%= currentEvent.name %>">
+                      <a role="button" class="rounded-lg font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                        Delete
+                      </a>
+                    </div>
+
+                    <!-- Delete Confirmation Modal (Tied to specific event) -->
+                    <%-
+                      include('../../partials/confirmation_modal', {
+                        modal_id: 'delete_event_modal_' + currentEvent.name,
+                        modal_title: 'Deleting Event (' + currentEvent.name + ')',
+                        modal_body: 'Are you sure you want to proceed with this? This action is irreversible.',
+                        modal_context_name: 'delete_event_' +  currentEvent.name,
+                        modal_api_body: {
+                          event_id: currentEvent.id
+                        }
+                      });
+                    %>
+                  <% } %>
+                </td>
+              </tr>
+            </tbody>
+          <% } %>
+        </table>
+      </div>
+
+      <!-- Paginate Section -->
+      <div class="flex flex-col items-center w-full mt-auto mt-5 mb-5">
+        <%-
+          include('../../partials/paginate_section', {
+            action_url: '/web/api/events',
+            active_page_number: active_page_number,
+            start_page_number: start_page_number,
+            end_page_number: end_page_number,
+            total_page_count: total_page_count
+          });
+        %>
+      </div>
     </div>
     <!-- ======================================= -->
     <!-- Footer -->
-    <%- include('../partials/footer') %>
+    <%- include('../../partials/footer') %>
     <!-- ======================================= -->
   </div>
   <!-- ======================================= -->
+  <script>
+    function onMoveToEventCreationPage() {
+      window.location.href = '/event/create';
+    }
+    
+    function onRefreshPageResult(pageNumber = null) {
+      let queryString = '?page=' + (pageNumber ? pageNumber : '1');
+      
+      queryString += appendFormValueToPageSearch('name');
+      queryString += appendFormValueToPageSearch('event_name');
+      queryString += appendFormValueToPageSearch('organiser_email');
+      queryString += appendFormValueToPageSearch('organiser_name');
+      queryString += appendFormValueToPageSearch('staff_email');
+      queryString += appendFormValueToPageSearch('staff_name');
+      queryString += appendFormValueToPageSearch('venue_address');
+
+      window.location.search = queryString;
+    }
+
+    function appendFormValueToPageSearch(form_name, append_ampersand = true) {
+      const form = document.getElementById('search_' + form_name);
+
+      if (form && form.value && form.value.trim().length > 0)
+        return ((append_ampersand ? '&' : '') + form_name + "=" + form.value);
+
+      return '';
+    }
+
+    function onModalAccepted(server_url, context_name, body) {
+      // Debug
+      //console.log("[On Modal Prompted - Accept] Context: " + context_name);
+
+      if (context_name.includes('delete_event')) {
+        // Debug
+        //console.log("URL: " + (server_url + '/web/api/event'));
+        //console.log("Body: ", body);
+
+        fetch(server_url + '/web/api/event', {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          method: 'DELETE',
+          body: body
+        })
+        .then((response) => response.json())
+        .then((result) => {
+          // Debug
+          //console.log("Result.", result);
+
+          if (result.success) {
+            alert('Event successfully deleted!');
+            window.location.reload();
+          }
+          else {
+            if (result.error.code === 'not-authorized-to-delete-event')
+              alert('You do not have sufficient permission to delete this event.');
+            else
+              alert('Something unexpected went wrong with the deletion process! Please check the logs.');
+          }
+        });
+      }
+    }
+
+    function onModalRejected(context_name) {
+      // Debug
+      //console.log("[On Modal Prompted - Reject] Context: " + context_name);
+    }
+  </script>
+  <!-- ======================================= -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+  <!-- ======================================= -->
 </body>
 
 </html>

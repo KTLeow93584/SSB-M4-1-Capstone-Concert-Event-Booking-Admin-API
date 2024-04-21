@@ -54,12 +54,12 @@
                 <!-- ============================== -->
                 <!-- Profile Picture -->
                 <div class="mb-5">
-                    <label for="profile_picture" class="block mb-2 text-md font-bold text-gray-900 dark:text-white" for="user_avatar">
+                    <label for="profile_picture" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
                         Upload File (Profile Picture)
                     </label>
                     <input id="profile_picture" name="profile_picture"
                         class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                        aria-describedby="user_avatar_help" id="user_avatar" type="file">
+                        aria-describedby="profile_picture_help" id="profile_picture" type="file">
                         
                     <div class="flex items-center justify-center w-full mt-8">
                         <img src="<%= target_user.profile_picture ? target_user.profile_picture : '/img/user-profile-default.webp' %>"
@@ -189,7 +189,7 @@
                         data-modal-target="exit_modal"
                         data-modal-toggle="exit_modal"
                         class="text-white max-w-48 w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                        Return To List
+                        Return To User List
                     </button>
                     <!-- User Modification Confirmation Modal -->
                     <%-
@@ -344,10 +344,8 @@
 
                     // Debug
                     //console.log("[Output] Body: ", requestBody);
-                    //console.log("[Output] Body 2: ", role.value);
-                    //console.log("[Output] Body 3: ", body.role);
 
-                    fetch('/web/api/user/edit', {
+                    fetch('/web/api/user', {
                         headers: {
                             'Accept': 'application/json',
                             'Content-Type': 'application/json'
@@ -366,14 +364,18 @@
                         }
                         else {
                             switch (result.error.code) {
-                                case 'not-permitted-to-modify-user-account':
-                                    alert('You are not permitted to modify another user of the same role or above.');
+                                case 'not-authorized-to-modify-user-account':
+                                    alert('You are not authorized to modify another user of the same role or above.');
                                     break;
                                 case 'not-authorized-to-change-self-role':
-                                    alert('You are not permitted to modify your own role.');
+                                    alert('You are not authorized to modify your own role.');
+                                    break;
+                                case 'incomplete-form-field':
+                                    alert('Some of the input fields are missing (Marked with *). Please check before submitting again.');
                                     break;
                                 default:
-                                    alert('Something unexpected went wrong with the deletion process! Please check the logs.');
+                                    alert('Something unexpected went wrong with the modification process! Please check the logs.');
+                                    break;
                             }
                         }
                     });

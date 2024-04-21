@@ -44,6 +44,7 @@ const {
   createJSONSuccessResponseToClient,
   createJSONErrorResponseToClient
 } = require("../services/middlewares-client.js");
+const { Console } = require("console");
 // =======================================
 // Login.
 router.post("/web/api/login", async (req, res) => {
@@ -198,18 +199,10 @@ router.post("/web/api/password/forget", async (req, res) => {
       // Debug
       //console.log("[Forget Password] User does not exist.");
 
-      return sendInfoToRedirectedPage(req, res, "/login", message);
+      return sendInfoToRedirectedPage(req, res, "/login", null, message);
     }
     // ==================================
     const user = userQuery.rows[0];
-
-    // User already requested password reset before, remove previous request, update with latest.
-    query = `
-      DELETE FROM password_requests
-      WHERE user_id = $1;
-    `;
-    await client.query(query, [user.id]);
-
     const requestToken = uuidv4();
     
     // Debug
@@ -228,11 +221,18 @@ router.post("/web/api/password/forget", async (req, res) => {
     // Debug
     //console.log(`[Forget Password] Expiry Time: ${expiryTimestamp}.`);
 
+    const timezoneQuery = await client.query("SELECT current_setting('timezone') as timezone;");
+    const defaultTimeZone = timezoneQuery.rows[0].timezone;
+    
+    // Update row if already exist, insert otherwise.
     query = `
       INSERT INTO password_requests(user_id, token, expire_at)
-      VALUES ($1, $2, $3);
+      VALUES ($1, $2, $3::timestamp AT TIME ZONE $4)
+      ON CONFLICT (user_id) DO UPDATE 
+      SET token = $2, 
+          expire_at = $3::timestamp AT TIME ZONE $4;
     `;
-    await client.query(query, [user.id, requestToken, expiryTimestamp]);
+    await client.query(query, [user.id, requestToken, expiryTimestamp, defaultTimeZone]);
 
     // Send Email to User whom has forgotten their password.
     sendMailToRecipientHTML(
@@ -246,7 +246,7 @@ router.post("/web/api/password/forget", async (req, res) => {
       path.join(__dirname, "../services/mail/templates/forgot_password.ejs")
     );
 
-    return sendInfoToRedirectedPage(req, res, "/login", message);
+    return sendInfoToRedirectedPage(req, res, "/login", null, message);
   }
   catch (error) {
     // Debug
@@ -323,7 +323,7 @@ router.post("/web/api/password/reset/:token", async (req, res) => {
     `;
     await client.query(query, [result.user_id]);
 
-    return sendInfoToRedirectedPage(req, res, "/login", "Password successfully changed. You may try logging in with your new credentials now.");
+    return sendInfoToRedirectedPage(req, res, "/login", null, "Password successfully changed. You may try logging in with your new credentials now.");
   }
   catch (error) {
     // Debug
@@ -347,7 +347,7 @@ router.post("/web/api/user/create", [isUserAuthorized], async (req, res) => {
     const { email, password, password_confirmation, name, profile_picture, country_name, role, contact_number, type, id_number } = req.body;
 
     // Debug
-    //console.log("[Edit User Info] Body.", req.body);
+    //console.log("[Create New User] Body.", req.body);
     
     if (!email || !password || !password_confirmation || !name || !country_name || !role || !contact_number || !type || !id_number)
         return createJSONErrorResponseToClient(res, 200, 404, "incomplete-form-field");
@@ -406,7 +406,7 @@ router.post("/web/api/user/create", [isUserAuthorized], async (req, res) => {
       
     const activeUser = activeUserQuery.rows[0];
     if (newUserRolePermissions >= activeUser.role_permission_level)
-      return createJSONErrorResponseToClient(res, 200, 405, "not-permitted-to-create-a-user-of-higher-role");
+      return createJSONErrorResponseToClient(res, 200, 405, "not-authorized-to-create-a-user-of-higher-role");
     // =======================
     // Get Country ID from input Country Name.
     const countrySQL = `SELECT id, name from countries WHERE name = $1;`
@@ -489,13 +489,16 @@ router.post("/web/api/user/create", [isUserAuthorized], async (req, res) => {
 });
 
 // Modifies User Account Info
-router.put("/web/api/user/edit", [isUserAuthorized], async (req, res) => {
+router.put("/web/api/user", [isUserAuthorized], async (req, res) => {
   const client = await pool.connect();
   try {
     const { user_id, email, name, profile_picture, country_name, role, contact_number, type, id_number } = req.body;
 
     // Debug
     //console.log("[Edit User Info] Body.", req.body);
+    
+    if (!email || !password || !password_confirmation || !name || !country_name || !role || !contact_number || !type || !id_number)
+        return createJSONErrorResponseToClient(res, 200, 404, "incomplete-form-field");
     // =======================
     const selectUserSQL = `
       SELECT
@@ -545,7 +548,7 @@ router.put("/web/api/user/edit", [isUserAuthorized], async (req, res) => {
 
       const activeUser = activeUserQuery.rows[0];
       if (selectedUser.role_permission_level >= activeUser.role_permission_level)
-        return createJSONErrorResponseToClient(res, 200, 405, "not-permitted-to-modify-user-account");
+        return createJSONErrorResponseToClient(res, 200, 405, "not-authorized-to-modify-user-account");
     }
     else {
       if (role)
@@ -628,7 +631,7 @@ router.put("/web/api/user/edit", [isUserAuthorized], async (req, res) => {
     // Track User Table Modification Records
     if (editUserQuery.rowCount > 0) {
       const insertRecords = `
-        INSERT INTO user_edits (modified_user_id, accountable_user_id, remark)
+        INSERT INTO user_modifications_history (modified_user_id, accountable_user_id, remark)
         VALUES ($1, $2, 'Modify User Account');
       `;
       await client.query(insertRecords, [user_id, req.session.user.id]);
@@ -653,12 +656,12 @@ router.put("/web/api/user/edit", [isUserAuthorized], async (req, res) => {
 });
 
 // Deletes User Account
-router.delete("/web/api/user/delete", [isUserAuthorized], async (req, res) => {
+router.delete("/web/api/user", [isUserAuthorized], async (req, res) => {
   const client = await pool.connect();
   try {
     const { user_id } = req.body;
     if (user_id === req.session.user.id)
-      return createJSONErrorResponseToClient(res, 200, 404, "not-permitted-to-delete-self");
+      return createJSONErrorResponseToClient(res, 200, 404, "not-authorized-to-delete-self");
 
     const selectUserQuery = await client.query('SELECT * FROM users WHERE id = $1;', [user_id]);
     if (selectUserQuery.rows.length <= 0)
@@ -673,7 +676,7 @@ router.delete("/web/api/user/delete", [isUserAuthorized], async (req, res) => {
     // Track User Table Modification Records
     if (deleteUserQuery.rowCount > 0) {
       const insertRecords = `
-        INSERT INTO user_edits (modified_user_id, accountable_user_id, remark)
+        INSERT INTO user_modifications_history (modified_user_id, accountable_user_id, remark)
         VALUES ($1, $2, 'Delete User Account');
       `;
       await client.query(insertRecords, [user_id, req.session.user.id]);
@@ -681,7 +684,7 @@ router.delete("/web/api/user/delete", [isUserAuthorized], async (req, res) => {
 
     // Send new data back to client.
     return createJSONSuccessResponseToClient(res, 200, {
-      message: deleteEventQuery.rowCount > 0 ? "User successfully deleted." : "User already deleted or does not exist.",
+      message: deleteUserQuery.rowCount > 0 ? "User successfully deleted." : "User already deleted or does not exist.",
       user: {
         user_id: parseInt(user_id)
       }

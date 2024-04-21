@@ -21,6 +21,14 @@
     <!-- ======================================= -->
     <!-- Body -->
     <div class="mt-20 flex flex-col w-full flex-1">
+      <div class="w-full flex flex-col items-center">
+        <p class="text-5xl font-bold">
+          Users Glossary
+        </p>
+      </div>
+
+      <hr class="my-8" />
+
       <div class="mb-8 w-full flex flex-col items-center">
         <p class="text-2xl font-bold">
           Search Filters
@@ -66,8 +74,13 @@
         %>
         
         <!-- Country Name Search Filter -->
-        <%- include('../../partials/search_input', { category: 'Country Name' , name: 'country_name' , default_value: form_data
-          && form_data.country_name ? form_data.country_name : null }); %>
+        <%-
+          include('../../partials/search_input', {
+            category: 'Country Name',
+            name: 'country_name',
+            default_value: form_data && form_data.country_name ? form_data.country_name : null 
+          });
+        %>
 
         <!-- Type Filter (Dropdown) -->
         <%-
@@ -110,9 +123,10 @@
           <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
               <th scope="col" class="px-6 py-3">
-                ID
-              </th><th scope="col" class="px-6 py-3">
-                Name
+                User ID
+              </th>
+              <th scope="col" class="px-6 py-3">
+                User Name
               </th>
               <th scope="col" class="px-6 py-3">
                 Email
@@ -141,9 +155,9 @@
             <% const currentUser = users[i] %>
             <tbody>
               <tr class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
-                <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                <td scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                   <%= currentUser.id %>
-                </th>
+                </td>
 
                 <td class="px-6 py-4">
                   <%= currentUser.name %> <%= (user.id === currentUser.id) ? '(You)' : '' %>
@@ -258,29 +272,31 @@
     function onMoveToAccountCreationPage() {
       window.location.href = '/user/create';
     }
+
     function onRefreshPageResult(pageNumber = null) {
       let queryString = '?page=' + (pageNumber ? pageNumber : '1');
       
-      queryString += appendFormValueToPageSearch('search_name', 'name');
-      queryString += appendFormValueToPageSearch('search_email', 'email');
-      queryString += appendFormValueToPageSearch('search_contact_number', 'contact_number');
-      queryString += appendFormValueToPageSearch('search_country_name', 'country_name');
+      queryString += appendFormValueToPageSearch('user_id');
+      queryString += appendFormValueToPageSearch('name');
+      queryString += appendFormValueToPageSearch('email');
+      queryString += appendFormValueToPageSearch('contact_number');
+      queryString += appendFormValueToPageSearch('country_name');
 
       // Client side handling.
-      let user_type = appendFormValueToPageSearch('search_user_type', 'user_type');
+      let user_type = appendFormValueToPageSearch('user_type');
       if (!user_type.includes("None"))
         queryString += user_type;
         
-      queryString += appendFormValueToPageSearch('search_id_number', 'id_number');
+      queryString += appendFormValueToPageSearch('id_number');
 
       window.location.search = queryString;
     }
 
-    function appendFormValueToPageSearch(form_name, prefix, append_ampersand = true) {
-      const form = document.getElementById(form_name);
+    function appendFormValueToPageSearch(form_name, append_ampersand = true) {
+      const form = document.getElementById('search_' + form_name);
 
       if (form && form.value && form.value.trim().length > 0)
-        return ((append_ampersand ? '&' : '') + prefix + "=" + form.value);
+        return ((append_ampersand ? '&' : '') + form_name + "=" + form.value);
 
       return '';
     }
@@ -291,10 +307,10 @@
 
       if (context_name.includes('delete_user')) {
         // Debug
-        //console.log("URL: " + (server_url + '/web/api/user/delete'));
+        //console.log("URL: " + (server_url + '/web/api/user'));
         //console.log("Body: ", body);
 
-        fetch(server_url + '/web/api/user/delete', {
+        fetch(server_url + '/web/api/user', {
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
@@ -312,7 +328,7 @@
             window.location.reload();
           }
           else {
-            if (result.error.code === 'not-permitted-to-delete-self')
+            if (result.error.code === 'not-authorized-to-delete-self')
               alert('You are not allowed to delete your own account via this page.');
             else
               alert('Something unexpected went wrong with the deletion process! Please check the logs.');

@@ -140,8 +140,12 @@ const profileAPIRouter = require("./apis/profile_api.js");
 app.use("/", profileAPIRouter);
 
 // Event Endpoints.
-const eventAPIRouter = require("./apis/events_api.js");
-app.use("/", eventAPIRouter);
+const userEventAPIRouter = require("./apis/events_user_api.js");
+app.use("/", userEventAPIRouter);
+
+// Event Endpoints.
+const adminEventAPIRouter = require("./apis/events_admin_api.js");
+app.use("/", adminEventAPIRouter);
 
 // Data Polling Endpoints.
 const userPollAPIRouter = require("./apis/user_data_poll_api.js");
@@ -176,8 +180,8 @@ app.get("/", async (req, res) => {
 
 app.get("/login", async (req, res) => {
   res.render("./pages/login", {
-      form_api_url: "/web/api/login",
-      user: req.session && req.session.user ? req.session.user : null,
+    form_api_url: "/web/api/login",
+    user: req.session && req.session.user ? req.session.user : null,
     ...req.page_response
   });
 });
@@ -222,15 +226,23 @@ app.get("/profile", isUserAuthorized, async (req, res) => {
     user: req.session.user
   });
 });
+// ==================
+// Admin - User Pages
+const {
+  getUsers, getUserInfo, getCountriesInfo,
+  getEvents, getEventInfo, getVenuesInfo, getOrganisersInfo, getStaffsInfo
+} = require("./apis/admin_data_poll_api.js");
 
-const { getUsers, getUserInfo, getCountriesInfo } = require("./apis/admin_data_poll_api.js");
 app.get("/users", isUserAuthorized, async (req, res) => {
   const result = await getUsers(req, res);
 
   // Debug
   //console.log("Result.", result);
   
-  res.render("./pages/users/index", { ...result });
+  res.render("./pages/users/index", {
+    user: req.session && req.session.user ? req.session.user : null,
+    ...result
+  });
 });
 
 app.get("/user/view/:id", isUserAuthorized, async (req, res) => {
@@ -246,11 +258,11 @@ app.get("/user/view/:id", isUserAuthorized, async (req, res) => {
 });
 
 app.get("/user/create", isUserAuthorized, async (req, res) => {
-  const result = await getCountriesInfo(req, res);
+  const countries = await getCountriesInfo(req, res);
 
   res.render("./pages/users/create", { 
     user: req.session && req.session.user ? req.session.user : null,
-    countries: [ ...result.countries ]
+    countries: countries
   });
 });
 
@@ -271,13 +283,63 @@ app.get("/user/edit/:id", isUserAuthorized, async (req, res) => {
     countries: [ ...result.countries ]
   });
 });
-
+// ==================
+// Admin - Event Pages
 app.get("/events", isUserAuthorized, async (req, res) => {
+  const result = await getEvents(req, res);
+
+  // Debug
+  //console.log("Result.", result);
+
   res.render("./pages/events/index", {
-    user: req.session && req.session.user ? req.session.user : null
+    user: req.session && req.session.user ? req.session.user : null,
+    ...result
   });
 });
 
+app.get("/event/view/:id", isUserAuthorized, async (req, res) => {
+  const result = await getEventInfo(req, res);
+
+  // Debug
+  //console.log("Result.", result);
+  
+  res.render("./pages/events/view", { 
+    user: req.session && req.session.user ? req.session.user : null,
+    target_event: { ...result.event }
+  });
+});
+
+app.get("/event/create", isUserAuthorized, async (req, res) => {
+  const venues = await getVenuesInfo(req, res);
+  const organisers = await getOrganisersInfo(req, res);
+  const staffs = await getStaffsInfo(req, res);
+
+  res.render("./pages/events/create", { 
+    user: req.session && req.session.user ? req.session.user : null,
+    venues: venues,
+    organisers: organisers,
+    staffs: staffs,
+  });
+});
+
+app.get("/event/edit/:id", isUserAuthorized, async (req, res) => {
+  const result = await getEventInfo(req, res);
+
+  // Must be above target user's permission level, if not SELF.
+  if (req.session.user.role_permission_level <= result.staff_role_permission_level && req.session.user.id !== result.event.staff_id)
+    return res.redirect("/unauthorized");
+  
+  // Debug
+  //console.log("Result.", result);
+  
+  res.render("./pages/events/edit", { 
+    user: req.session && req.session.user ? req.session.user : null,
+    target_event: { ...result.event },
+    venues: [ ...result.venues ],
+    users: [...result.users ]
+  });
+});
+// ==================
 app.get("/api_doc", isUserAuthorized, async (req, res) => {
   res.render("./pages/api_documentations/index", {
     user: req.session && req.session.user ? req.session.user : null

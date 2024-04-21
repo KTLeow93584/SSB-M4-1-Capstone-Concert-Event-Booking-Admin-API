@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Concert Event Hosting Services (Republic of Rock) Users (Modify) Page</title>
+    <title>Concert Event Hosting Services (Republic of Rock) Users (Create New) Page</title>
 
     <link rel="stylesheet" href="/css/style-tailwind.css" type="text/css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
@@ -25,7 +25,7 @@
                 <!-- ============================== -->
                 <div class="flex items-center justify-center mb-5">
                     <p class="text-center text-3xl font-bold me-5">
-                        Add New User
+                        Create a New Account
                     </p>
                 </div>
                 <!-- ============================== -->
@@ -91,13 +91,12 @@
                 <!-- ============================== -->
                 <!-- Profile Picture -->
                 <div class="mb-5">
-                    <label for="profile_picture" class="block mb-2 text-md font-bold text-gray-900 dark:text-white"
-                        for="user_avatar">
+                    <label for="profile_picture" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
                         Upload File (Profile Picture)
                     </label>
                     <input id="profile_picture" name="profile_picture"
                         class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                        aria-describedby="user_avatar_help" id="user_avatar" type="file"/>
+                        aria-describedby="profile_picture_help" type="file"/>
 
                     <div class="flex items-center justify-center w-full mt-8">
                         <img src="/img/user-profile-default.webp"
@@ -205,14 +204,14 @@
                 <div class="flex justify-evenly mb-5">
                     <button data-modal-target="create_user_modal" data-modal-toggle="create_user_modal"
                         class="text-white max-w-48 w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                        Create New User
+                        Save and Create
                     </button>
                     <button data-modal-target="exit_modal" data-modal-toggle="exit_modal"
                         class="text-white max-w-48 w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                        Return To List
+                        Return To User List
                     </button>
                     
-                    <!-- User Modification Confirmation Modal -->
+                    <!-- User Creation Confirmation Modal -->
                     <%-
                         include('../../partials/confirmation_modal', {
                             modal_id: 'create_user_modal',
@@ -386,16 +385,17 @@
                             else {
                                 switch (result.error.code) {
                                     case 'incomplete-form-field':
-                                        alert('Some of the input fields are missing. Please check before submitting again.');
+                                        alert('Some of the input fields are missing (Marked with *). Please check before submitting again.');
                                         break;
                                     case 'mismatched-password':
                                         alert('Your password does not match the confirmation field. Please check before submitting again.');
                                         break;
                                     case 'incorrect-password-format':
-                                        alert('Your password does not match the requirements. Please re-verify before submitting again.');
+                                        alert('Your password does not meet the requirements. Please re-verify before submitting again.');
                                         break;
                                     default:
-                                        alert('Something unexpected went wrong with the deletion process! Please check the logs.');
+                                        alert('Something unexpected went wrong with the creation process! Please check the logs.');
+                                        break;
                                 }
                             }
                         });

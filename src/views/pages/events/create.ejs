@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Concert Event Hosting Services (Republic of Rock) Events (Create New) Page</title>
+
+    <link rel="stylesheet" href="/css/style-tailwind.css" type="text/css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+</head>
+
+<body>
+    <!-- ======================================= -->
+    <div class="w-full flex flex-col min-h-screen">
+        <!-- ======================================= -->
+        <!-- Navigation Panel -->
+        <%- include('../../partials/nav_panel', { has_side_bar: false }); %>
+        <!-- ======================================= -->
+        <!-- Body -->
+        <div class="mt-20 flex flex-col ">
+            <div id="event_form" class="max-w-5xl w-full mx-auto">
+                <!-- ============================== -->
+                <div class="flex items-center justify-center mb-5">
+                    <p class="text-center text-3xl font-bold me-5">
+                        Create a New Event
+                    </p>
+                </div>
+                <!-- ============================== -->
+                <!-- Event Name -->
+                <div class="mb-5">
+                    <label for="name" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Event Name*
+                    </label>
+                    <input type="text" id="name" name="name"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="Event Name (E.g. Concert ABC)" required />
+                </div>
+                <!-- ============================== -->
+                <!-- Organiser -->
+                <div class="mb-5">
+                    <label for="organiser" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Organiser*
+                    </label>
+                    <select role="button" id="organiser" name="organiser"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <%
+                            for (let i = 0; i < organisers.length; ++i) {
+                                const organiser = organisers[i];
+                        %>
+                            <option value="<%= organiser.id %>" <%= (i === 0) ? "selected" : "" %>>
+                                <%= (organiser.name + ' (' + organiser.email + ')') %>
+                            </option>
+                        <% } %>
+                    </select>
+                </div>
+                <!-- ============================== -->
+                <!-- Staff -->
+                <div class="mb-5">
+                    <label for="staff" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Staff
+                    </label>
+                    <%
+                        if (user.role.toLowerCase() === 'admin') {
+                    %>
+                        <select role="button" id="staff" name="staff"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                            <%
+                                for (let i = 0; i < staffs.length; ++i) {
+                                    const staff = staffs[i];
+                            %>
+                                <option value="<%= staff.id %>" <%= (i === 0) ? "selected" : "" %>>
+                                    <%= (staff.name + ' (' + staff.email + ')') %>
+                                </option>
+                            <% } %>
+                        </select>
+                    <% } else { %>
+                        <input type="text" id="staff_disabled" name="staff_disabled"
+                            value="<%= (user.name + '(' + user.email + ')') %>"
+                            class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            required />
+
+                        <input type="text" id="staff" name="staff"
+                            value="<%= user.id %>"
+                            class="hidden"
+                            required />
+                    <% } %>
+                </div>
+                <!-- ============================== -->
+                <!-- Event Promotional Image -->
+                <div class="mb-5">
+                    <label for="promo_image" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Upload File (Promotional Image)*
+                    </label>
+                    <input id="promo_image" name="promo_image"
+                        class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                        aria-describedby="promo_image_help" type="file">
+
+                    <div class="flex items-center justify-center w-full mt-8">
+                        <img src="/img/event-default.webp"
+                            alt="Profile Picture (Large)" id="display_profile_lg" class="me-3"
+                            style="min-width:96px; min-height:96px; max-width:128px; max-height:128px; width:100%; height:auto;" />
+                        <img src="/img/event-default.webp"
+                            alt="Profile Picture (Medium)" id="display_profile_md" class="me-3"
+                            style="min-width:64px; min-height:64px; max-width:96px; max-height:96px; width:100%; height:auto;" />
+                        <img src="/img/event-default.webp"
+                            alt="Profile Picture (Small)" id="display_profile_sm"
+                            style="min-width:32px; min-height:32px; max-width:64px; max-height:64px; width:100%; height:auto;" />
+                    </div>
+                    <div class="flex flex-col rounded-lg mb-2 px-2 py-1">
+                        <p class="font-bold">Requirements for promotional image setup: </p>
+                        <p class="fw-normal">1. Must not exceed 512kb. </p>
+                        <p class="fw-normal">2. Equal Width and Height Dimensions. </p>
+                    </div>
+                </div>
+                <!-- ============================== -->
+                <!-- Venue -->
+                <div class="mb-5">
+                    <label for="venue" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Venue*
+                    </label>
+                    <select role="button" id="venue" name="venue"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <%
+                            for (let i = 0; i < venues.length; ++i) {
+                                const venue = venues[i];
+                        %>
+                            <option value="<%= venue.id %>" <%= (i === 0) ? "selected" : "" %>>
+                                <%= (venue.address + ' (' + venue.state + ')') %>
+                            </option>
+                        <% } %>
+                    </select>
+                </div>
+                <!-- ============================== -->
+                <!-- Minimum Date for Start & End (Tomorrow from Current Date) -->
+                <%
+                    const now_date = new Date();
+                    now_date.setDate(now_date.getDate() + 1);
+                    const now_date_split = now_date.toISOString().split('T');
+                    const min_date = now_date_split[0] + 'T00:00';
+                %>
+                <!-- ============================== -->
+                <!-- Scheduled Start Date -->
+                <div class="mb-5">
+                    <label for="event_start_datetime" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Start Date & Time*
+                    </label>
+                    <input type="datetime-local" id="event_start_datetime" name="event_start_datetime"
+                        min="<%= min_date %>"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        required />
+                </div>
+                <!-- ============================== -->
+                <!-- Scheduled End Date -->
+                <div class="mb-5">
+                    <label for="end_datetime" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        End Date & Time*
+                    </label>
+                    <input type="datetime-local" id="event_end_datetime" name="event_end_datetime"
+                        min="<%= min_date %>"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        required />
+                </div>
+                <!-- ============================== -->
+                <!-- Remarks -->
+                <div class="mb-5">
+                    <label for="remarks" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
+                        Remarks
+                    </label>
+                    <input type="text" as="textarea" id="remarks" name="remarks"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="Insert any remarks here." required />
+                </div>
+                <!-- ============================== -->
+                <div class="flex justify-evenly mb-5">
+                    <button data-modal-target="create_event_modal" data-modal-toggle="create_event_modal"
+                        class="text-white max-w-48 w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        Save and Create
+                    </button>
+                    <button data-modal-target="exit_modal" data-modal-toggle="exit_modal"
+                        class="text-white max-w-48 w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        Return To Event List
+                    </button>
+                    <!-- Event Creation Confirmation Modal -->
+                    <%-
+                        include('../../partials/confirmation_modal', {
+                            modal_id: 'create_event_modal',
+                            modal_title: 'Creating a New Event',
+                            modal_body: 'Confirm decision to create the new event?',
+                            modal_context_name: 'create_event_modal',
+                            modal_api_body: null
+                        });
+                    %>
+                    <!-- Return to Listing Page Modal -->
+                    <%-
+                        include('../../partials/confirmation_modal', {
+                            modal_id: 'exit_modal',
+                            modal_title: 'Return To Listing Page',
+                            modal_body: 'Confirm decision to return? All unsaved changes will be lost.',
+                            modal_context_name: 'exit_modal',
+                            modal_api_body: null
+                        });
+                    %>
+                </div>
+                <!-- ============================== -->
+            </div>
+        </div>
+        <!-- ======================================= -->
+        <!-- Footer -->
+        <%- include('../../partials/footer') %>
+        <!-- ======================================= -->
+    </div>
+    <!-- ======================================= -->
+    <script>
+        // =====================
+        // Event Name HTML element.
+        const event_name = document.getElementById('name');
+        // =====================
+        // Organiser HTML element.
+        const organiser = document.getElementById('organiser');
+        // =====================
+        // Staff HTML element.
+        const staff = document.getElementById('staff');
+        // =====================
+        // Profile Picture Display HTML elements.
+        const display_lg = document.getElementById('display_profile_lg');
+        const display_md = document.getElementById('display_profile_md');
+        const display_sm = document.getElementById('display_profile_sm');
+
+        const promo_image = document.getElementById('promo_image');
+        promo_image.addEventListener('change', (event) => {
+            const file = event.target.files.length > 0 ? event.target.files[0] : null;
+
+            // Debug
+            //console.log("[On Promotional Image Uploaded] File.", file);
+            
+            if (!file) 
+                return;
+
+            // Debug
+            //console.log("[On Promotional Image Upload] Size.", file.size);
+
+            const fileReader = new FileReader();
+            fileReader.readAsDataURL(file);
+            fileReader.addEventListener("load", () => {
+                const url = fileReader.result;
+
+                // Test for width and height
+                const testImg = new window.Image();
+                testImg.onload = () => {
+                    const width = testImg.width;
+                    const height = testImg.height;
+
+                    // Debug
+                    //console.log("[On Profile Picture Upload] Width: " + width + ", Height: " + height);
+
+                    const isValid = width === height & file.size <= 512000;
+                    if (isValid) {
+                        display_lg.src = url;
+                        display_md.src = url;
+                        display_sm.src = url;
+                    }
+                }
+                testImg.src = url;
+            });
+        });
+        // =====================
+        // Venue HTML element.
+        const venue = document.getElementById('venue');
+        // =====================
+        // Event Start & End Times.
+        const event_start_datetime = document.getElementById('event_start_datetime');
+        const event_end_datetime = document.getElementById('event_end_datetime');
+        // =====================
+        // Remarks HTML element.
+        const remarks = document.getElementById('remarks');
+        // =====================
+        // Submit Changes to server API.
+        function onModalAccepted(server_url, context_name, body) {
+            // Debug
+            //console.log("[On Modal Prompted - Accept] Context: " + context_name);
+
+            switch (context_name) {
+                case 'create_event_modal':
+                    // Debug
+                    //console.log("[Input] Body: ", body);
+
+                    const requestBody = {
+                        event_name: event_name.value.trim().length > 0 ? event_name.value : null,
+                        organiser_id: parseInt(organiser.value),
+                        staff_id: parseInt(staff.value),
+                        promo_image: (promo_image.files && promo_image.files.length > 0) ? display_profile_lg.src : null,
+                        venue_id: parseInt(venue.value),
+                        event_start_datetime: event_start_datetime.value,
+                        event_end_datetime: event_end_datetime.value,
+                        remarks: remarks.value.trim().length > 0 ? remarks.value : null
+                    };
+
+                    // Debug
+                    //console.log("[Output] Body: ", requestBody);
+
+                    fetch(server_url + '/web/api/event', {
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        method: 'POST',
+                        body: JSON.stringify(requestBody)
+                    })
+                    .then((response) => response.json())
+                    .then((result) => {
+                        // Debug
+                        //console.log("Result.", result);
+
+                        if (result.success) {
+                            alert('Event successfully created!');
+                            window.location.href = "/event/view/" + result.client_data.event.event_id;
+                        }
+                        else {
+                            switch (result.error.code) {
+                                case 'not-authorized-to-create-event-for-other-staffs':
+                                    alert('You are not authorized as a staff to create a new event on behalf of other staffs.');
+                                    break;
+                                case 'invalid-start-end-date':
+                                    alert('The event\'s End Date & Time must come after the Start End Date & Time.');
+                                    break;
+                                case 'incomplete-form-field':
+                                    alert('Some of the input fields are missing (Marked with *). Please check before submitting again.');
+                                    break;
+                                default:
+                                    alert('Something unexpected went wrong with the modification process! Please check the logs.');
+                                    break;
+                            }
+                        }
+                    });
+                    break;
+                case 'exit_modal':
+                    window.location.href = '/events?page=1';
+                    break;
+                default:
+            }
+        }
+
+        function onModalRejected(context_name) {
+            // Debug
+            //console.log("[On Modal Prompted - Reject] Context: " + context_name);
+        }
+        // =====================
+    </script>
+    <!-- ======================================= -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+    <!-- ======================================= -->
+</body>
+
+</html>

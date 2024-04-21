@@ -41,8 +41,13 @@ BEGIN
   END IF;
   
   -- Account Edits Accountability Table
-  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = table_catalog_name AND table_name = 'user_edits') THEN
-    DROP TABLE user_edits;
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = table_catalog_name AND table_name = 'user_modifications_history') THEN
+    DROP TABLE user_modifications_history;
+  END IF;
+  
+  -- Event Edits Accountability Table
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = table_catalog_name AND table_name = 'event_modifications_history') THEN
+    DROP TABLE event_modifications_history;
   END IF;
   
   -- User Sessions Table
@@ -67,7 +72,7 @@ BEGIN
     name VARCHAR,
     abbreviation VARCHAR(4),
     phone_code VARCHAR(8),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
   );
   
   -- Users Table
@@ -83,7 +88,7 @@ BEGIN
     device_id VARCHAR(64),
     refresh_token TEXT,
     profile_picture TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (country_id) REFERENCES countries(id) ON DELETE SET NULL
   );
   
@@ -91,29 +96,39 @@ BEGIN
   --CREATE TABLE user_sessions (
     --sid VARCHAR NOT NULL COLLATE "default" PRIMARY KEY,
     --sess JSON NOT NULL,
-    --expire timestamp(6) NOT NULL
+    --expire TIMESTAMP(6) WITH TIME ZONE NOT NULL
   --);
   
   -- Create index on expire column
   --CREATE INDEX "IDX_user_sessions_expire" ON "user_sessions" ("expire");
 
   -- Account Edits Accountability Table
-  CREATE TABLE user_edits (
+  CREATE TABLE user_modifications_history (
     id SERIAL PRIMARY KEY,
     modified_user_id INTEGER,
     accountable_user_id INTEGER,
     remark TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (accountable_user_id) REFERENCES users(id) ON DELETE SET NULL
+  );
+
+  -- Account Edits Accountability Table
+  CREATE TABLE event_modifications_history (
+    id SERIAL PRIMARY KEY,
+    event_id INTEGER,
+    user_id INTEGER,
+    remark TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
   );
   
   -- Password Requests Table
   CREATE TABLE password_requests (
     id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id INT NOT NULL UNIQUE,
     token VARCHAR(64),
-    expire_at TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expire_at TIMESTAMP ,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   );
   
@@ -123,7 +138,7 @@ BEGIN
     user_id INT NOT NULL,
     name VARCHAR(128),
     nric varchar(64),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   );
   
@@ -133,7 +148,7 @@ BEGIN
     user_id INT NOT NULL,
     name VARCHAR(128),
     registration_number VARCHAR(128),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   );
   
@@ -141,8 +156,8 @@ BEGIN
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     token VARCHAR(64),
-    verified_at TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    verified_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   );
 
@@ -153,7 +168,7 @@ BEGIN
     state VARCHAR,
     catalogues TEXT ARRAY DEFAULT '{}',
     remarks TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
   );
 
   -- Events Table
@@ -165,9 +180,9 @@ BEGIN
     name VARCHAR(64),
     promo_image TEXT,
     remarks TEXT,
-    scheduled_at_start TIMESTAMP,
-    scheduled_at_end TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    scheduled_at_start TIMESTAMP WITH TIME ZONE,
+    scheduled_at_end TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (organiser_id) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY (staff_id) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY (venue_id) REFERENCES venues(id) ON DELETE SET NULL
@@ -177,9 +192,9 @@ BEGIN
   CREATE TABLE promotions (
     id SERIAL PRIMARY KEY,
     amount INT NOT NULL,
-    start_date TIMESTAMP NOT NULL,
-    end_date TIMESTAMP NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    start_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    end_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
   );
   
   -- Install extension to obtain the hash method.
@@ -410,40 +425,77 @@ BEGIN
   '');
   
   -- Create dummy promotions.
-  INSERT INTO promotions (amount, start_date, end_date) VALUES(8, '2024-03-26 00:00:00', '2024-03-29 23:59:59');
-  INSERT INTO promotions (amount, start_date, end_date) VALUES(12, '2024-03-26 00:00:00', '2024-04-01 23:59:59');
-  INSERT INTO promotions (amount, start_date, end_date) VALUES(5, '2024-03-26 00:00:00', '2024-04-03 23:59:59');
+  INSERT INTO promotions (amount, start_date, end_date)
+  VALUES(8, '2024-03-26 00:00:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore', '2024-03-29 23:59:59'::TIMESTAMP AT TIME ZONE 'Asia/Singapore');
+  
+  INSERT INTO promotions (amount, start_date, end_date)
+  VALUES(12, '2024-03-26 00:00:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore', '2024-04-01 23:59:59'::TIMESTAMP AT TIME ZONE 'Asia/Singapore');
+  
+  INSERT INTO promotions (amount, start_date, end_date)
+  VALUES(5, '2024-03-26 00:00:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore', '2024-04-03 23:59:59'::TIMESTAMP AT TIME ZONE 'Asia/Singapore');
   
   -- Create events.
   INSERT INTO events (organiser_id, staff_id, venue_id, name, promo_image, remarks, scheduled_at_start, scheduled_at_end) 
-  VALUES(6, 2, 2, 
+  VALUES(5, 2, 1, 
   'One Ok Rock Luxury Disease', 
   'https://pbs.twimg.com/media/F0WiDJ5aUAAZCL4?format=jpg&name=small', 
   '', 
-  '2024-03-30 20:30:00',
-  '2024-03-30 23:30:00');
+  '2024-03-30 20:30:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore',
+  '2024-03-30 23:30:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore');
   
   INSERT INTO events (organiser_id, staff_id, venue_id, name, promo_image, remarks, scheduled_at_start, scheduled_at_end) 
-  VALUES(9, 2, 2, 
+  VALUES(6, 3, 2, 
   'Abingdon Boys School Live Concert', 
-  'https://static.wikia.nocookie.net/tokyo-magnitude-8-point-zero/images/2/2e/Abingdon_Boys_School.jpg/revision/latest?cb=20210710151310',
+  'https://static.wikia.nocookie.net/tokyo-magnitude-8-point-zero/images/2/2e/Abingdon_Boys_School.jpg',
   '', 
-  '2024-03-31 19:15:00',
-  '2024-03-31 22:15:00');
+  '2024-03-31 19:15:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore',
+  '2024-03-31 22:15:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore');
   
   INSERT INTO events (organiser_id, staff_id, venue_id, name, promo_image, remarks, scheduled_at_start, scheduled_at_end) 
-  VALUES(7, 2, 2, 
+  VALUES(7, 4, 3, 
   'Fear and Loathing in Last Vegas Concert 2024', 
   'https://i.pinimg.com/originals/d0/f5/83/d0f5833a3f352fdf02c7f77d8a9dc603.jpg', 
   '',
-  '2024-02-04 15:30:00',
-  '2024-03-31 18:30:00');
+  '2024-02-04 15:30:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore',
+  '2024-03-31 18:30:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore');
   
   INSERT INTO events (organiser_id, staff_id, venue_id, name, promo_image, remarks, scheduled_at_start, scheduled_at_end) 
-  VALUES(8, 2, 2, 
+  VALUES(8, 2, 1, 
   'Dummy Band Maid Concert 2024', 
   'https://www.moshimoshi-nippon.jp/wp/wp-content/uploads/2020/07/62e7e706ec9dd790c218595d732882b2.jpg', 
   '',
-  '2024-04-04 10:00:00',
-  '2024-04-04 14:00:00');
+  '2024-04-04 10:00:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore',
+  '2024-04-04 14:00:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore');
+  
+  INSERT INTO events (organiser_id, staff_id, venue_id, name, promo_image, remarks, scheduled_at_start, scheduled_at_end) 
+  VALUES(9, 3, 2, 
+  'Dummy Concert 1', 
+  'https://media.istockphoto.com/id/1330424071/photo/large-group-of-people-at-a-concert-party.jpg?s=612x612&w=0&k=20&c=LwdiOCBqbfICjQ3j5AzwyugxmfkbyfL3StKEQhtx4hE=', 
+  '',
+  '2024-04-29 15:00:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore',
+  '2024-04-29 18:00:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore');
+  
+  INSERT INTO events (organiser_id, staff_id, venue_id, name, promo_image, remarks, scheduled_at_start, scheduled_at_end) 
+  VALUES(10, 4, 3, 
+  'Dummy Concert 2', 
+  'https://media.istockphoto.com/id/1330424071/photo/large-group-of-people-at-a-concert-party.jpg?s=612x612&w=0&k=20&c=LwdiOCBqbfICjQ3j5AzwyugxmfkbyfL3StKEQhtx4hE=', 
+  '',
+  '2024-04-29 15:00:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore',
+  '2024-04-29 18:00:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore');
+  
+  INSERT INTO events (organiser_id, staff_id, venue_id, name, promo_image, remarks, scheduled_at_start, scheduled_at_end) 
+  VALUES(11, 2, 1, 
+  'Dummy Concert 3', 
+  'https://img.freepik.com/free-photo/excited-audience-watching-confetti-fireworks-having-fun-music-festival-night-copy-space_637285-559.jpg', 
+  '',
+  '2024-04-30 17:00:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore',
+  '2024-04-30 20:00:00'::TIMESTAMP::TIMESTAMP::TIMESTAMP AT TIME ZONE 'Asia/Singapore' AT TIME ZONE 'Asia/Singapore');
+  
+  INSERT INTO events (organiser_id, staff_id, venue_id, name, promo_image, remarks, scheduled_at_start, scheduled_at_end) 
+  VALUES(12, 3, 1, 
+  'Dummy Concert 4', 
+  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuR9D1l8AaB3iL7ftTXsgOAeGkXBzfr6qYIoqdBDKB2A&s', 
+  '',
+  '2024-05-1 15:00:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore',
+  '2024-05-1 17:30:00'::TIMESTAMP::TIMESTAMP AT TIME ZONE 'Asia/Singapore');
 END $$
