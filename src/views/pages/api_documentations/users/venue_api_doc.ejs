@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Concert Event Hosting Services (Republic of Rock) API Documentation</title>
+    <link rel="stylesheet" href="/css/style-tailwind.css" type="text/css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="w-full flex flex-col min-h-screen">
+        <%- include('../../../partials/nav_panel', { has_side_bar: true }) %>
+        <%- include('../../../partials/side_bar_code_doc') %>
+
+        <div class="sm:w-7/12 md:w-8/12 lg:w-9/12 xl:w-10/12 p-4 sm:ml-64 flex-1">
+            <div class="mt-16">
+                <p class="text-2xl font-bold">
+                    Category: Venues
+                </p>
+                <div class="mt-5 mx-8">
+                    <div class="w-full">
+                        <ul class="list-disc list-inside">
+                            <!-- Get User Profile Information API -->
+                            <%- include('../../../partials/code_doc_section', {
+                                title: 'Get Venue Data',
+                                description: '',
+                                endpoint_url: 'api/venues',
+                                endpoint_type: 'GET',
+                                endpoint_parameters: null,
+                                endpoint_success_responses: [
+                                    {
+                                        name: 'Success. (With Results)' ,
+                                        description: '',
+                                        json_response: `
+                                            venues: [
+                                                {
+                                                    id: 1,
+                                                    address: '...',
+                                                    state: '...',
+                                                    catalogues: INSERT_IMAGE_URL_HERE,
+                                                    remarks: '...',
+                                                    created_at: INSERT_TIMESTAMP_HERE
+                                                },
+                                                {
+                                                    ...
+                                                },
+                                                {
+                                                    ...
+                                                }
+                                            ]
+                                        `
+                                    },
+                                    {
+                                        name: 'Success (Zero Match)',
+                                        description: '',
+                                        json_response: `venues: [] (Empty)`
+                                    }
+                                ], 
+                                endpoint_failed_responses: [
+                                    {
+                                        name: 'Server Codebase Error.' ,
+                                        description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
+                                        code_message: '500',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'server-error',
+                                                    code: 500
+                                                }
+                                            }
+                                        `
+                                    }
+                                ]
+                            }) %>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <%- include('../../../partials/footer') %>
+    </div>
+    <!-- ======================================= -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+</body>
+
+</html>

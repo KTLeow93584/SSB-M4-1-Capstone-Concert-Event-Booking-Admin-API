@@ -3,16 +3,45 @@
     aria-label="Sidebar">
     <div class="h-full px-3 pb-4 overflow-y-auto bg-white dark:bg-gray-800">
         <ul class="space-y-2 font-medium">
-            <% for (let i = 0; i < list.length; ++i) { %>
-            <% const listElement = list[i]; %>
-                <li>
-                    <a href="<%= listElement.url %>"
-                        class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                        <% if (listElement.iconURL !== null) { %>
-                            <img src="<%= listElement.iconURL %>" class="h-7">
-                        <% } %>
-                        <span class="ms-3"><%= listElement.name %></span>
-                    </a>
+            <%
+                for (let i = 0; i < elements.length; ++i) {
+                    const element = elements[i];
+            %>
+                <li class="flex flex-col justify-center my-0 py-0">
+                    <% if (element.url) { %>
+                        <a href="<%= element.url %>"
+                            class="flex items-center justify-start w-full p-2 text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                            <span class="text-left">
+                                <%= element.name %>
+                            </span>
+                        </a>
+                    <% } else { %>
+                        <p class="flex items-center justify-start w-full p-2 text-gray-900 transition duration-75 rounded-lg group dark:text-white">
+                            <span class="text-left">
+                                <%= element.name %>
+                            </span>
+                        </p>
+                    <% } %>
+                    <% if (element.sub_elements.length > 0) { %>
+                        <ul class="ps-4 py-2 space-y-2">
+                            <%
+                                for (let i = 0; i < element.sub_elements.length; ++i) {
+                                    const sub_element = element.sub_elements[i];
+                            %>
+                                <li>
+                                    <a href="<%= sub_element.url %>"
+                                        class="flex items-center justify-start w-full p-2 text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                                        <% if (sub_element.icon_url !== null) { %>
+                                            <img src="<%= sub_element.icon_url %>" class="h-7">
+                                        <% } %>
+                                        <span class="ms-3">
+                                            <%= sub_element.name %>
+                                        </span>
+                                    </a>
+                                </li>
+                            <% } %>
+                        </ul>
+                    <% } %>
                 </li>
             <% } %>
         </ul>

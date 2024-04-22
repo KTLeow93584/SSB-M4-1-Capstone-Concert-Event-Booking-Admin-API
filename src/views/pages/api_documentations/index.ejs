@@ -12,7 +12,80 @@
         <%- include('../../partials/nav_panel', { has_side_bar: true }) %>
         <%- include('../../partials/side_bar_code_doc') %>
         
-        <div class="w-full p-4 sm:ml-64 flex-1">
+        <div class="sm:w-7/12 md:w-8/12 lg:w-9/12 xl:w-10/12 p-4 sm:ml-64 flex-1">
+            <div class="mt-16">
+                <h1 class="text-3xl font-bold mb-4">
+                    Welcome to Republic of Rock's API Documentation
+                </h1>
+
+                <div class="bg-white p-6 rounded-md shadow-md mb-6">
+                    <ul class="list-disc list-inside">
+                        <div class="mb-16">
+                            <li class="text-2xl font-semibold mb-4">
+                                Introduction
+                            </li>
+
+                            <p class="mb-4">
+                                This guide is designed to help staffs and fellow developers alike to understand how the systems are handled under the hood.
+                                Regardless if you're a seasoned developer or a freshie in the field, this documentation should be able to provide you with at
+                                least a minimal grasp on the features available, and help troubleshoot any issues you encountered.
+                            </p>
+
+                        </div>
+
+                        <div class="mb-16">
+                            <li class="text-xl font-semibold mb-2">
+                                Key Features
+                            </li>
+
+                            <ul class="list-[upper-roman] list-inside pl-6 mb-4">
+                                <li class="mb-2">
+                                    <a href="/api_doc/auth_user" class="text-blue-500 hover:underline"">User App APIs</a>:
+                                    <span>
+                                        Every contextual api that's linked to the Front-End App.
+                                    </span>
+                                </li>
+                                <li class="mb-2">
+                                    <a href="/api_doc/auth_admin" class="text-blue-500 hover:underline"">Admin Web APIs</a>:
+                                    <span>
+                                        API Endpoints utilized by the admin web pages.
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="mb-16">
+                            <li class="text-xl font-semibold mb-2">Getting Started</li>
+
+                            <p class="mb-4">
+                                If you're ready to dive in and start using Republic of Rock, head over to the <a href="#" data-tooltip-target="tooltip-getting-started"
+                                    class="text-blue-500">Getting Started</a> section to learn how to authenticate, make your first
+                                API request, and explore basic usage scenarios.
+                                <div id="tooltip-getting-started" role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                                    Currently Unavailable as of this Iteration
+                                    <div class="tooltip-arrow" data-popper-arrow></div>
+                                </div>
+                            </p>
+                        </div>
+
+                        <div class="mb-16">
+                            <li class="text-xl font-semibold mb-2">Feedback</li>
+
+                            <p class="mb-4">
+                                We're constantly striving to improve Republic of Rock and improve its usages' conveniences for both our staffs
+                                and end-users. If you have any feedback, suggestions, or feature requests, we'd love to hear from you. Please
+                                don't hesitate to <a href="#" data-tooltip-target="tooltip-contact-us" class="text-blue-500">Contact Us</a> and let us know how we can better
+                                serve your needs..
+                                <div id="tooltip-contact-us" role="tooltip"
+                                    class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                                    Currently Unavailable as of this Iteration
+                                    <div class="tooltip-arrow" data-popper-arrow></div>
+                                </div>
+                            </p>
+                        </div>
+                    </ul>
+                </div>
+            </div>
         </div>
 
         <%- include('../../partials/footer') %>

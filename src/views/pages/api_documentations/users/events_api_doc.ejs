@@ -9,19 +9,19 @@
 
 <body>
     <div class="w-full flex flex-col min-h-screen">
-        <%- include('../../partials/nav_panel', { has_side_bar: true }) %>
-        <%- include('../../partials/side_bar_code_doc') %>
+        <%- include('../../../partials/nav_panel', { has_side_bar: true }) %>
+        <%- include('../../../partials/side_bar_code_doc') %>
 
-        <div class="w-full p-4 sm:ml-64 flex-1">
+        <div class="sm:w-7/12 md:w-8/12 lg:w-9/12 xl:w-10/12 p-4 sm:ml-64 flex-1">
             <div class="mt-16">
                 <p class="text-2xl font-bold">
-                    Category: Events
+                    Category: Events (Users)
                 </p>
                 <div class="mt-5 mx-8">
                     <div class="w-full">
                         <ul class="list-disc list-inside">
-                            <!-- Events Listing (Consumers) API -->
-                            <%- include('../../partials/code_doc_section', {
+                            <!-- Events Listing API -->
+                            <%- include('../../../partials/code_doc_section', {
                                 title: 'Events Listing (Consumers)',
                                 description: '',
                                 endpoint_url: 'api/events/user',
@@ -93,82 +93,9 @@
                                     }
                                 ]
                             }) %>
-                            <!-- Events Listing (Staffs) API -->
-                            <%- include('../../partials/code_doc_section', {
-                                title: 'Events Listing (Administration)',
-                                description: '',
-                                endpoint_url: 'api/events/staff',
-                                endpoint_type: 'GET',
-                                endpoint_parameters: null,
-                                endpoint_success_responses: [
-                                    {
-                                        name: 'Success. (With Results)',
-                                        description: '',
-                                        json_response: `
-                                            events: [
-                                                {
-                                                    event_id: 1,
-                                                    event_name: '...',
-                                                    event_promotional_image: INSERT_URL_HERE,
-                                                    event_start_time: INSERT_TIME_STAMP_HERE,
-                                                    event_end_time: INSERT_TIME_STAMP_HERE,
-                                                    event_venue_id: 1,
-
-                                                    organiser_email: '...@some-mail.com',
-                                                    organiser_name: '...',
-                                                    organiser_phone_code: '+??',
-                                                    organiser_contact_number: 123456789,
-
-                                                    staff_email: '...@some-mail.com',
-                                                    staff_name: '...',
-                                                    staff_phone_code: '+??',
-                                                    staff_contact_number: 987654321,
-
-                                                    venue_address: '...',
-                                                    venue_state: '...',
-                                                    venue_image_catalogues: INSERT_URL_HERE,
-
-                                                    event_remarks: '...',
-                                                    created_at: INSERT_TIME_STAMP_HERE
-                                                },
-                                                {
-                                                    ...
-                                                },
-                                                {
-                                                    ...
-                                                }
-                                            ]
-                                        `
-                                    },
-                                    {
-                                        name: 'Success (Zero Match)',
-                                        description: '',
-                                        json_response: `
-                                            message: "No events found for this staff.",
-                                            events: []
-                                        `
-                                    }
-                                ],
-                                endpoint_failed_responses: [
-                                    {
-                                        name: 'Server Codebase Error.' ,
-                                        description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
-                                        code_message: '500',
-                                        json_response: `
-                                            {
-                                                success: false,
-                                                error: {
-                                                    status: "server-error",
-                                                    code: 500
-                                                }
-                                            }
-                                        `
-                                    }
-                                ]
-                            }) %>
-                            <!-- Event Overview API -->
-                            <%- include('../../partials/code_doc_section', {
-                                title: 'Event Detailed Overview (Consumers)',
+                            <!-- Event Info API -->
+                            <%- include('../../../partials/code_doc_section', {
+                                title: 'View Event Details',
                                 description: 'Retrieving all the info about an event where the requesting user is the organiser.',
                                 endpoint_url: 'api/event/:id',
                                 endpoint_type: 'GET',
@@ -223,8 +150,8 @@
                                     }
                                 ]
                             }) %>
-                            <!-- Creating a New Event API -->
-                            <%- include('../../partials/code_doc_section', {
+                            <!-- Create a New Event API -->
+                            <%- include('../../../partials/code_doc_section', {
                                 title: 'New Event Endpoint',
                                 description: '',
                                 endpoint_url: 'api/event',
@@ -280,7 +207,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "incomplete-form",
+                                                    status: 'incomplete-form',
                                                     code: 405
                                                 }
                                             }
@@ -294,7 +221,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "no-user-found",
+                                                    status: 'no-user-found',
                                                     code: 404
                                                 }
                                             }
@@ -308,7 +235,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "server-error",
+                                                    status: 'server-error',
                                                     code: 500
                                                 }
                                             }
@@ -317,7 +244,7 @@
                                 ]
                             }) %>
                             <!-- Modifying an Existing Event API -->
-                            <%- include('../../partials/code_doc_section', {
+                            <%- include('../../../partials/code_doc_section', {
                                 title: 'Modify Existing Event Endpoint',
                                 description: '',
                                 endpoint_url: 'api/event',
@@ -351,7 +278,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "incomplete-form",
+                                                    status: 'incomplete-form',
                                                     code: 405
                                                 }
                                             }
@@ -365,7 +292,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "no-event-found",
+                                                    status: 'no-event-found',
                                                     code: 404
                                                 }
                                             }
@@ -379,7 +306,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "server-error",
+                                                    status: 'server-error',
                                                     code: 500
                                                 }
                                             }
@@ -388,7 +315,7 @@
                                 ]
                             }) %>
                             <!-- Delete an Existing Event API -->
-                            <%- include('../../partials/code_doc_section', {
+                            <%- include('../../../partials/code_doc_section', {
                                 title: 'Delete Existing Event Endpoint',
                                 description: '',
                                 endpoint_url: 'api/event',
@@ -417,7 +344,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "no-event-found",
+                                                    status: 'no-event-found',
                                                     code: 404
                                                 }
                                             }
@@ -431,7 +358,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "server-error",
+                                                    status: 'server-error',
                                                     code: 500
                                                 }
                                             }
@@ -440,7 +367,7 @@
                                 ]
                             }) %>
                             <!-- Approve an Existing Event API -->
-                            <%- include('../../partials/code_doc_section', {
+                            <%- include('../../../partials/code_doc_section', {
                                 title: 'Approve an Existing Event Endpoint',
                                 description: '',
                                 endpoint_url: 'api/event/approve',
@@ -464,7 +391,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "incorrect-role",
+                                                    status: 'incorrect-role',
                                                     code: 405
                                                 }
                                             }
@@ -478,7 +405,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "event-not-found",
+                                                    status: 'event-not-found',
                                                     code: 404
                                                 }
                                             }
@@ -492,7 +419,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "server-error",
+                                                    status: 'server-error',
                                                     code: 500
                                                 }
                                             }
@@ -505,7 +432,7 @@
                 </div>
             </div>
         </div>
-        <%- include('../../partials/footer') %>
+        <%- include('../../../partials/footer') %>
     </div>
     <!-- ======================================= -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>

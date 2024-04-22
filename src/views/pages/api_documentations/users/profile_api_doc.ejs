@@ -9,10 +9,10 @@
 
 <body>
     <div class="w-full flex flex-col min-h-screen">
-        <%- include('../../partials/nav_panel', { has_side_bar: true }) %>
-        <%- include('../../partials/side_bar_code_doc') %>
+        <%- include('../../../partials/nav_panel', { has_side_bar: true }) %>
+        <%- include('../../../partials/side_bar_code_doc') %>
 
-        <div class="w-full p-4 sm:ml-64 flex-1">
+        <div class="sm:w-7/12 md:w-8/12 lg:w-9/12 xl:w-10/12 p-4 sm:ml-64 flex-1">
             <div class="mt-16">
                 <p class="text-2xl font-bold">
                     Category: User Profile
@@ -21,7 +21,7 @@
                     <div class="w-full">
                         <ul class="list-disc list-inside">
                             <!-- Get User Profile Information API -->
-                            <%- include('../../partials/code_doc_section', {
+                            <%- include('../../../partials/code_doc_section', {
                                 title: 'Get User Profile Information',
                                 description: '',
                                 endpoint_url: 'api/profile',
@@ -91,7 +91,7 @@
                                 ]
                             }) %>
                             <!-- Update User Profile API -->
-                            <%- include('../../partials/code_doc_section', {
+                            <%- include('../../../partials/code_doc_section', {
                                 title: 'Update User Profile Information',
                                 description: '',
                                 endpoint_url: 'api/profile',
@@ -168,7 +168,7 @@
             </div>
         </div>
         
-        <%- include('../../partials/footer') %>
+        <%- include('../../../partials/footer') %>
     </div>
     <!-- ======================================= -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>

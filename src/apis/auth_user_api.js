@@ -37,7 +37,7 @@ const {
   authenticateFirebaseJWToken,
   createJSONSuccessResponseToClient,
   createJSONErrorResponseToClient
-} = require("../services/middlewares-client.js");
+} = require("../services/middlewares.js");
 // =======================================
 // Registration.
 router.post("/api/register", async (req, res) => {
@@ -432,7 +432,7 @@ router.post("/api/password/reset/verify", async (req, res) => {
   }
 });
 
-// Request Forgot Password.
+// Reset Password.
 router.post("/api/password/reset", async (req, res) => {
   const client = await pool.connect();
   try {

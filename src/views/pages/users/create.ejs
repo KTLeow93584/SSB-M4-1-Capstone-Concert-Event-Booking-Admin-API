@@ -32,7 +32,7 @@
                 <!-- Email Address -->
                 <div class="mb-5">
                     <label for="email" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
-                        Email Address
+                        Email Address*
                     </label>
                     <input type="email" id="email" name="email"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -42,7 +42,7 @@
                 <!-- Password -->
                 <div class="mb-5">
                     <label for="password" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
-                        Password
+                        Password*
                     </label>
                     <div class="flex items-center pe-3 block bg-gray-50 rounded-lg border border-solid border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus-within:ring-1 focus-within:ring-blue-500 focus-within:border-blue-500 dark:focus:ring-blue-500 dark:focus:border-blue-500">
                         <input name="password" type="password" id="password"
@@ -59,7 +59,7 @@
                 <!-- Password Confirmation-->
                 <div class="mb-5">
                     <label for="password_confirmation" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
-                        Confirm Password
+                        Confirm Password*
                     </label>
                     <div class="flex items-center pe-3 block bg-gray-50 rounded-lg border border-solid border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus-within:ring-1 focus-within:ring-blue-500 focus-within:border-blue-500 dark:focus:ring-blue-500 dark:focus:border-blue-500">
                         <input name="password_confirmation" type="password" id="password_confirmation"
@@ -82,7 +82,7 @@
                 <!-- Name -->
                 <div class="mb-5">
                     <label for="name" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
-                        Name
+                        Name*
                     </label>
                     <input type="text" id="name" name="name"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -122,7 +122,7 @@
                 <!-- Role -->
                 <div class="mb-5">
                     <label for="role" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
-                        Role
+                        Role*
                     </label>
                     <select role="button" id="role" name="role"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
@@ -141,7 +141,7 @@
                 <!-- Country Name -->
                 <div class="mb-5">
                     <label for="country_name" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
-                        Country
+                        Country*
                     </label>
                     <select role="button" id="country_name" name="country_name"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
@@ -160,7 +160,7 @@
                 <!-- Contact Number (+ Country Number) -->
                 <div class="mb-5">
                     <label for="contact_number" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
-                        Contact Number
+                        Contact Number*
                     </label>
                     <div class="flex">
                         <input type="text" id="country_code" aria-label="country_code_disabled" name="country_code"
@@ -175,7 +175,7 @@
                 <!-- User Type (Individual or Organization) -->
                 <div class="mb-5">
                     <label for="user_type" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
-                        User Type
+                        User Type*
                     </label>
                     <select role="button" id="user_type" name="user_type"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
@@ -192,7 +192,7 @@
                 <div class="mb-5">
                     <label for="id_number" id="id_number_label"
                         class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
-                        NRIC
+                        NRIC*
                     </label>
                     <div>
                         <input type="text" id="id_number" aria-label="id_number" name="id_number"
@@ -328,7 +328,7 @@
         // User Type HTML Element
         const user_type = document.getElementById('user_type');
         user_type.addEventListener('change', (event) => {
-            id_number_label.innerHTML = event.target.value === 'Individual' ? 'NRIC' : 'Registration Number';
+            id_number_label.innerHTML = event.target.value === 'Individual' ? 'NRIC*' : 'Registration Number*';
         });
         // =====================
         // Identification Number HTML element.
@@ -363,7 +363,7 @@
                     };
 
                     // Debug
-                    console.log("[Output] Body: ", requestBody);
+                    //console.log("[Output] Body: ", requestBody);
 
                     fetch('/web/api/user/create', {
                         headers: {
@@ -376,7 +376,7 @@
                         .then((response) => response.json())
                         .then((result) => {
                             // Debug
-                            console.log("Result.", result);
+                            //console.log("Result.", result);
 
                             if (result.success) {
                                 alert('User successfully created!');

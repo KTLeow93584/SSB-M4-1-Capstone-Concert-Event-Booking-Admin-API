@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Concert Event Hosting Services (Republic of Rock) API Documentation</title>
+    <link rel="stylesheet" href="/css/style-tailwind.css" type="text/css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="w-full flex flex-col min-h-screen">
+        <%- include('../../../partials/nav_panel', { has_side_bar: true }) %>
+        <%- include('../../../partials/side_bar_code_doc') %>
+        
+        <div class="sm:w-7/12 md:w-8/12 lg:w-9/12 xl:w-10/12 p-4 sm:ml-64 flex-1">
+            <div class="mt-16">
+                <p class="text-2xl font-bold">
+                    Category: Authentication (Staff/Admin)
+                </p>
+                <div class="mt-5 mx-8">
+                    <div class="w-full">
+                        <ul class="list-disc list-inside">
+                            <!-- Login API -->
+                            <%- include('../../../partials/code_doc_section', {
+                                title: 'Login',
+                                description: 'No Socials Login Support as of this iteration.',
+                                endpoint_url: 'web/api/login',
+                                endpoint_type: 'POST',
+                                endpoint_parameters: {
+                                    email: '...@some-email.com',
+                                    password: '...'
+                                },
+                                endpoint_success_responses: [
+                                    {
+                                        name: 'Success. (Code 201)',
+                                        description: 'Nothing to return to client.',
+                                        json_response: null
+                                    }
+                                ], 
+                                endpoint_failed_responses: [
+                                    {
+                                        name: 'Incorrect Email/Password Combination' ,
+                                        description: 'The combined email and password credentials either did not match to any registered users, valid user but incorrect password, or the client attempting to the server has insufficient permission levels (Role: User).',
+                                        code_message: '401',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'incorrect-credentials',
+                                                    code: 401
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Server Codebase Error.' ,
+                                        description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
+                                        code_message: '500',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'server-error',
+                                                    code: 500
+                                                }
+                                            }
+                                        `
+                                    }
+                                ]
+                            }) %>
+                            <!-- Logout API -->
+                            <%- include('../../../partials/code_doc_section', {
+                                title: 'Logout',
+                                description: 'Removes the web session cookie from the client\'s browser.',
+                                endpoint_url: 'web/api/logout',
+                                endpoint_type: 'POST',
+                                endpoint_parameters: null,
+                                endpoint_success_responses: [
+                                    {
+                                        name: 'Success. (Code: 201)',
+                                        description: 'Nothing to return to client. Redirects to login page.',
+                                        json_response: null
+                                    }
+                                ], 
+                                endpoint_failed_responses: [
+                                ]
+                            }) %>
+                            <!-- Forget Password API -->
+                            <%- include('../../../partials/code_doc_section', {
+                                title: 'Forget Password',
+                                description: '',
+                                endpoint_url: 'web/api/password/forget',
+                                endpoint_type: 'POST',
+                                endpoint_parameters: null,
+                                endpoint_success_responses: [
+                                    {
+                                        name: 'Success. (Code: 201)',
+                                        description: 'Nothing to return to front-end app.',
+                                        json_response: null
+                                    }
+                                ], 
+                                endpoint_failed_responses: [
+                                    {
+                                        name: 'Incomplete Form',
+                                        description: 'Missing Input Field(s) (Email).', 
+                                        code_message: '409',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'incomplete-form',
+                                                    code: 409
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Invalid User',
+                                        description: '', 
+                                        code_message: '404',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'no-user-found',
+                                                    code: 404
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Server Codebase Error.' ,
+                                        description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
+                                        code_message: '500',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'server-error',
+                                                    code: 500
+                                                }
+                                            }
+                                        `
+                                    }
+                                ]
+                            }) %>
+                            <!-- Perform Password Reset API -->
+                            <%- include('../../../partials/code_doc_section', {
+                                title: 'Perform Password Reset Request',
+                                description: 'Execute the request.',
+                                endpoint_url: 'web/api/password/reset/:token',
+                                endpoint_type: 'POST',
+                                endpoint_parameters: {
+                                    password: '...',
+                                    token: '...'
+                                },
+                                endpoint_success_responses: [
+                                    {
+                                        name: 'Success. (Code: 201)',
+                                        description: 'Nothing to return to front-end app.',
+                                        json_response: null
+                                    }
+                                ], 
+                                endpoint_failed_responses: [
+                                    {
+                                        name: 'Invalid Password Reset Request.' ,
+                                        description: 'Unable to locate request from database.',
+                                        code_message: '404',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'invalid-password-reset-request',
+                                                    code: 404
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Password Field does not match with Confirmation Field.' ,
+                                        description: '',
+                                        code_message: '401',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'mismatched-password',
+                                                    code: 401
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Incorrect Password Format.' ,
+                                        description: 'Password must [contain a symbol, number, a lower-case and upper-case alphabet] and have at least 8 characters.',
+                                        code_message: '405',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'incorrect-password-format',
+                                                    code: 405
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Expired Password Request.' ,
+                                        description: '',
+                                        code_message: '405',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'expired-password-request',
+                                                    code: 405
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Server Codebase Error.' ,
+                                        description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
+                                        code_message: '500',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'server-error',
+                                                    code: 500
+                                                }
+                                            }
+                                        `
+                                    }
+                                ]
+                            }) %>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <%- include('../../../partials/footer') %>
+    </div>
+    <!-- ======================================= -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+</body>
+
+</html>

@@ -9,19 +9,19 @@
 
 <body>
     <div class="w-full flex flex-col min-h-screen">
-        <%- include('../../partials/nav_panel', { has_side_bar: true }) %>
-        <%- include('../../partials/side_bar_code_doc') %>
+        <%- include('../../../partials/nav_panel', { has_side_bar: true }) %>
+        <%- include('../../../partials/side_bar_code_doc') %>
         
-        <div class="w-full p-4 sm:ml-64 flex-1">
+        <div class="sm:w-7/12 md:w-8/12 lg:w-9/12 xl:w-10/12 p-4 sm:ml-64 flex-1">
             <div class="mt-16">
                 <p class="text-2xl font-bold">
-                    Category: Authentication (Consumers)
+                    Category: Authentication (Users)
                 </p>
                 <div class="mt-5 mx-8">
                     <div class="w-full">
                         <ul class="list-disc list-inside">
                             <!-- Registration API -->
-                            <%- include('../../partials/code_doc_section', {
+                            <%- include('../../../partials/code_doc_section', {
                                 title: 'Registration',
                                 description: 'Has two variants: Registration via Social Platforms (Google, Facebook) or Registration via Email & Password Combinations. Also can register either as an individual or an organization.',
                                 endpoint_url: 'api/register',
@@ -54,7 +54,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "incomplete-form",
+                                                    status: 'incomplete-form',
                                                     code: 405
                                                 }
                                             }
@@ -68,7 +68,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "ambiguous-registration-type",
+                                                    status: 'ambiguous-registration-type',
                                                     code: 405
                                                 }
                                             }
@@ -82,7 +82,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "incorrect-password-format",
+                                                    status: 'incorrect-password-format',
                                                     code: 405
                                                 }
                                             }
@@ -96,7 +96,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "user-already-exist",
+                                                    status: 'user-already-exist',
                                                     code: 409
                                                 }
                                             }
@@ -110,7 +110,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "server-error",
+                                                    status: 'server-error',
                                                     code: 500
                                                 }
                                             }
@@ -119,7 +119,7 @@
                                 ]
                             }) %>
                             <!-- Login API -->
-                            <%- include('../../partials/code_doc_section', {
+                            <%- include('../../../partials/code_doc_section', {
                                 title: 'Login',
                                 description: 'Has two variants: Logging in via Social Platforms (Google, Facebook) or Logging in via Email & Password Combinations.',
                                 endpoint_url: 'api/login',
@@ -155,7 +155,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "no-user-found",
+                                                    status: 'no-user-found',
                                                     code: 404
                                                 }
                                             }
@@ -169,7 +169,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "incorrect-credentials",
+                                                    status: 'incorrect-credentials',
                                                     code: 401
                                                 }
                                             }
@@ -183,7 +183,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "server-error",
+                                                    status: 'server-error',
                                                     code: 500
                                                 }
                                             }
@@ -192,7 +192,7 @@
                                 ]
                             }) %>
                             <!-- Logout API -->
-                            <%- include('../../partials/code_doc_section', {
+                            <%- include('../../../partials/code_doc_section', {
                                 title: 'Logout',
                                 description: 'In the event the login fails, do nothing for the back-end side. Front-end app, however should clear the cached token.',
                                 endpoint_url: 'api/logout',
@@ -214,7 +214,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "server-error",
+                                                    status: 'server-error',
                                                     code: 500
                                                 }
                                             }
@@ -223,7 +223,7 @@
                                 ]
                             }) %>
                             <!-- Forget Password API -->
-                            <%- include('../../partials/code_doc_section', {
+                            <%- include('../../../partials/code_doc_section', {
                                 title: 'Forget Password',
                                 description: '',
                                 endpoint_url: 'api/password/forget',
@@ -245,7 +245,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "no-user-found",
+                                                    status: 'no-user-found',
                                                     code: 404
                                                 }
                                             }
@@ -259,7 +259,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "server-error",
+                                                    status: 'server-error',
                                                     code: 500
                                                 }
                                             }
@@ -268,7 +268,7 @@
                                 ]
                             }) %>
                             <!-- Verify Password Reset API -->
-                            <%- include('../../partials/code_doc_section', {
+                            <%- include('../../../partials/code_doc_section', {
                                 title: 'Verify Password Reset Request',
                                 description: 'Sanity check from the front-end app to test if the request tallied is valid.',
                                 endpoint_url: 'api/password/reset/verify',
@@ -292,7 +292,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "server-error",
+                                                    status: 'server-error',
                                                     code: 500
                                                 }
                                             }
@@ -301,7 +301,7 @@
                                 ]
                             }) %>
                             <!-- Perform Password Reset API -->
-                            <%- include('../../partials/code_doc_section', {
+                            <%- include('../../../partials/code_doc_section', {
                                 title: 'Perform Password Reset Request',
                                 description: 'Execute the request.',
                                 endpoint_url: 'api/password/reset',
@@ -326,7 +326,7 @@
                                             {
                                                 success: false,
                                                 error: {
-                                                    status: "server-error",
+                                                    status: 'server-error',
                                                     code: 500
                                                 }
                                             }
@@ -339,7 +339,7 @@
                 </div>
             </div>
         </div>
-        <%- include('../../partials/footer') %>
+        <%- include('../../../partials/footer') %>
     </div>
     <!-- ======================================= -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>

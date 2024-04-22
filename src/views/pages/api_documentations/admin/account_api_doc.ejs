@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Concert Event Hosting Services (Republic of Rock) API Documentation</title>
+    <link rel="stylesheet" href="/css/style-tailwind.css" type="text/css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="w-full flex flex-col min-h-screen">
+        <%- include('../../../partials/nav_panel', { has_side_bar: true }) %>
+        <%- include('../../../partials/side_bar_code_doc') %>
+
+        <div class="sm:w-7/12 md:w-8/12 lg:w-9/12 xl:w-10/12 p-4 sm:ml-64 flex-1">
+            <div class="mt-16">
+                <p class="text-2xl font-bold">
+                    Category: Accounts (Staff/Admin)
+                </p>
+                <div class="mt-5 mx-8">
+                    <div class="w-full">
+                        <ul class="list-disc list-inside">
+                            <!-- Create a New Account -->
+                            <%- include('../../../partials/code_doc_section', {
+                                title: 'New Account Endpoint',
+                                description: '',
+                                endpoint_url: 'web/api/event',
+                                endpoint_type: 'POST',
+                                endpoint_parameters: {
+                                    email: '...@email.com',
+                                    password: '...',
+                                    password_confirmation: '...',
+                                    name: '...',
+                                    profile_picture: 'INSERT_URL_HERE (Optional)',
+                                    country_name: '...',
+                                    role: 'Admin or Staff or User',
+                                    contact_number: '...',
+                                    type: 'Individual OR Organization',
+                                    id_number: '...'
+                                },
+                                endpoint_success_responses: [
+                                    {
+                                        name: 'Success.',
+                                        description: '',
+                                        json_response: `
+                                            user: {
+                                                user_id: 1
+                                            }
+                                        `
+                                    }
+                                ], 
+                                endpoint_failed_responses: [
+                                    {
+                                        name: 'Incomplete Forms.' ,
+                                        description: 'Cetain fields (marked with *) were empty on submission. (E.g. Name, Contact Number, etc.)',
+                                        code_message: '404',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'incomplete-form-field',
+                                                    code: 404
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Password Field does not match with Confirmation Field.' ,
+                                        description: '',
+                                        code_message: '401',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'mismatched-password',
+                                                    code: 401
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Incorrect Password Format.' ,
+                                        description: 'Password must [contain a symbol, number, a lower-case and upper-case alphabet] and have at least 8 characters.',
+                                        code_message: '405',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'incorrect-password-format',
+                                                    code: 405
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'User Not Found.' ,
+                                        description: '',
+                                        code_message: '404',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'no-user-found',
+                                                    code: 404
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Not Authorized to Create Account of Higher Role.' ,
+                                        description: 'E.g. Staffs are not permitted to create Administrator role users.',
+                                        code_message: '405',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'not-authorized-to-create-a-user-of-higher-role',
+                                                    code: 405
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Unable to locate any supported country from Database.' ,
+                                        description: 'This should not happen under normal circumstances. Please inform the administrators and developers should this issue occur.',
+                                        code_message: '405',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'no-valid-country-found',
+                                                    code: 405
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Server Codebase Error.' ,
+                                        description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
+                                        code_message: '500',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'server-error',
+                                                    code: 500
+                                                }
+                                            }
+                                        `
+                                    }
+                                ]
+                            }) %>
+                            <!-- Modifying an Existing Account API -->
+                            <%- include('../../../partials/code_doc_section', {
+                                title: 'Modifying an Existing Account Endpoint',
+                                description: '',
+                                endpoint_url: 'web/api/event',
+                                endpoint_type: 'PUT',
+                                endpoint_parameters: {
+                                    user_id: 1,
+                                    email: '... (Optional, Unchanged if null)',
+                                    name: '... (Optional, Unchanged if null)',
+                                    profile_picture: 'INSERT_URL_HERE (Optional, Unchanged if null)',
+                                    country_name: 'Date (Optional, Unchanged if null)',
+                                    role: 'Admin or Staff or User (Optional, Unchanged if null)',
+                                    contact_number: '... (Optional, Unchanged if null)',
+                                    type: 'Individual OR Organization (Optional, Unchanged if null)',
+                                    id_number: '... (Optional, Unchanged if null)'
+                                },
+                                endpoint_success_responses: [
+                                    {
+                                        name: 'Success.',
+                                        description: '',
+                                        json_response: `
+                                            user: {
+                                                user_id: 1
+                                            }
+                                        `
+                                    }
+                                ],
+                                endpoint_failed_responses: [
+                                    {
+                                        name: 'User Not Found.' ,
+                                        description: 'Either the queried User or active User\'s ID, corresponds to non existing user in the database.',
+                                        code_message: '404',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'no-user-found',
+                                                    code: 404
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Unauthorized to Modify Account.' ,
+                                        description: 'E.g. Staffs are not permitted to make adjustments to other Staffs/Administrator accounts. (Equal or higher roles)',
+                                        code_message: '405',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'not-authorized-to-modify-user-account',
+                                                    code: 405
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Not Authorized to Change Own Role.' ,
+                                        description: '',
+                                        code_message: '405',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'not-authorized-to-change-self-role',
+                                                    code: 405
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Unable to locate any supported country from Database.' ,
+                                        description: 'This should not happen under normal circumstances. Please inform the administrators and developers should this issue occur.',
+                                        code_message: '405',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'no-valid-country-found',
+                                                    code: 405
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Server Codebase Error.' ,
+                                        description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
+                                        code_message: '500',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'server-error',
+                                                    code: 500
+                                                }
+                                            }
+                                        `
+                                    }
+                                ]
+                            }) %>
+                            <!-- Deleting an Existing Account API -->
+                            <%- include('../../../partials/code_doc_section', {
+                                title: 'Delete Existing Account Endpoint',
+                                description: '',
+                                endpoint_url: 'web/api/user',
+                                endpoint_type: 'DELETE',
+                                endpoint_parameters: {
+                                    user_id: 1
+                                },
+                                endpoint_success_responses: [
+                                    {
+                                        name: 'Success.',
+                                        description: '',
+                                        json_response: `
+                                            message: 'Account successfully deleted.' OR 'Account already deleted or does not exist.',
+                                            user: {
+                                                user_id: 1
+                                            }
+                                        `
+                                    }
+                                ],
+                                endpoint_failed_responses: [
+                                    {
+                                        name: 'Not Authorized to Delete Self',
+                                        description: 'Feature currently unavailable as of this iteration. For staffs, administrators can delete their accounts and likewise, staffs can only delete user-role accounts.', 
+                                        code_message: '405',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'not-authorized-to-delete-self',
+                                                    code: 405
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'User Not Found.',
+                                        description: '',
+                                        code_message: '405',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'no-user-found',
+                                                    code: 405
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Server Codebase Error.',
+                                        description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
+                                        code_message: '500',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'server-error',
+                                                    code: 500
+                                                }
+                                            }
+                                        `
+                                    }
+                                ]
+                            }) %>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <%- include('../../../partials/footer') %>
+    </div>
+    <!-- ======================================= -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+</body>
+
+</html>

@@ -101,7 +101,7 @@
             <table class="align-top border-collapse border border-slate-400">
                 <tbody class="align-top">
                     <tr>
-                        <td class="border border-slate-300 px-6 pt-5 pb-3 w-screen">
+                        <td class="border border-slate-300 px-6 pt-5 w-screen">
                             <ol class="list-decimal list-inside">
                                 <% endpoint_success_responses.forEach((response, index)=> { %>
                                     <li>
@@ -119,35 +119,35 @@
                                             <br />
                                         <% } %>
 
-                                        <div class="code-container">
-                                            <%
-                                                if (response.json_response) {
-                                                    let lines = response.json_response.split(/\r?\n/).map((line) => line.trim());
-                                            %>
+                                        <%
+                                            if (response.json_response) {
+                                                let lines = response.json_response.split(/\r?\n/).map((line) => line.trim());
+                                        %>
+                                            <div class="code-container">
+                                                <% let tabIndentCount = 0; %>
 
-                                            <% let tabIndentCount = 0; %>
-
-                                            <% lines.forEach((line, lineIndex) => { %>
-                                                <!-- ===================================================== -->
-                                                <!-- Increase Tab Indent on every "{" character encounter. -->
-                                                <!-- Decrease Tab Indent on every "}" character encounter. -->
-                                                <% 
-                                                    if (line.includes("}") || line.includes("]"))
-                                                        tabIndentCount = (tabIndentCount === 0) ? 0 : (tabIndentCount - 1);
-                                                %>
-                                                <!-- ===================================================== -->
-                                                <p class="code-text m-0 p-0">
-                                                    <% for (let i = 0; i < tabIndentCount; ++i) { %>
-                                                        <span class="whitespace-pre-wrap">    </span>
-                                                    <% } %>
-                                                    <%= line %>
-                                                </p>
-                                                <%
-                                                    if (line.includes("{") || line.includes("["))
-                                                        ++tabIndentCount;
-                                                %>
-                                            <% }); } %>
-                                        </div>
+                                                <% lines.forEach((line, lineIndex) => { %>
+                                                    <!-- ===================================================== -->
+                                                    <!-- Increase Tab Indent on every "{" character encounter. -->
+                                                    <!-- Decrease Tab Indent on every "}" character encounter. -->
+                                                    <% 
+                                                        if (line.includes("}") || line.includes("]"))
+                                                            tabIndentCount = (tabIndentCount === 0) ? 0 : (tabIndentCount - 1);
+                                                    %>
+                                                    <!-- ===================================================== -->
+                                                    <p class="code-text m-0 p-0">
+                                                        <% for (let i = 0; i < tabIndentCount; ++i) { %>
+                                                            <span class="whitespace-pre-wrap">    </span>
+                                                        <% } %>
+                                                        <%= line %>
+                                                    </p>
+                                                    <%
+                                                        if (line.includes("{") || line.includes("["))
+                                                            ++tabIndentCount;
+                                                    %>
+                                                <% });%>
+                                            </div>
+                                        <% } %>
                                     </li>
                                     <%- (index < endpoint_success_responses.length - 1) ? '<hr class="my-5 border-[#000000]" />' : '' %>
                                 <% }); %>
@@ -167,7 +167,8 @@
                 <tbody class="align-top">
                     <tr>
                         <td class="border border-slate-300 px-6 py-3 w-screen">
-                            <ol class="list-decimal list-inside">
+                            <% if (endpoint_failed_responses.length > 0) { %>
+                                <ol class="list-decimal list-inside">
                                 <% endpoint_failed_responses.forEach((response, index)=> { %>
                                     <li>
                                         <span class="text-red-500">
@@ -209,7 +210,10 @@
                                     </li>
                                     <%- (index < endpoint_failed_responses.length - 1) ? '<hr class="my-5 border-[#000000]" />' : '' %>
                                 <% }); %>
-                            </ol>
+                                </ol>
+                            <% } else { %>
+                                <p class="font-medium">N/A</p>
+                            <% } %>
                         </td>
                     </tr>
                 </tbody>

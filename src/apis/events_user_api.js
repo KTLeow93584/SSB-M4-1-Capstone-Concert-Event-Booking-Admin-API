@@ -16,7 +16,7 @@ const {
   authenticateFirebaseJWToken,
   createJSONSuccessResponseToClient,
   createJSONErrorResponseToClient
-} = require("../services/middlewares-client.js");
+} = require("../services/middlewares.js");
 // =======================================
 // Retrieve All Events from a specific user (Must be Logged In) Endpoint.
 router.get("/api/events/user", [authenticateCustomJWToken, authenticateFirebaseJWToken], async (req, res) => {
@@ -218,10 +218,6 @@ router.put("/api/event", [authenticateCustomJWToken, authenticateFirebaseJWToken
     } = req.body;
 
     const email = req.email;
-    // =======================
-    // Missing Form Inputs
-    if (!email || !event_venue_id || !event_name || !event_scheduled_start || !event_scheduled_end || !event_promo_image)
-        return createJSONErrorResponseToClient(res, 200, 405, "incomplete-form");
     // =======================
     // Retrieve the user id from email for next query.
     let sqlQuery = "SELECT id FROM users WHERE email = $1";

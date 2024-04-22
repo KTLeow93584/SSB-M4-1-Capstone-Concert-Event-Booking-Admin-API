@@ -36,29 +36,26 @@ const router = express.Router();
 // Middlewares.
 const {
   isUserAuthorized,
-  sendInfoToRedirectedPage,
-  sendErrorResponseToRedirectedPage
-} = require("../services/middlewares-server.js");
-
-const {
   createJSONSuccessResponseToClient,
   createJSONErrorResponseToClient
-} = require("../services/middlewares-client.js");
-const { Console } = require("console");
+} = require("../services/middlewares.js");
 // =======================================
 // Login.
 router.post("/web/api/login", async (req, res) => {
   const client = await pool.connect();
 
   try {
-    // Debug
-    //console.log("[On Login - Admin] Body.", req.body);
-
     const body = {
-      email: req.body.email.toLowerCase(),
+      email: req.body.email ? req.body.email.toLowerCase() : null,
       password: req.body.password ? req.body.password : null,
       remember_toggle: req.body.remember_toggle === undefined ? false : true
     };
+
+    // Debug
+    //console.log("[On Login - Admin] Body.", body);
+
+    if (!body.email || !body.password)
+      return createJSONErrorResponseToClient(res, 200, 401, "incorrect-credentials");
 
     let query = `
       SELECT 
@@ -88,29 +85,17 @@ router.post("/web/api/login", async (req, res) => {
     const user = result.rows.length > 0 ? result.rows[0] : null;
     
     // Otherwise, return an error response because no user found from input email.
-    if (!user) {
-        return sendErrorResponseToRedirectedPage(req, res, req.body, 401, { 
-          type: "incorrect-credentials", 
-          message: "Incorrect Email/Password Combination"
-        });
-    }
+    if (!user)
+      return createJSONErrorResponseToClient(res, 200, 401, "incorrect-credentials");
 
     // Verify if password provided from request's body is the same with the user's actual password.
     // If it's not valid, return an error response and set the token to null.
     const passwordIsValid = await bcrypt.compare(body.password, user.password);
-    if (!passwordIsValid) {
-        return sendErrorResponseToRedirectedPage(req, res, req.body, 401, { 
-          type: "incorrect-credentials", 
-          message: "Incorrect Email/Password Combination"
-        });
-    }
+    if (!passwordIsValid) 
+      return createJSONErrorResponseToClient(res, 200, 401, "incorrect-credentials");
 
-    if (user.role === "user") {
-        return sendErrorResponseToRedirectedPage(req, res, req.body, 405, { 
-          type: "unauthorized-user", 
-          message: "Incorrect Email/Password Combination"
-        });
-    }
+    if (user.role === "user") 
+      return createJSONErrorResponseToClient(res, 200, 401, "incorrect-credentials");
 
     const { refreshToken } = createNewCustomAccessToken(user);
 
@@ -135,16 +120,13 @@ router.post("/web/api/login", async (req, res) => {
     // User won't have to log in again based on 2 durations (depending if the "Remember Me" checkbox is set to "true" or "false").
     req.session.cookie.maxAge = body.remember_toggle ? parseInt(CACHE_TTL_REMEMBER_ME_DURATION) : parseInt(CACHE_TTL_DURATION);
 
-    return sendInfoToRedirectedPage(req, res, "/dashboard");
+    return createJSONSuccessResponseToClient(res, 201);
   }
   catch (error) {
     // Debug
     console.error(error.stack);
 
-    return sendErrorResponseToRedirectedPage(req, res, req.body, 500, { 
-      type: "server-error", 
-      message: "Something went wrong with the server"
-    });
+    return createJSONErrorResponseToClient(res, 200, 500, "server-error");
   }
   finally {
     client.release();
@@ -172,15 +154,9 @@ router.post("/web/api/password/forget", async (req, res) => {
   try {
     const { email } = req.body;
     // ==================================
-    const message = "You should be receiving a mail from us shortly, if the email address is tied to a registred account.";
-    // ==================================
     // Empty Email Field.
-    if (!email) {
-      return sendErrorResponseToRedirectedPage(req, res, req.body, 409, { 
-        type: "incomplete-form", 
-        message: "Email field cannot be empty."
-      });
-    }
+    if (!email)
+      return createJSONErrorResponseToClient(res, 200, 409, "incomplete-form");
     // ==================================
     let query = `
       SELECT 
@@ -199,7 +175,7 @@ router.post("/web/api/password/forget", async (req, res) => {
       // Debug
       //console.log("[Forget Password] User does not exist.");
 
-      return sendInfoToRedirectedPage(req, res, "/login", null, message);
+      return createJSONErrorResponseToClient(res, 200, 404, "no-user-found");
     }
     // ==================================
     const user = userQuery.rows[0];
@@ -220,19 +196,16 @@ router.post("/web/api/password/forget", async (req, res) => {
 
     // Debug
     //console.log(`[Forget Password] Expiry Time: ${expiryTimestamp}.`);
-
-    const timezoneQuery = await client.query("SELECT current_setting('timezone') as timezone;");
-    const defaultTimeZone = timezoneQuery.rows[0].timezone;
-    
+    // ==================================
     // Update row if already exist, insert otherwise.
     query = `
       INSERT INTO password_requests(user_id, token, expire_at)
-      VALUES ($1, $2, $3::timestamp AT TIME ZONE $4)
+      VALUES ($1, $2, $3)
       ON CONFLICT (user_id) DO UPDATE 
       SET token = $2, 
-          expire_at = $3::timestamp AT TIME ZONE $4;
+          expire_at = $3;
     `;
-    await client.query(query, [user.id, requestToken, expiryTimestamp, defaultTimeZone]);
+    await client.query(query, [user.id, requestToken, expiryTimestamp]);
 
     // Send Email to User whom has forgotten their password.
     sendMailToRecipientHTML(
@@ -246,115 +219,33 @@ router.post("/web/api/password/forget", async (req, res) => {
       path.join(__dirname, "../services/mail/templates/forgot_password.ejs")
     );
 
-    return sendInfoToRedirectedPage(req, res, "/login", null, message);
+    return createJSONSuccessResponseToClient(res, 201);
   }
   catch (error) {
     // Debug
     console.error(error.stack);
 
-    return sendErrorResponseToRedirectedPage(req, res, req.body, 500, { 
-      type: "server-error", 
-      message: "Something went wrong with the server"
-    });
+    return createJSONErrorResponseToClient(res, 200, 500, "server-error");
   }
   finally {
     client.release();
   }
 });
 
-// Request Forgot Password.
+// Reset Password.
 router.post("/web/api/password/reset/:token", async (req, res) => {
   const client = await pool.connect();
   try {
-    const { password, password_confirmation } = req.body;
     const { token } = req.params;
     // =======================
-    if (password !== password_confirmation) {
-      return sendErrorResponseToRedirectedPage(req, res, req.body, 405, { 
-        type: "mismatched-password", 
-        message: "Passwords do not match. Please check the form before submitting."
-      });
-    }
+    let query = await client.query('SELECT * FROM password_requests WHERE token = $1;', [token]);
+    if (query.rows <= 0)
+      return createJSONErrorResponseToClient(res, 200, 404, "invalid-password-reset-request");
     // =======================
-    // Check if password's format matches requirement.
-    // - Must contain 1 number, 1 lowercase alphabet, 1 uppercase alphabet, 1 symbol.
-    // - Must contain at least 8 characters.
+    const { password, password_confirmation } = req.body;
 
-    const regexUpperLetters = /[A-Z]/;
-    const regexLowerLetters = /[a-z]/;
-    const regexNumbers = /[0-9]/;
-    const regexSymbols = /[^a-zA-z0-9]/;
-
-    const pass = password.length >= 8 & regexUpperLetters.test(password) &
-        regexLowerLetters.test(password) & regexNumbers.test(password) &
-        regexSymbols.test(password);
-
-    if (!pass) {
-      return sendErrorResponseToRedirectedPage(req, res, req.body, 405, { 
-        type: "incorrect-password-format", 
-        message: "Password must match the specified format."
-      });
-    }
-    // =======================
-    const result = await isPasswordResetRequestValid(client, token);
-
-    if (!result.success)
-      return sendErrorResponseToRedirectedPage(req, res, req.body, 405, { 
-        type: "expired-password-request", 
-        message: "The password reset request has already expired."
-      });
-
-    let query = `
-      UPDATE users SET
-        password = $1
-      WHERE id = $2;
-    `;
-    // Debug
-    //console.log("[Reset Password] New Password:", password);
-    //console.log("[Reset Password] User ID:", result.user_id);
-    
-    const hashedPassword = await generateNewPasswordHash(password);
-    await client.query(query, [hashedPassword, result.user_id]);
-
-    // Delete Password Request data row from the corresponding table.
-    query = `
-      DELETE FROM password_requests
-      WHERE user_id = $1;
-    `;
-    await client.query(query, [result.user_id]);
-
-    return sendInfoToRedirectedPage(req, res, "/login", null, "Password successfully changed. You may try logging in with your new credentials now.");
-  }
-  catch (error) {
-    // Debug
-    console.error(error.stack);
-
-    return sendErrorResponseToRedirectedPage(req, res, req.body, 500, { 
-      type: "server-error", 
-      message: "Something went wrong with the server"
-    });
-  }
-  finally {
-    client.release();
-  }
-});
-
-// Create a New User Account Info
-router.post("/web/api/user/create", [isUserAuthorized], async (req, res) => {
-  const client = await pool.connect();
-  try {
-    // =======================
-    const { email, password, password_confirmation, name, profile_picture, country_name, role, contact_number, type, id_number } = req.body;
-
-    // Debug
-    //console.log("[Create New User] Body.", req.body);
-    
-    if (!email || !password || !password_confirmation || !name || !country_name || !role || !contact_number || !type || !id_number)
-        return createJSONErrorResponseToClient(res, 200, 404, "incomplete-form-field");
-    // =======================
-    // Mismatched Password with Confirmation.
-    if (password !== password_confirmation) 
-      return createJSONErrorResponseToClient(res, 200, 405, "mismatched-password");
+    if (password !== password_confirmation)
+      return createJSONErrorResponseToClient(res, 200, 401, "mismatched-password");
     // =======================
     // Check if password's format matches requirement.
     // - Must contain 1 number, 1 lowercase alphabet, 1 uppercase alphabet, 1 symbol.
@@ -372,329 +263,37 @@ router.post("/web/api/user/create", [isUserAuthorized], async (req, res) => {
     if (!pass)
       return createJSONErrorResponseToClient(res, 200, 405, "incorrect-password-format");
     // =======================
-    // Role Permission Checks (If editing a user that's not myself.)
-    const activeUserSQL = `
-      SELECT
-        id,
-        role,
-        CASE 
-          WHEN role ILIKE 'Admin' THEN 3
-          WHEN role ILIKE 'Staff' THEN 2
-          WHEN role ILIKE 'User' THEN 1
-          ELSE 0
-        END AS role_permission_level
-      FROM users WHERE id = $1;
+    const result = await isPasswordResetRequestValid(client, token);
+
+    if (!result.success)
+      return createJSONErrorResponseToClient(res, 200, 405, "expired-password-request");
+
+    let sqlQuery = `
+      UPDATE users SET
+        password = $1
+      WHERE id = $2;
     `;
-    const activeUserQuery = await client.query(activeUserSQL, [req.session.user.id]);
-
-    if (activeUserQuery.rows.length <= 0)
-      return createJSONErrorResponseToClient(res, 200, 404, "no-user-found");
-
-    let newUserRolePermissions = -1;
-    switch (role.toLowerCase()) {
-      case "admin":
-        newUserRolePermissions = 3;
-        break;
-      case "staff":
-        newUserRolePermissions = 2;
-        break;
-      case "user":
-      default:
-        newUserRolePermissions = 1;
-        break;
-    }
-      
-    const activeUser = activeUserQuery.rows[0];
-    if (newUserRolePermissions >= activeUser.role_permission_level)
-      return createJSONErrorResponseToClient(res, 200, 405, "not-authorized-to-create-a-user-of-higher-role");
-    // =======================
-    // Get Country ID from input Country Name.
-    const countrySQL = `SELECT id, name from countries WHERE name = $1;`
-    const countryQuery = await client.query(countrySQL, [country_name]);
-
-    if (countryQuery.rows.length <= 0)
-        return createJSONErrorResponseToClient(res, 200, 404, "no-valid-country-found");
-
-    const country_id = countryQuery.rows[0].id;
-    // =======================
-    // Insert into users table (Email, Country ID, Contact Number, Password, Role, Profile Picture)
-    const newUserSQL = `
-      INSERT INTO users (email, country_id, contact_number, password, role, profile_picture)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING id, email;
-    `;
-    const newUserQuery = await client.query(newUserSQL, [email, country_id, contact_number, password, role, profile_picture]);
-    // =======================
-    const newUser = newUserQuery.rows[0];
-    // =======================
-    // Insert into Individuals or Organizations Table (Name, Identification Number as NRIC or Registration Number)
-    let newUserTypeSQL = '';
-    let newUserTypeQuery = null;
-
-    if (type === "Individual") {
-      newUserTypeSQL = `
-        INSERT INTO individuals (user_id, name, nric)
-        VALUES ($1, $2, $3)
-        RETURNING id;
-      `;
-      newUserTypeQuery = await client.query(newUserTypeSQL, [newUser.id, name, id_number]);
-    }
-    else {
-      newUserTypeSQL = `
-        INSERT INTO organizations (user_id, name, registration_number)
-        VALUES ($1, $2, $3)
-        RETURNING id;
-      `;
-      newUserTypeQuery = await client.query(newUserTypeSQL, [newUser.id, name, id_number]);
-    }
-    // =======================
-    // Add pending verification query
-    const verificationToken = uuidv4();
+    // Debug
+    //console.log("[Reset Password] New Password:", password);
+    //console.log("[Reset Password] User ID:", result.user_id);
     
-    const verifiedQuery = `
-      INSERT INTO user_verifications (user_id, token)
-      VALUES ($1, $2);
+    const hashedPassword = await generateNewPasswordHash(password);
+    await client.query(sqlQuery, [hashedPassword, result.user_id]);
+
+    // Delete Password Request data row from the corresponding table.
+    query = `
+      DELETE FROM password_requests
+      WHERE user_id = $1;
     `;
-    await client.query(verifiedQuery, [newUser.id, verificationToken]);
-    // =======================
-    // Send Email to Newly Registered User.
-    // Requesting them to verify their email.
-    sendMailToRecipientHTML(
-      "ror-support-noreply@ror.com",
-      email,
-      `Hello, ${name}. Please verify your email.`,
-      { 
-        name: name, 
-        link: SERVER_URL + "/verify/" + verificationToken
-      },
-      path.join(__dirname, "../services/mail/templates/user_verify_email.ejs")
-    );
-    // =======================
-    // Send new data back to client.
-    return createJSONSuccessResponseToClient(res, 200, {
-      user: {
-        user_id: parseInt(newUser.id)
-      }
-    });
+    await client.query(query, [result.user_id]);
+
+    return createJSONSuccessResponseToClient(res, 201);
   }
   catch (error) {
     // Debug
     console.error(error.stack);
 
-    return createJSONErrorResponseToClient(res, 200, 500, "server-error");
-  }
-  finally {
-    client.release();
-  }
-});
-
-// Modifies User Account Info
-router.put("/web/api/user", [isUserAuthorized], async (req, res) => {
-  const client = await pool.connect();
-  try {
-    const { user_id, email, name, profile_picture, country_name, role, contact_number, type, id_number } = req.body;
-
-    // Debug
-    //console.log("[Edit User Info] Body.", req.body);
-    
-    if (!email || !password || !password_confirmation || !name || !country_name || !role || !contact_number || !type || !id_number)
-        return createJSONErrorResponseToClient(res, 200, 404, "incomplete-form-field");
-    // =======================
-    const selectUserSQL = `
-      SELECT
-        u.id,
-        u.role,
-        CASE 
-          WHEN role ILIKE 'Admin' THEN 3
-          WHEN role ILIKE 'Staff' THEN 2
-          WHEN role ILIKE 'User' THEN 1
-          ELSE 0
-        END AS role_permission_level,
-        CASE
-          WHEN i.user_id IS NOT NULL 
-            THEN 'Individual'
-          WHEN o.user_id IS NOT NULL 
-            THEN 'Organization'
-          ELSE 'Invalid'
-        END AS type
-      FROM users u
-      LEFT JOIN individuals i ON i.user_id = u.id
-      LEFT JOIN organizations o ON o.user_id = u.id
-      WHERE u.id = $1;
-    `;
-    const selectQuery = await client.query(selectUserSQL, [user_id]);
-    if (selectQuery.rows.length <= 0)
-      return createJSONErrorResponseToClient(res, 200, 404, "no-user-found");
-    const selectedUser = selectQuery.rows[0];
-    // =======================
-    // Role Permission Checks (If editing a user that's not myself.)
-    if (user_id !== req.session.user.id) {
-      const activeUserSQL = `
-        SELECT
-          id,
-          role,
-          CASE 
-            WHEN role ILIKE 'Admin' THEN 3
-            WHEN role ILIKE 'Staff' THEN 2
-            WHEN role ILIKE 'User' THEN 1
-            ELSE 0
-          END AS role_permission_level
-        FROM users WHERE id = $1;
-      `;
-      const activeUserQuery = await client.query(activeUserSQL, [req.session.user.id]);
-
-      if (activeUserQuery.rows.length <= 0)
-        return createJSONErrorResponseToClient(res, 200, 404, "no-user-found");
-
-      const activeUser = activeUserQuery.rows[0];
-      if (selectedUser.role_permission_level >= activeUser.role_permission_level)
-        return createJSONErrorResponseToClient(res, 200, 405, "not-authorized-to-modify-user-account");
-    }
-    else {
-      if (role)
-        return createJSONErrorResponseToClient(res, 200, 405, "not-authorized-to-change-self-role");
-    }
-    // =======================
-    // Modify Country ID, Contact Number, Profile Picture,
-    let country_id = null;
-    if (country_name) {
-      const selectCountryQuery = await client.query('SELECT id, name FROM countries WHERE name = $1;', [country_name]);
-
-      if (selectCountryQuery.rows.length <= 0)
-        return createJSONErrorResponseToClient(res, 200, 404, "no-valid-country-found");
-
-      country_id = selectCountryQuery.rows[0].id;
-    }
-    // =======================
-    // Debug
-    //console.log("[Edit User Info] Parameters (ID, Email, Name, Country ID, Contact Number, Type, Identification Number).", [
-      //user_id, email, name, country_id, contact_number, type, id_number
-    //]);
-    // =======================
-    const editUserSQL = `
-      UPDATE users
-      SET 
-        email = COALESCE($1, email),
-        profile_picture = COALESCE($2, profile_picture),
-        country_id = COALESCE($3, country_id),
-        role = COALESCE($4, role),
-        contact_number = COALESCE($5, contact_number)
-      WHERE id = $6;
-    `;
-    const editUserQuery = await client.query(editUserSQL, [email, profile_picture, country_id, role, contact_number, user_id]);
-    // =======================
-    // Modify User Type (Along with new name and identification number)
-    if (type && selectedUser.type !== type) {
-      if (type === "Individual") {
-        await client.query('DELETE FROM organizations WHERE user_id = $1', [user_id]);
-        await client.query('INSERT INTO individuals (user_id, name, nric) VALUES ($1, $2, $3)', [
-          user_id, name, id_number
-        ]);
-      }
-      else {
-        await client.query('DELETE FROM individuals WHERE user_id = $1', [user_id]);
-        await client.query('INSERT INTO organizations (user_id, name, registration_number) VALUES ($1, $2, $3)', [
-          user_id, name, id_number
-        ]);
-      }
-    }
-    // Modify Name and Identification Number
-    else {
-      const editNameSQL = `
-        WITH updated_individuals AS (
-          UPDATE individuals
-          SET 
-            name = COALESCE($1, name),
-            nric = COALESCE($2, nric)
-          WHERE id = $3
-          RETURNING id, name
-        ),
-        updated_organizations AS (
-          UPDATE organizations
-          SET
-            name = COALESCE($1, name),
-            registration_number = COALESCE($2, registration_number)
-          WHERE id = $3
-          RETURNING id, name
-        )
-        SELECT id, name FROM updated_individuals
-        UNION ALL
-        SELECT id, name FROM updated_organizations;
-      `;
-      await client.query(editNameSQL, [name, id_number, user_id]);
-    }
-    // =======================
-    // Debug
-    //console.log("[On Delete Existing User] Log 1 - User ID", user_id);
-    //console.log("[On Delete Existing User] Log 2 - Delete Query", deleteUserQuery.rowCount);
-
-    // Track User Table Modification Records
-    if (editUserQuery.rowCount > 0) {
-      const insertRecords = `
-        INSERT INTO user_modifications_history (modified_user_id, accountable_user_id, remark)
-        VALUES ($1, $2, 'Modify User Account');
-      `;
-      await client.query(insertRecords, [user_id, req.session.user.id]);
-    }
-
-    // Send new data back to client.
-    return createJSONSuccessResponseToClient(res, 200, {
-      user: {
-        user_id: parseInt(user_id)
-      }
-    });
-  }
-  catch (error) {
-    // Debug
-    console.error(error.stack);
-
-    return createJSONErrorResponseToClient(res, 200, 500, "server-error");
-  }
-  finally {
-    client.release();
-  }
-});
-
-// Deletes User Account
-router.delete("/web/api/user", [isUserAuthorized], async (req, res) => {
-  const client = await pool.connect();
-  try {
-    const { user_id } = req.body;
-    if (user_id === req.session.user.id)
-      return createJSONErrorResponseToClient(res, 200, 404, "not-authorized-to-delete-self");
-
-    const selectUserQuery = await client.query('SELECT * FROM users WHERE id = $1;', [user_id]);
-    if (selectUserQuery.rows.length <= 0)
-      return createJSONErrorResponseToClient(res, 200, 404, "no-user-found");
-
-    const deleteUserQuery = await client.query('DELETE FROM users WHERE id = $1;', [user_id]);
-
-    // Debug
-    //console.log("[On Delete Existing User] Log 1 - User ID", user_id);
-    //console.log("[On Delete Existing User] Log 2 - Delete Query", deleteUserQuery.rowCount);
-
-    // Track User Table Modification Records
-    if (deleteUserQuery.rowCount > 0) {
-      const insertRecords = `
-        INSERT INTO user_modifications_history (modified_user_id, accountable_user_id, remark)
-        VALUES ($1, $2, 'Delete User Account');
-      `;
-      await client.query(insertRecords, [user_id, req.session.user.id]);
-    }
-
-    // Send new data back to client.
-    return createJSONSuccessResponseToClient(res, 200, {
-      message: deleteUserQuery.rowCount > 0 ? "User successfully deleted." : "User already deleted or does not exist.",
-      user: {
-        user_id: parseInt(user_id)
-      }
-    });
-  }
-  catch (error) {
-    // Debug
-    console.error(error.stack);
-
-    return createJSONErrorResponseToClient(res, 200, 500, "server-error");
+    return createJSONErrorResponseToClient(res, 200, 405, "server-error");
   }
   finally {
     client.release();

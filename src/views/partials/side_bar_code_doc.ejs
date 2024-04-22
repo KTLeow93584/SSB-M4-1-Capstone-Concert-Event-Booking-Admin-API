@@ -1,30 +1,60 @@
 <%- 
-    include('side_bar', { list:
-        [
+    include('side_bar', {
+        elements: [
             {
-                url: '/api_doc/auth_user',
-                name: 'Authentications (Consumers)',
-                iconURL: `/img/apis/auth_user_icon.svg`
+                name: 'Overview',
+                url: '/api_doc',
+                icon_url: '',
+                sub_elements: []
             },
             {
-                url: '/api_doc/events',
-                name: 'Event Bookings',
-                iconURL: `/img/apis/event_icon.svg`
+                name: 'User App APIs',
+                url: null,
+                icon_url: '/img/apis/auth_user_icon.svg',
+                sub_elements: [
+                    {
+                        name: 'Authentications',
+                        url: '/api_doc/auth_user',
+                        icon_url: '/img/apis/auth_user_icon.svg'
+                    },
+                    {
+                        name: 'Event Bookings',
+                        url: '/api_doc/events_user',
+                        icon_url: '/img/apis/event_icon.svg'
+                    },
+                    {
+                        name: 'Profile',
+                        url: '/api_doc/profile',
+                        icon_url: '/img/apis/profile_icon.svg'
+                    },
+                    {
+                        name: 'Venue',
+                        url: '/api_doc/venue',
+                        icon_url: '/img/apis/venue.svg'
+                    },
+                ]
             },
             {
-                url: '/api_doc/profile',
-                name: 'Profile',
-                iconURL: `/img/apis/profile_icon.svg`
-            },
-            {
-                url: '/api_doc/auth_admin',
-                name: 'Authentication (Administrators)',
-                iconURL: `/img/apis/auth_admin_icon.svg`
-            },
-            {
-                url: '/api_doc/admin_poll',
-                name: 'Administrative Data Poll',
-                iconURL: `/img/apis/admin_poll_icon.svg`
+                name: 'Admin Web APIs',
+                url: null,
+                icon_url: '/img/apis/auth_user_icon.svg',
+                sub_elements: [
+                    {
+                        name: 'Authentications',
+                        url: '/api_doc/auth_admin',
+                        icon_url: '/img/apis/auth_user_icon.svg'
+                    },
+                    {
+                        name: 'Accounts',
+                        url: '/api_doc/accounts_admin',
+                        icon_url: '/img/apis/event_icon.svg'
+                    },
+                    {
+                        name: 'Event Bookings',
+                        url: '/api_doc/events_admin',
+                        icon_url: '/img/apis/event_icon.svg'
+                    }
+                ]
             }
         ]
     }) 

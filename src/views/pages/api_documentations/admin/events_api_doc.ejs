@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Concert Event Hosting Services (Republic of Rock) API Documentation</title>
+    <link rel="stylesheet" href="/css/style-tailwind.css" type="text/css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="w-full flex flex-col min-h-screen">
+        <%- include('../../../partials/nav_panel', { has_side_bar: true }) %>
+        <%- include('../../../partials/side_bar_code_doc') %>
+
+        <div class="sm:w-7/12 md:w-8/12 lg:w-9/12 xl:w-10/12 p-4 sm:ml-64 flex-1">
+            <div class="mt-16">
+                <p class="text-2xl font-bold">
+                    Category: Events (Staff/Admin)
+                </p>
+                <div class="mt-5 mx-8">
+                    <div class="w-full">
+                        <ul class="list-disc list-inside">
+                            <!-- Create a New Event -->
+                            <%- include('../../../partials/code_doc_section', {
+                                title: 'New Event Endpoint',
+                                description: '',
+                                endpoint_url: 'web/api/event',
+                                endpoint_type: 'POST',
+                                endpoint_parameters: {
+                                    event_name: '...',
+                                    organiser_id: 1,
+                                    staff_id: 2,
+                                    venue_id: 3,
+                                    event_start_datetime: 'Date',
+                                    event_end_datetime: 'Date',
+                                    promo_image: '...',
+                                    remarks: '... (Optional)'
+                                },
+                                endpoint_success_responses: [
+                                    {
+                                        name: 'Success.',
+                                        description: '',
+                                        json_response: `
+                                            event: {
+                                                event_id: 1,
+                                            }
+                                        `
+                                    }
+                                ], 
+                                endpoint_failed_responses: [
+                                    {
+                                        name: 'Incomplete Forms.' ,
+                                        description: 'Cetain fields (marked with *) were empty on submission. (E.g. Event Name, Promotional Image, etc.)',
+                                        code_message: '404',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'incomplete-form-field',
+                                                    code: 404
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Invalid Start & End Date.' ,
+                                        description: 'The end date submitted is before the start date.',
+                                        code_message: '405',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'invalid-start-end-date',
+                                                    code: 405
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Unauthorized Event Creation.' ,
+                                        description: 'Staffs are not permitted to create an event on behalf of other staffs. This should not happen, if under normal circumstances if using the client-side creation form.',
+                                        code_message: '405',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'not-authorized-to-create-event-for-other-staffs',
+                                                    code: 405
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Server Codebase Error.' ,
+                                        description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
+                                        code_message: '500',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'server-error',
+                                                    code: 500
+                                                }
+                                            }
+                                        `
+                                    }
+                                ]
+                            }) %>
+                            <!-- Modifying an Existing Event API -->
+                            <%- include('../../../partials/code_doc_section', {
+                                title: 'Modifying an Existing Event Endpoint',
+                                description: '',
+                                endpoint_url: 'web/api/event',
+                                endpoint_type: 'PUT',
+                                endpoint_parameters: {
+                                    event_id: 1,
+                                    event_name: '... (Optional, Unchanged if null)',
+                                    staff_id: '2 (Optional, Unchanged if null)',
+                                    venue_id: '3 (Optional, Unchanged if null)',
+                                    event_start_datetime: 'Date (Optional, Unchanged if null)',
+                                    event_end_datetime: 'Date (Optional, Unchanged if null)',
+                                    promo_image: 'INSERT_URL_HERE (Optional, Unchanged if null)',
+                                    remarks: '... (Optional, Unchanged if null)'
+                                },
+                                endpoint_success_responses: [
+                                    {
+                                        name: 'Success.',
+                                        description: '',
+                                        json_response: `
+                                            event: {
+                                                event_id: 1
+                                            }
+                                        `
+                                    }
+                                ],
+                                endpoint_failed_responses: [
+                                    {
+                                        name: 'Invalid Staff.' ,
+                                        description: 'Event\'s Staff ID does not correspond to any user in the database. This should not occur under normal circumstances. It highlights a flaw in the database logic should it occur.',
+                                        code_message: '405',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'invalid-staff',
+                                                    code: 405
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Unauthorized to Modify Event.' ,
+                                        description: 'Staffs are not authorized to modify events that they are presently not in charge. Only Administrators hold the authorization to do so.',
+                                        code_message: '405',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'not-authorized-to-modify-event',
+                                                    code: 405
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Event Not Found.' ,
+                                        description: '',
+                                        code_message: '404',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'no-event-found',
+                                                    code: 404
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Server Codebase Error.' ,
+                                        description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
+                                        code_message: '500',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'server-error',
+                                                    code: 500
+                                                }
+                                            }
+                                        `
+                                    }
+                                ]
+                            }) %>
+                            <!-- Deleting an Existing Event API -->
+                            <%- include('../../../partials/code_doc_section', {
+                                title: 'Delete Existing Event Endpoint',
+                                description: '',
+                                endpoint_url: 'web/api/event',
+                                endpoint_type: 'DELETE',
+                                endpoint_parameters: {
+                                    event_id: 1
+                                },
+                                endpoint_success_responses: [
+                                    {
+                                        name: 'Success.',
+                                        description: '',
+                                        json_response: `
+                                            message: 'Event successfully deleted.' OR 'Event already deleted or does not exist.',
+                                            event: {
+                                                event_id: 1
+                                            }
+                                        `
+                                    }
+                                ],
+                                endpoint_failed_responses: [
+                                    {
+                                        name: 'Event Not Found',
+                                        description: '', 
+                                        code_message: '404',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'no-event-found',
+                                                    code: 404
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Unauthorized to Delete Event.',
+                                        description: 'Staffs are not authorized to delete events he/she is not in charge of. Only Administrators can do so.',
+                                        code_message: '405',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'not-authorized-to-delete-event',
+                                                    code: 405
+                                                }
+                                            }
+                                        `
+                                    },
+                                    {
+                                        name: 'Server Codebase Error.',
+                                        description: 'Read through the compiler\'s logs, then check the codebase to identify where this error is coming from.',
+                                        code_message: '500',
+                                        json_response: `
+                                            {
+                                                success: false,
+                                                error: {
+                                                    status: 'server-error',
+                                                    code: 500
+                                                }
+                                            }
+                                        `
+                                    }
+                                ]
+                            }) %>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <%- include('../../../partials/footer') %>
+    </div>
+    <!-- ======================================= -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+</body>
+
+</html>

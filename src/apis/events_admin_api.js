@@ -15,13 +15,10 @@ const router = express.Router();
 // =======================================
 // Middlewares.
 const {
-  isUserAuthorized
-} = require("../services/middlewares-server.js");
-
-const {
+  isUserAuthorized,
   createJSONSuccessResponseToClient,
   createJSONErrorResponseToClient
-} = require("../services/middlewares-client.js");
+} = require("../services/middlewares.js");
 // =======================================
 // Create a New Event Endpoint.
 router.post("/web/api/event", [isUserAuthorized], async (req, res) => {
@@ -82,9 +79,6 @@ router.post("/web/api/event", [isUserAuthorized], async (req, res) => {
       promo_image, remarks
     ]);
 
-    if (query.rows.length <= 0)
-      return createJSONErrorResponseToClient(res, 200, 404, "no-event-found");
-
     const newEvent = query.rows[0];
     // =======================
     // Send new data back to client.
@@ -118,9 +112,6 @@ router.put("/web/api/event", [isUserAuthorized], async (req, res) => {
 
     // Debug
     //console.log("[Edit Event Info] Body.", req.body);
-    
-    if (!event_name || !organiser_id || !venue_id || !event_start_datetime || !event_end_datetime || !promo_image)
-        return createJSONErrorResponseToClient(res, 200, 404, "incomplete-form-field");
     // =======================
     let query = await client.query("SELECT id, organiser_id, staff_id from events where id = $1;", [event_id]);
     const event = query.rows[0];
@@ -253,7 +244,7 @@ router.delete("/web/api/event", [isUserAuthorized], async (req, res) => {
     const activeUser = query.rows[0];
     
     if (existingEvent.staff_id !== req.session.user.id && existingEvent.staff_role_permission_level >= activeUser.role_permission_level)
-      return createJSONErrorResponseToClient(res, 200, 404, "not-authorized-to-delete-event");
+      return createJSONErrorResponseToClient(res, 200, 405, "not-authorized-to-delete-event");
     // ========================
     // Track Event Table Modification Records
     const deleteEventQuery = await client.query('DELETE FROM events WHERE id = $1;', [event_id]);
@@ -277,57 +268,6 @@ router.delete("/web/api/event", [isUserAuthorized], async (req, res) => {
         event_id: parseInt(event_id)
       }
     });
-  }
-  catch (error) {
-    // Debug
-    console.error(error.stack);
-
-    return createJSONErrorResponseToClient(res, 200, 500, "server-error");
-  }
-  finally {
-    client.release();
-  }
-});
-
-// Approve an existing Event Endpoint. (Must come from staff/admin)
-router.post("/web/api/event/approve", [isUserAuthorized], async (req, res) => {
-  const client = await pool.connect();
-
-  try {
-    const { event_id } = req.body;
-    const email = req.email;
-
-    // Retrieve the user id from email for next query.
-    let sqlQuery = `
-      SELECT
-        id,
-        role 
-      FROM users 
-      WHERE email = $1
-    `;
-    let query = await client.query(sqlQuery, [email]);
-    
-    const user = query.rows[0];
-    const user_id = user.id;
-
-    if (user.role === "user")
-      return createJSONErrorResponseToClient(res, 200, 405, "incorrect-role");
-
-    // Get existing user
-    const selectEventQuery = await client.query(
-      "SELECT * from events where id = $1",
-      [event_id]
-    );
-    if (selectEventQuery.rows.length <= 0)
-      return createJSONErrorResponseToClient(res, 200, 404, "event-not-found");
-
-    query = await client.query(
-      "UPDATE events SET staff_id = $1 WHERE id = $2",
-      [user_id, event_id]
-    );
-
-    // Send new data back to client.
-    return createJSONSuccessResponseToClient(res, 201);
   }
   catch (error) {
     // Debug

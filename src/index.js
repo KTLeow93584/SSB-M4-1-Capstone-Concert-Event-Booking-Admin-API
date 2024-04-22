@@ -65,8 +65,6 @@ app.use(session({
     }
 }));
 
-const { isUserAuthorized } = require('./services/middlewares-server');
-
 // Custom middleware to update maxAge of session cookie if not expired
 app.use((req, res, next) => {
     if (req.session && req.session.cookie && req.session.cookie.expires) {
@@ -119,21 +117,18 @@ const telesignServices = require("./services/phone_verify_telesign.js");
 //telesignServices.verifyPhoneNumberIdentity("60175845732");
 //telesignServices.sendOTPSMSToPhoneNumber("60175845732");
 // =======================================
-// APIs (Staffs/Admins/Developers - Back-End Domain)
-
-// Authentication Endpoints. (Login/Registration/etc.)
-const { router: adminAuthAPIRouter } = require("./apis/auth_admin_api.js");
-app.use("/", adminAuthAPIRouter);
-
-// Data Pooling Endpoints.
-const { router: adminPollAPIRouter } = require("./apis/admin_data_poll_api.js");
-app.use("/", adminPollAPIRouter);
-// =================
 // APIs (End-Users)
 
 // Authentication Endpoints. (Login/Registration/etc.)
 const userAuthAPIRouter = require("./apis/auth_user_api.js");
 app.use("/", userAuthAPIRouter);
+
+const { router: adminAuthAPIRouter } = require("./apis/auth_admin_api.js");
+app.use("/", adminAuthAPIRouter);
+
+// Account-related Endpoints. (Creation/Modification/Deletion.)
+const adminAccountAPIRouter = require("./apis/account_admin_api.js");
+app.use("/", adminAccountAPIRouter);
 
 // Profile Endpoints.
 const profileAPIRouter = require("./apis/profile_api.js");
@@ -143,238 +138,32 @@ app.use("/", profileAPIRouter);
 const userEventAPIRouter = require("./apis/events_user_api.js");
 app.use("/", userEventAPIRouter);
 
-// Event Endpoints.
 const adminEventAPIRouter = require("./apis/events_admin_api.js");
 app.use("/", adminEventAPIRouter);
-
-// Data Polling Endpoints.
-const userPollAPIRouter = require("./apis/user_data_poll_api.js");
-app.use("/", userPollAPIRouter);
 
 // Venue Endpoints.
 const venueAPIRouter = require("./apis/venues_api.js");
 app.use("/", venueAPIRouter);
 // =======================================
-// Global Middlewares (Used in every API call)
-app.use((req, res, next) => {
-  req.page_response = {};
-
-  req.page_response = {
-    form_data: req.session.formData ?? null,
-    info_message: req.session.infoMessage ?? null,
-    error_message: req.session.errorMessage ?? null
-  }
-  
-  // Clear the data from session after displaying it.
-  delete req.session.formData;
-  delete req.session.infoMessage;
-  delete req.session.errorMessage;
-
-  next();
-});
+// Admin - Authentication Web Endpoints.
+const adminAuthRouter = require("./web-routes/auth.js");
+app.use("/", adminAuthRouter);
 // =======================================
-// Web Pages.
-app.get("/", async (req, res) => {
-  res.redirect(req.session.user ? "/dashboard" : "/login");
-});
-
-app.get("/login", async (req, res) => {
-  res.render("./pages/login", {
-    form_api_url: "/web/api/login",
-    user: req.session && req.session.user ? req.session.user : null,
-    ...req.page_response
-  });
-});
-
-const { verifyPasswordRequestToken, verifyAccountEmail } = require("./apis/auth_admin_api.js");
-app.get("/verify/:token", async (req, res) => {
-  const result = await verifyAccountEmail(req, res);
-
-  return res.render("./pages/email_verify", {
-    is_valid: result.success,
-    is_already_verified: result.is_already_verified
-  });
-});
-
-app.get("/password/forget", async (req, res) => {
-  res.render("./pages/password_forget", {
-      form_api_url: "/web/api/password/forget",
-      user: req.session && req.session.user ? req.session.user : null,
-    ...req.page_response
-  });
-});
-
-app.get("/password/reset/:token", async (req, res) => {
-  const result = await verifyPasswordRequestToken(req, res, req.params["token"]);
-
-  res.render("./pages/password_reset", {
-    form_api_url: `/web/api/password/reset/${req.params["token"]}`,
-    is_valid: result,
-    user: req.session && req.session.user ? req.session.user : null,
-    ...req.page_response
-  });
-});
-
-app.get("/dashboard", isUserAuthorized, async (req, res) => {
-  res.render("./pages/dashboard", {
-    user: req.session.user
-  });
-});
-
-app.get("/profile", isUserAuthorized, async (req, res) => {
-  res.render("./pages/profile", {
-    user: req.session.user
-  });
-});
-// ==================
-// Admin - User Pages
-const {
-  getUsers, getUserInfo, getCountriesInfo,
-  getEvents, getEventInfo, getVenuesInfo, getOrganisersInfo, getStaffsInfo
-} = require("./apis/admin_data_poll_api.js");
-
-app.get("/users", isUserAuthorized, async (req, res) => {
-  const result = await getUsers(req, res);
-
-  // Debug
-  //console.log("Result.", result);
-  
-  res.render("./pages/users/index", {
-    user: req.session && req.session.user ? req.session.user : null,
-    ...result
-  });
-});
-
-app.get("/user/view/:id", isUserAuthorized, async (req, res) => {
-  const result = await getUserInfo(req, res);
-
-  // Debug
-  //console.log("Result.", result);
-  
-  res.render("./pages/users/view", { 
-    user: req.session && req.session.user ? req.session.user : null,
-    target_user: { ...result.user }
-  });
-});
-
-app.get("/user/create", isUserAuthorized, async (req, res) => {
-  const countries = await getCountriesInfo(req, res);
-
-  res.render("./pages/users/create", { 
-    user: req.session && req.session.user ? req.session.user : null,
-    countries: countries
-  });
-});
-
-app.get("/user/edit/:id", isUserAuthorized, async (req, res) => {
-  const result = await getUserInfo(req, res);
-
-  // Must be above target user's permission level, if not SELF.
-  if (req.session.user.role_permission_level <= result.user.role_permission_level && 
-    req.session.user.id !== result.user.id)
-    return res.redirect("/unauthorized");
-  
-  // Debug
-  //console.log("Result.", result);
-  
-  res.render("./pages/users/edit", { 
-    user: req.session && req.session.user ? req.session.user : null,
-    target_user: { ...result.user },
-    countries: [ ...result.countries ]
-  });
-});
-// ==================
-// Admin - Event Pages
-app.get("/events", isUserAuthorized, async (req, res) => {
-  const result = await getEvents(req, res);
-
-  // Debug
-  //console.log("Result.", result);
-
-  res.render("./pages/events/index", {
-    user: req.session && req.session.user ? req.session.user : null,
-    ...result
-  });
-});
-
-app.get("/event/view/:id", isUserAuthorized, async (req, res) => {
-  const result = await getEventInfo(req, res);
-
-  // Debug
-  //console.log("Result.", result);
-  
-  res.render("./pages/events/view", { 
-    user: req.session && req.session.user ? req.session.user : null,
-    target_event: { ...result.event }
-  });
-});
-
-app.get("/event/create", isUserAuthorized, async (req, res) => {
-  const venues = await getVenuesInfo(req, res);
-  const organisers = await getOrganisersInfo(req, res);
-  const staffs = await getStaffsInfo(req, res);
-
-  res.render("./pages/events/create", { 
-    user: req.session && req.session.user ? req.session.user : null,
-    venues: venues,
-    organisers: organisers,
-    staffs: staffs,
-  });
-});
-
-app.get("/event/edit/:id", isUserAuthorized, async (req, res) => {
-  const result = await getEventInfo(req, res);
-
-  // Must be above target user's permission level, if not SELF.
-  if (req.session.user.role_permission_level <= result.staff_role_permission_level && req.session.user.id !== result.event.staff_id)
-    return res.redirect("/unauthorized");
-  
-  // Debug
-  //console.log("Result.", result);
-  
-  res.render("./pages/events/edit", { 
-    user: req.session && req.session.user ? req.session.user : null,
-    target_event: { ...result.event },
-    venues: [ ...result.venues ],
-    users: [...result.users ]
-  });
-});
-// ==================
-app.get("/api_doc", isUserAuthorized, async (req, res) => {
-  res.render("./pages/api_documentations/index", {
-    user: req.session && req.session.user ? req.session.user : null
-  });
-});
-
-app.get("/api_doc/auth_user", isUserAuthorized, async (req, res) => {
-  res.render("pages/api_documentations/authentication_users_api_doc", {
-    user: req.session && req.session.user ? req.session.user : null
-  });
-});
-
-app.get("/api_doc/events", isUserAuthorized, async (req, res) => {
-  res.render("pages/api_documentations/events_api_doc", {
-    user: req.session && req.session.user ? req.session.user : null
-  });
-});
-
-app.get("/api_doc/profile", isUserAuthorized, async (req, res) => {
-  res.render("pages/api_documentations/profile_api_doc", {
-    user: req.session && req.session.user ? req.session.user : null
-  });
-});
-
-app.get("/api_doc/auth_admin", isUserAuthorized, async (req, res) => {
-  res.render("pages/api_documentations/authentication_admins_api_doc", {
-    user: req.session && req.session.user ? req.session.user : null
-  });
-});
-
-app.get("/api_doc/admin_poll", isUserAuthorized, async (req, res) => {
-  res.render("pages/api_documentations/admin_poll_api_doc", {
-    user: req.session && req.session.user ? req.session.user : null
-  });
-});
+// Admin - Navigation Web Endpoints.
+const adminNavRouter = require("./web-routes/nav.js");
+app.use("/", adminNavRouter);
+// =======================================
+// Admin - User Web Endpoints.
+const adminUserRouter = require("./web-routes/users.js");
+app.use("/", adminUserRouter);
+// =======================================
+// Admin - Event Web Endpoints.
+const adminEventRouter = require("./web-routes/events.js");
+app.use("/", adminEventRouter);
+// =======================================
+// Documentation Web Endpoints.
+const apiDocRouter = require("./web-routes/api_doc.js");
+app.use("/", apiDocRouter);
 // =======================================
 // Error Pages.
 app.use("/server-error", (req, res) => {

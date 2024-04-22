@@ -204,6 +204,14 @@ const authenticateFirebaseJWToken = async function(req, res, next) {
   }
 }
 // =======================================
+// Check if user (and role) is authorized to view the page.
+function isUserAuthorized(req, res, next) {
+  if (req.session.user)
+      return next();
+  else
+      res.redirect('/login');
+}
+// =======================================
 function createJSONSuccessResponseToClient(res, statusCode, clientDataObj = null) {
   return res.status(statusCode).json({
     success: true,
@@ -224,5 +232,6 @@ function createJSONErrorResponseToClient(res, statusCode, errorStatus, errorCode
 // =======================================
 module.exports = {
   authenticateCustomJWToken, authenticateFirebaseJWToken,
-  createJSONSuccessResponseToClient, createJSONErrorResponseToClient
+  createJSONSuccessResponseToClient, createJSONErrorResponseToClient,
+  isUserAuthorized
 };
