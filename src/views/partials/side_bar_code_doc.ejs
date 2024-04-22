@@ -1,58 +1,69 @@
 <%- 
     include('side_bar', {
+        active_key: active_key,
         elements: [
             {
                 name: 'Overview',
+                key: 'overview',
                 url: '/api_doc',
-                icon_url: '',
+                icon_url: '/img/apis/overview_icon.svg',
                 sub_elements: []
             },
             {
                 name: 'User App APIs',
+                key: 'api_users',
                 url: null,
-                icon_url: '/img/apis/auth_user_icon.svg',
+                icon_url: '/img/apis/category_user_icon.svg',
                 sub_elements: [
                     {
-                        name: 'Authentications',
+                        name: 'Authentication',
+                        key: 'authentication_user',
                         url: '/api_doc/auth_user',
                         icon_url: '/img/apis/auth_user_icon.svg'
                     },
                     {
-                        name: 'Event Bookings',
+                        name: 'Events',
+                        key: 'events_user',
                         url: '/api_doc/events_user',
-                        icon_url: '/img/apis/event_icon.svg'
+                        icon_url: '/img/apis/events_user_icon.svg'
                     },
                     {
                         name: 'Profile',
+                        key: 'profile_user',
                         url: '/api_doc/profile',
-                        icon_url: '/img/apis/profile_icon.svg'
+                        icon_url: '/img/apis/profile_user_icon.svg'
                     },
                     {
                         name: 'Venue',
+                        key: 'venue_user',
                         url: '/api_doc/venue',
-                        icon_url: '/img/apis/venue.svg'
+                        icon_url: '/img/apis/venue_user_icon.svg'
                     },
                 ]
             },
             {
                 name: 'Admin Web APIs',
+                key: 'api_admin',
                 url: null,
-                icon_url: '/img/apis/auth_user_icon.svg',
+                icon_url: '/img/apis/category_admin_icon.svg',
                 sub_elements: [
                     {
-                        name: 'Authentications',
+                        name: 'Authentication',
+                        key: 'authentication_admin',
                         url: '/api_doc/auth_admin',
-                        icon_url: '/img/apis/auth_user_icon.svg'
+                        icon_url: '/img/apis/auth_admin_icon.svg'
                     },
                     {
                         name: 'Accounts',
+                        key: 'accounts_admin',
                         url: '/api_doc/accounts_admin',
-                        icon_url: '/img/apis/event_icon.svg'
+                        icon_url: '/img/apis/accounts_admin_icon.svg'
                     },
                     {
-                        name: 'Event Bookings',
+                        name: 'Events',
+                        key: 'events_admin',
                         url: '/api_doc/events_admin',
-                        icon_url: '/img/apis/event_icon.svg'
+                        icon_url: '/img/apis/events_admin_icon.svg'
                     }
                 ]
             }

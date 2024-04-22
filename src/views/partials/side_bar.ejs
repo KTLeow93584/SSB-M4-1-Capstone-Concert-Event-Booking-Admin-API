@@ -10,13 +10,19 @@
                 <li class="flex flex-col justify-center my-0 py-0">
                     <% if (element.url) { %>
                         <a href="<%= element.url %>"
-                            class="flex items-center justify-start w-full p-2 text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                            class="<%= (element.key === active_key) ? 'bg-blue-300' : 'bg-white' %> flex items-center justify-start w-full p-2 text-gray-900 transition duration-75 rounded-lg grouphover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                            <% if (element.icon_url) { %>
+                                <img src="<%= element.icon_url %>" class="h-5 me-2">
+                            <% } %>
                             <span class="text-left">
                                 <%= element.name %>
                             </span>
                         </a>
                     <% } else { %>
                         <p class="flex items-center justify-start w-full p-2 text-gray-900 transition duration-75 rounded-lg group dark:text-white">
+                            <% if (element.icon_url) { %>
+                                <img src="<%= element.icon_url %>" class="h-5 me-2">
+                            <% } %>
                             <span class="text-left">
                                 <%= element.name %>
                             </span>
@@ -30,8 +36,8 @@
                             %>
                                 <li>
                                     <a href="<%= sub_element.url %>"
-                                        class="flex items-center justify-start w-full p-2 text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
-                                        <% if (sub_element.icon_url !== null) { %>
+                                        class="<%= (sub_element.key === active_key) ? 'bg-blue-300' : 'bg-white' %> flex items-center justify-start w-full p-2 text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                                        <% if (sub_element.icon_url) { %>
                                             <img src="<%= sub_element.icon_url %>" class="h-7">
                                         <% } %>
                                         <span class="ms-3">

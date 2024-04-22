@@ -10,7 +10,7 @@
 <body>
     <div class="w-full flex flex-col min-h-screen">
         <%- include('../../partials/nav_panel', { has_side_bar: true }) %>
-        <%- include('../../partials/side_bar_code_doc') %>
+        <%- include('../../partials/side_bar_code_doc', { active_key: 'overview' }) %>
         
         <div class="sm:w-7/12 md:w-8/12 lg:w-9/12 xl:w-10/12 p-4 sm:ml-64 flex-1">
             <div class="mt-16">
@@ -75,7 +75,7 @@
                                 We're constantly striving to improve Republic of Rock and improve its usages' conveniences for both our staffs
                                 and end-users. If you have any feedback, suggestions, or feature requests, we'd love to hear from you. Please
                                 don't hesitate to <a href="#" data-tooltip-target="tooltip-contact-us" class="text-blue-500">Contact Us</a> and let us know how we can better
-                                serve your needs..
+                                serve your needs.
                                 <div id="tooltip-contact-us" role="tooltip"
                                     class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
                                     Currently Unavailable as of this Iteration
