@@ -126,13 +126,12 @@ app.use("/", userAuthAPIRouter);
 const { router: adminAuthAPIRouter } = require("./apis/auth_admin_api.js");
 app.use("/", adminAuthAPIRouter);
 
-// Account-related Endpoints. (Creation/Modification/Deletion.)
+// Account-related Endpoints. (Create/Modify/Delete/etc.)
+const userAccountAPIRouter = require("./apis/account_user_api.js");
+app.use("/", userAccountAPIRouter);
+
 const adminAccountAPIRouter = require("./apis/account_admin_api.js");
 app.use("/", adminAccountAPIRouter);
-
-// Profile Endpoints.
-const profileAPIRouter = require("./apis/profile_api.js");
-app.use("/", profileAPIRouter);
 
 // Event Endpoints.
 const userEventAPIRouter = require("./apis/events_user_api.js");

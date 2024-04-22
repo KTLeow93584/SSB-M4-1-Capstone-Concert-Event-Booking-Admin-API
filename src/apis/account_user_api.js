@@ -25,8 +25,9 @@ router.get("/api/profile", [authenticateCustomJWToken, authenticateFirebaseJWTok
     const client = await pool.connect();
 
     try {
+      // ========================
       const email = req.email;
-
+      // ========================
       const userSelect = `
         SELECT
           u.id,
@@ -34,6 +35,8 @@ router.get("/api/profile", [authenticateCustomJWToken, authenticateFirebaseJWTok
           COALESCE(i.name, o.name) AS name,
           u.profile_picture,
           u.country_id,
+          c.name as country_name,
+          c.phone_code as country_code,
           u.contact_number,
           CASE
               WHEN i.user_id IS NOT NULL 
@@ -52,6 +55,7 @@ router.get("/api/profile", [authenticateCustomJWToken, authenticateFirebaseJWTok
         FROM users u
         LEFT JOIN individuals i ON i.user_id = u.id
         LEFT JOIN organizations o ON o.user_id = u.id
+        LEFT JOIN countries c ON c.id = u.country_id
         WHERE email = $1;
       `;
       const userSelectQuery = await client.query(userSelect, [email]);
@@ -65,10 +69,21 @@ router.get("/api/profile", [authenticateCustomJWToken, authenticateFirebaseJWTok
       // User is both an individual and an organization or neither of both, this should not happen.
       if (result.type === 'invalid') 
         return createJSONErrorResponseToClient(res, 200, 404, "invalid-user-format");
-
+      // ========================
+      let countriesSQLQuery = `
+        SELECT
+          id,
+          name,
+          phone_code
+        FROM countries;
+      `;
+      let countriesQuery = await client.query(countriesSQLQuery);
+      const countries = countriesQuery.rows && countriesQuery.rows.length > 0 ? countriesQuery.rows : [];
+      // ========================
       // Send new data back to client.
       return createJSONSuccessResponseToClient(res, 200, {
-        user: { ...result }
+        user: { ...result },
+        countries: countries
       });
     }
     catch (error) {

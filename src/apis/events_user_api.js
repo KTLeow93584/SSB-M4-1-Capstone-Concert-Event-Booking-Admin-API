@@ -26,13 +26,10 @@ router.get("/api/events/user", [authenticateCustomJWToken, authenticateFirebaseJ
     const email = req.email;
 
     // Retrieve the user id from email for next query.
-    let sqlQuery = `SELECT id, role FROM users WHERE email = $1`;
+    let sqlQuery = `SELECT id, email, role FROM users WHERE email = $1`;
     let query = await client.query(sqlQuery, [email]);
     const user = query.rows[0];
     const user_id = user.id;
-
-    if (user.role !== "user")
-      return createJSONErrorResponseToClient(res, 200, 405, "incorrect-role");
 
     const eventResults = await performEventsToDisplayQuery(client, user_id, user.role);
 
@@ -362,9 +359,8 @@ async function performEventsToDisplayQuery(client, user_id, role) {
 
     LEFT JOIN venues v
       ON e.venue_id = v.id
-  ` +
-  (role === "user" ? `WHERE e.organiser_id = $1` : `WHERE e.staff_id = $1`) +
-  `
+
+    WHERE e.organiser_id = $1
     ORDER BY created_at DESC;
   `;
   const events = await client.query(eventQuery, [user_id]);

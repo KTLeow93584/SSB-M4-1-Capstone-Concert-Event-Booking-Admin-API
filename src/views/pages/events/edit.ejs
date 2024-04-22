@@ -63,7 +63,7 @@
                             Staff
                         </label>
                         <select role="button" id="staff" name="staff"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                             <%
                                 for (let i = 0; i < users.length; ++i) {
                                     const user = users[i];
@@ -74,11 +74,23 @@
                             <% } %>
                         </select>
                     <% } else { %>
-                        <label for="staff_disabled" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
-                            Staff
-                        </label>
+                        <div class="flex items-center mb-2">
+                            <label for="staff_disabled" class="block text-md font-bold text-gray-900 dark:text-white me-3">
+                                Staff
+                            </label>
+                            <% if (!target_event.staff_id) { %>
+                                <button id="staff_assign_button"
+                                    onclick="onAssignStaff('<%= user.id %>', '<%= user.name %>', '<%= user.email %>')"
+                                    class="text-white max-w-48 w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                    Assign me to the event!
+                                </button>
+                            <% } %>
+                        </div>
+                        <input type="text" id="staff" name="staff" value=""
+                            class="hidden me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            disabled />
                         <input type="text" id="staff_disabled" name="staff_disabled"
-                            value="<%= (target_event.staff_name + ' (' + target_event.staff_email + ')') %>"
+                            value="<%= target_event.staff_id ? (target_event.staff_name + ' (' + target_event.staff_email + ')') : 'Unassigned' %>"
                             class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             disabled />
                     <% } %>
@@ -258,6 +270,8 @@
         // =====================
         // Staff HTML element.
         const staff = document.getElementById('staff');
+        const staff_display = document.getElementById('staff_disabled');
+        const staff_assign_button = document.getElementById('staff_assign_button');
         // =====================
         // Profile Picture Display HTML elements.
         const display_lg = document.getElementById('display_profile_lg');
@@ -311,6 +325,12 @@
         // Remarks HTML element.
         const remarks = document.getElementById('remarks');
         // =====================
+        function onAssignStaff(user_id, user_name, user_email) {
+            staff.value = user_id;
+            staff_display.value = (user_name + ' (' + user_email + ')');
+            staff_assign_button.classList.add('hidden');
+        }
+        // =====================
         // Submit Changes to server API.
         function onModalAccepted(server_url, context_name, body) {
             // Debug
@@ -323,10 +343,13 @@
                     // Debug
                     //console.log("[Input] Body: ", body);
 
+                    const staff_value = (staff.value.trim().length > 0) ? parseInt(staff.value) : null;
+                    const staff_id = (staff_value !== null && staff_value !== body.staff_id) ? staff_value : null;
+
                     const requestBody = {
                         event_id: body.id,
                         event_name: (event_name.value === body.name) ? null : event_name.value,
-                        staff_id: staff ? ((parseInt(staff.value) === body.staff_id) ? null : parseInt(staff.value)) : null,
+                        staff_id: staff_id,
                         promo_image: (display_profile_lg.src === body.promo_image) ? null : display_profile_lg.src,
                         venue_id: (parseInt(venue.value) === body.venue_id) ? null : parseInt(venue.value),
                         event_start_datetime: (new Date(event_start_datetime.value).getTime() === new Date(body.event_start_datetime).getTime()) ? null : event_start_datetime.value,
@@ -335,9 +358,9 @@
                     };
 
                     // Debug
-                    //console.log("[Output] Body: ", requestBody);
+                    console.log("[Output] Body: ", requestBody);
 
-                    fetch(server_url + '/web/api/event', {
+                    fetch('/web/api/event', {
                         headers: {
                             'Accept': 'application/json',
                             'Content-Type': 'application/json'

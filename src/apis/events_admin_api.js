@@ -144,7 +144,7 @@ router.put("/web/api/event", [isUserAuthorized], async (req, res) => {
     query = await client.query(sqlQuery, [req.session.user.id]);
     let user = query.rows[0];
 
-    if (event.staff_id !== user.id && user.role_permission_level <= staff.role_permission_level)
+    if (event.staff_id && event.staff_id !== user.id && user.role_permission_level <= staff.role_permission_level)
         return createJSONErrorResponseToClient(res, 200, 405, "not-authorized-to-modify-event");
     // =======================
     sqlQuery = `
