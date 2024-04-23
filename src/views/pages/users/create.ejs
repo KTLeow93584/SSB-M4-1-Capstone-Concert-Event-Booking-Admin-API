@@ -126,15 +126,17 @@
                     </label>
                     <select role="button" id="role" name="role"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                        <option value="admin">
-                            Admin
-                        </option>
-                        <option value="staff">
-                            Staff
-                        </option>
-                        <option value="user" "selected">
-                            User
-                        </option>
+                        <% 
+                            for (let i = 0; i < roles.length; ++i) {
+                                const role = roles[i];
+                                if ((user.role_permission_level < 3 && role.clearance_level > 2) || 
+                                    (user.role_permission_level >= 3 && role.clearance_level > user.role_permission_level))
+                                    continue;
+                        %>
+                            <option value="<%= JSON.stringify(role) %>" <%= role.name.toLowerCase() === 'user' ? 'selected' : '' %> >
+                                <%= role.name.substring(0, 1).toUpperCase() + role.name.substring(1).toLowerCase() %>
+                            </option>
+                        <% } %>
                     </select>
                 </div>
                 <!-- ============================== -->
@@ -147,7 +149,7 @@
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                         <%
                             for (let i = 0; i < countries.length; ++i) {
-                                const country=countries[i];
+                                const country = countries[i];
                         %>
                             <option value="<%= JSON.stringify(country) %>"
                                 "<%= (i === 0)  ? 'selected' : '' %>">
@@ -249,6 +251,9 @@
             temp.type = temp.type === "password" ? "text" : "password";
         }
         // =====================
+        // Server URL
+        const server_url = '<%= process.env.SERVER_URL %>';
+        // =====================
         // Profile Picture Display HTML elements.
         const profile_picture = document.getElementById('profile_picture');
 
@@ -338,16 +343,17 @@
         const id_number_label = document.getElementById('id_number_label');
         // =====================
         // Submit Changes to server API.
-        function onModalAccepted(context_name) {
+        function onModalAccepted(context_name, body) {
             // Debug
-            //console.log("[On Modal Prompted - Accept] Context: " + context_name);
+            console.log("[On Modal Prompted - Accept] Context: " + context_name);
 
             switch (context_name) {
                 case 'create_user_modal':
                     // Debug
-                    //console.log("[Input] Body: ", body);
+                    console.log("[Input] Body: ", body);
 
                     const countryObj = JSON.parse(country_name.value);
+                    const roleObj = JSON.parse(role.value);
                     
                     const requestBody = {
                         email: email.value,
@@ -356,16 +362,16 @@
                         name: name.value,
                         profile_picture: (profile_picture.files && profile_picture.files.length > 0) ? display_profile_lg.src : null,
                         country_name: countryObj.name,
-                        role: role.value.toLowerCase(),
+                        role_id: roleObj.id,
                         contact_number: contact_number.value,
                         type: user_type.value,
                         id_number: id_number.value
                     };
 
                     // Debug
-                    //console.log("[Output] Body: ", requestBody);
+                    console.log("[Output] Body: ", requestBody);
 
-                    fetch('/web/api/user/create', {
+                    fetch(server_url + '/web/api/user/create', {
                         headers: {
                             'Accept': 'application/json',
                             'Content-Type': 'application/json'
@@ -376,7 +382,7 @@
                         .then((response) => response.json())
                         .then((result) => {
                             // Debug
-                            //console.log("Result.", result);
+                            console.log("Result.", result);
 
                             if (result.success) {
                                 alert('User successfully created!');

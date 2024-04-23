@@ -63,7 +63,7 @@
                         Staff
                     </label>
                     <%
-                        if (user.role.toLowerCase() === 'admin') {
+                        if (user.role_name.toLowerCase() === 'admin') {
                     %>
                         <select role="button" id="staff" name="staff"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
@@ -215,6 +215,9 @@
     <!-- ======================================= -->
     <script>
         // =====================
+        // Server URL
+        const server_url = '<%= process.env.SERVER_URL %>';
+        // =====================
         // Event Name HTML element.
         const event_name = document.getElementById('name');
         // =====================
@@ -278,7 +281,7 @@
         const remarks = document.getElementById('remarks');
         // =====================
         // Submit Changes to server API.
-        function onModalAccepted(server_url, context_name, body) {
+        function onModalAccepted(context_name, body) {
             // Debug
             //console.log("[On Modal Prompted - Accept] Context: " + context_name);
 

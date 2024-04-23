@@ -87,22 +87,21 @@
                     <label for="role" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
                         Role
                     </label>
-                    <% if (target_user.id === user.id) { %>
+                    <% if (target_user.role_permission_level>= user.role_permission_level && user.role_permission_level <= 2) { %>
                         <input type="text" id="role" aria-label="role_disabled" name="role"
                             class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             value="<%= target_user.role.substring(0, 1).toUpperCase() + target_user.role.substring(1).toLowerCase() %>" disabled>
                     <% } else { %>
                         <select role="button" id="role" name="role"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                            <option value="admin" <%= (target_user.role.toLowerCase() === "admin") ? "selected" : "" %>>
-                                Admin
-                            </option>
-                            <option value="staff" <%= (target_user.role.toLowerCase() === "staff") ? "selected" : "" %>>
-                                Staff
-                            </option>
-                            <option value="user" <%= (target_user.role.toLowerCase() === "user") ? "selected" : "" %>>
-                                User
-                            </option>
+                            <% 
+                                for (let i = 0; i < roles.length; ++i) {
+                                    const role = roles[i];
+                            %>
+                                <option value="<%= JSON.stringify(role) %>" <%= role.name.toLowerCase() === target_user.role_name ? 'selected' : '' %> >
+                                    <%= role.name.substring(0, 1).toUpperCase() + role.name.substring(1).toLowerCase() %>
+                                </option>
+                            <% } %>
                         </select>
                     <% } %>
                 </div>
@@ -202,7 +201,7 @@
                                 id: target_user.id,
                                 email: target_user.email,
                                 name: target_user.name,
-                                role: target_user.role,
+                                role_id: target_user.role_id,
                                 profile_picture: target_user.profile_picture,
                                 country_name: target_user.country_name,
                                 contact_number: target_user.contact_number,
@@ -232,6 +231,9 @@
     </div>
     <!-- ======================================= -->
     <script>
+        // =====================
+        // Server URL
+        const server_url = '<%= process.env.SERVER_URL %>';
         // =====================
         // Profile Picture Display HTML elements.
         const display_lg = document.getElementById('display_profile_lg');
@@ -329,6 +331,7 @@
                     //console.log("[Input] Body: ", body);
 
                     const countryObj = JSON.parse(country_name.value);
+                    const roleObj = JSON.parse(role.value);
 
                     const requestBody = {
                         user_id: body.id,
@@ -336,7 +339,7 @@
                         name: (name.value === body.name && user_type.value === body.type) ? null : name.value,
                         profile_picture: (display_profile_lg.src === body.profile_picture) ? null : display_profile_lg.src,
                         country_name: (countryObj.name === body.country_name) ? null : countryObj.name,
-                        role: (role.value.toLowerCase() === body.role.toLowerCase()) ? null : role.value.toLowerCase(),
+                        role_id: (roleObj.id === body.role_id) ? null : roleObj.id,
                         contact_number: (contact_number.value === body.contact_number) ? null : contact_number.value,
                         type: (user_type.value === body.type) ? null : user_type.value,
                         id_number: (id_number.value === body.identification_number && user_type.value === body.type) ? null : id_number.value
@@ -345,7 +348,7 @@
                     // Debug
                     //console.log("[Output] Body: ", requestBody);
 
-                    fetch('/web/api/user', {
+                    fetch(server_url + '/web/api/user', {
                         headers: {
                             'Accept': 'application/json',
                             'Content-Type': 'application/json'

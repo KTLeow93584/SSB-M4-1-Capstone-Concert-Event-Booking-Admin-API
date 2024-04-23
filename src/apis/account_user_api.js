@@ -56,7 +56,7 @@ router.get("/api/profile", [authenticateCustomJWToken, authenticateFirebaseJWTok
         LEFT JOIN individuals i ON i.user_id = u.id
         LEFT JOIN organizations o ON o.user_id = u.id
         LEFT JOIN countries c ON c.id = u.country_id
-        WHERE email = $1;
+        WHERE u.email = $1;
       `;
       const userSelectQuery = await client.query(userSelect, [email]);
 

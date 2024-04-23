@@ -42,12 +42,12 @@ router.post("/web/api/user/create", [isUserAuthorized], async (req, res) => {
   const client = await pool.connect();
   try {
     // =======================
-    const { email, password, password_confirmation, name, profile_picture, country_name, role, contact_number, type, id_number } = req.body;
+    const { email, password, password_confirmation, name, profile_picture, country_name, role_id, contact_number, type, id_number } = req.body;
 
     // Debug
     //console.log("[Create New User] Body.", req.body);
     
-    if (!email || !password || !password_confirmation || !name || !country_name || !role || !contact_number || !type || !id_number)
+    if (!email || !password || !password_confirmation || !name || !country_name || !role_id || !contact_number || !type || !id_number)
         return createJSONErrorResponseToClient(res, 200, 404, "incomplete-form-field");
     // =======================
     // Mismatched Password with Confirmation.
@@ -73,37 +73,27 @@ router.post("/web/api/user/create", [isUserAuthorized], async (req, res) => {
     // Role Permission Checks (If editing a user that's not myself.)
     const activeUserSQL = `
       SELECT
-        id,
-        role,
-        CASE 
-          WHEN role ILIKE 'Admin' THEN 3
-          WHEN role ILIKE 'Staff' THEN 2
-          WHEN role ILIKE 'User' THEN 1
-          ELSE 0
-        END AS role_permission_level
-      FROM users WHERE id = $1;
+        u.id,
+        r.clearance_level as role_permission_level
+      FROM users u
+      LEFT JOIN roles r ON r.id = u.role_id
+      WHERE u.id = $1;
     `;
     const activeUserQuery = await client.query(activeUserSQL, [req.session.user.id]);
 
+    const roleQuery = await client.query('SELECT * FROM roles WHERE id = $1;', [role_id]);
+    const targetRole = roleQuery.rows[0];
+
     if (activeUserQuery.rows.length <= 0)
       return createJSONErrorResponseToClient(res, 200, 404, "no-user-found");
-
-    let newUserRolePermissions = -1;
-    switch (role.toLowerCase()) {
-      case "admin":
-        newUserRolePermissions = 3;
-        break;
-      case "staff":
-        newUserRolePermissions = 2;
-        break;
-      case "user":
-      default:
-        newUserRolePermissions = 1;
-        break;
-    }
       
     const activeUser = activeUserQuery.rows[0];
-    if (newUserRolePermissions >= activeUser.role_permission_level)
+
+    // If Staff = Can only create Users.
+    // If Admins = Can only create Users, Staffs and fellow Admins.
+    // If Developer = Can create Users, Staffs and Admins.
+    if ((activeUser.role_permission_level < 3 && targetRole.clearance_level >= activeUser.role_permission_level) || 
+      (activeUser.role_permission_level >= 3 && targetRole.clearance_level > activeUser.role_permission_level))
       return createJSONErrorResponseToClient(res, 200, 405, "not-authorized-to-create-a-user-of-higher-role");
     // =======================
     // Get Country ID from input Country Name.
@@ -115,13 +105,13 @@ router.post("/web/api/user/create", [isUserAuthorized], async (req, res) => {
 
     const country_id = countryQuery.rows[0].id;
     // =======================
-    // Insert into users table (Email, Country ID, Contact Number, Password, Role, Profile Picture)
+    // Insert into users table (Email, Country ID, Contact Number, Password, Role ID, Profile Picture)
     const newUserSQL = `
-      INSERT INTO users (email, country_id, contact_number, password, role, profile_picture)
+      INSERT INTO users (email, country_id, contact_number, password, role_id, profile_picture)
       VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING id, email;
     `;
-    const newUserQuery = await client.query(newUserSQL, [email, country_id, contact_number, password, role, profile_picture]);
+    const newUserQuery = await client.query(newUserSQL, [email, country_id, contact_number, password, role_id, profile_picture]);
     // =======================
     const newUser = newUserQuery.rows[0];
     // =======================
@@ -190,7 +180,7 @@ router.post("/web/api/user/create", [isUserAuthorized], async (req, res) => {
 router.put("/web/api/user", [isUserAuthorized], async (req, res) => {
   const client = await pool.connect();
   try {
-    const { user_id, email, name, profile_picture, country_name, role, contact_number, type, id_number } = req.body;
+    const { user_id, email, name, profile_picture, country_name, role_id, contact_number, type, id_number } = req.body;
 
     // Debug
     //console.log("[Edit User Info] Body.", req.body);
@@ -198,13 +188,7 @@ router.put("/web/api/user", [isUserAuthorized], async (req, res) => {
     const selectUserSQL = `
       SELECT
         u.id,
-        u.role,
-        CASE 
-          WHEN role ILIKE 'Admin' THEN 3
-          WHEN role ILIKE 'Staff' THEN 2
-          WHEN role ILIKE 'User' THEN 1
-          ELSE 0
-        END AS role_permission_level,
+        r.clearence_level as role_permission_level,
         CASE
           WHEN i.user_id IS NOT NULL 
             THEN 'Individual'
@@ -215,6 +199,7 @@ router.put("/web/api/user", [isUserAuthorized], async (req, res) => {
       FROM users u
       LEFT JOIN individuals i ON i.user_id = u.id
       LEFT JOIN organizations o ON o.user_id = u.id
+      LEFT JOIN roles r ON r.id = u.role_id
       WHERE u.id = $1;
     `;
     const selectQuery = await client.query(selectUserSQL, [user_id]);
@@ -226,15 +211,11 @@ router.put("/web/api/user", [isUserAuthorized], async (req, res) => {
     if (user_id !== req.session.user.id) {
       const activeUserSQL = `
         SELECT
-          id,
-          role,
-          CASE 
-            WHEN role ILIKE 'Admin' THEN 3
-            WHEN role ILIKE 'Staff' THEN 2
-            WHEN role ILIKE 'User' THEN 1
-            ELSE 0
-          END AS role_permission_level
-        FROM users WHERE id = $1;
+          u.id,
+          r.clearance_level as role_permission_level,
+        FROM users u
+        LEFT JOIN roles r ON r.id = u.role_id
+        WHERE u.id = $1;
       `;
       const activeUserQuery = await client.query(activeUserSQL, [req.session.user.id]);
 
@@ -246,7 +227,7 @@ router.put("/web/api/user", [isUserAuthorized], async (req, res) => {
         return createJSONErrorResponseToClient(res, 200, 405, "not-authorized-to-modify-user-account");
     }
     else {
-      if (role)
+      if (role_id)
         return createJSONErrorResponseToClient(res, 200, 405, "not-authorized-to-change-self-role");
     }
     // =======================
@@ -272,11 +253,11 @@ router.put("/web/api/user", [isUserAuthorized], async (req, res) => {
         email = COALESCE($1, email),
         profile_picture = COALESCE($2, profile_picture),
         country_id = COALESCE($3, country_id),
-        role = COALESCE($4, role),
+        role_id = COALESCE($4, role_id),
         contact_number = COALESCE($5, contact_number)
       WHERE id = $6;
     `;
-    const editUserQuery = await client.query(editUserSQL, [email, profile_picture, country_id, role, contact_number, user_id]);
+    const editUserQuery = await client.query(editUserSQL, [email, profile_picture, country_id, role_id, contact_number, user_id]);
     // =======================
     // Modify User Type (Along with new name and identification number)
     if (type && selectedUser.type !== type) {

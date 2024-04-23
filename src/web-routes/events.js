@@ -164,12 +164,7 @@ async function getEvents(req, res) {
         us.email as staff_email,
         COALESCE(usi.name, uso.name) AS staff_name,
         v.address as venue_address,
-        CASE 
-            WHEN us.role ILIKE 'Admin' THEN 3
-            WHEN us.role ILIKE 'Staff' THEN 2
-            WHEN us.role ILIKE 'User' THEN 1
-            ELSE 0
-        END AS staff_role_permission_level,
+        r.clearance_level as staff_role_permission_level,
         e.created_at as event_creation_date
       FROM events e
 
@@ -178,6 +173,7 @@ async function getEvents(req, res) {
       LEFT JOIN organizations uoo ON uoo.user_id = uo.id
 
       LEFT JOIN users us ON e.staff_id = us.id
+      LEFT JOIN roles r ON r.id = us.role_id
       LEFT JOIN individuals usi ON usi.user_id = us.id
       LEFT JOIN organizations uso ON uso.user_id = us.id
 
@@ -299,11 +295,13 @@ async function getEventInfo(req, res) {
       SELECT
         u.id,
         u.email,
-        COALESCE(i.name, o.name) as name
+        COALESCE(i.name, o.name) as name,
+        r.clearance_level as role_permission_level
       FROM users u
       LEFT JOIN individuals i ON i.user_id = u.id
       LEFT JOIN organizations o ON o.user_id = u.id
-      WHERE u.role != 'user';
+      LEFT JOIN roles r ON r.id = u.role_id
+      WHERE r.clearance_level > 1;
     `;
     query = await client.query(sqlQuery);
     const users = query.rows && query.rows.length > 0 ? query.rows : [];
@@ -334,11 +332,13 @@ async function getOrganisersInfo(req, res) {
       SELECT
         u.id,
         u.email,
-        COALESCE(i.name, o.name) as name
+        COALESCE(i.name, o.name) as name,
+        r.clearance_level as role_permission_level
       FROM users u
       LEFT JOIN individuals i ON i.user_id = u.id
       LEFT JOIN organizations o ON o.user_id = u.id
-      WHERE u.role = 'user';
+      LEFT JOIN roles r on r.id = u.role_id
+      WHERE r.clearance_level = 1;
     `;
     query = await client.query(sqlQuery);
     const organisers = query.rows && query.rows.length > 0 ? query.rows : [];
@@ -369,11 +369,13 @@ async function getStaffsInfo(req, res) {
       SELECT
         u.id,
         u.email,
-        COALESCE(i.name, o.name) as name
+        COALESCE(i.name, o.name) as name,
+        r.clearance_level as role_permission_level
       FROM users u
       LEFT JOIN individuals i ON i.user_id = u.id
       LEFT JOIN organizations o ON o.user_id = u.id
-      WHERE u.role != 'user';
+      LEFT JOIN roles r on r.id = u.role_id
+      WHERE r.clearance_level > 1;
     `;
     query = await client.query(sqlQuery);
     const staffs = query.rows && query.rows.length > 0 ? query.rows : [];

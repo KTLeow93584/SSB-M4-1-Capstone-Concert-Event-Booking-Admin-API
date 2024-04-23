@@ -51,28 +51,33 @@ router.get("/user/view/:id", isUserAuthorized, async (req, res) => {
 
 router.get("/user/create", isUserAuthorized, async (req, res) => {
   const countries = await getCountriesInfo(req, res);
+  const roles = await getAvailableRoles(req, res);
 
   res.render("./pages/users/create", { 
     user: req.session && req.session.user ? req.session.user : null,
-    countries: countries
+    countries: countries,
+    roles: roles
   });
 });
 
 router.get("/user/edit/:id", isUserAuthorized, async (req, res) => {
   const result = await getUserInfo(req, res);
 
-  // Must be above target user's permission level, if not SELF.
-  if (req.session.user.role_permission_level <= result.user.role_permission_level && 
-    req.session.user.id !== result.user.id)
-    return res.redirect("/unauthorized");
-  
   // Debug
   //console.log("Result.", result);
+
+  // Must be above target user's permission level, if not SELF.
+  if (req.session.user.role_permission_level <= result.user.role_permission_level && req.session.user.id !== result.user.id)
+    return res.redirect("/unauthorized");
+  
+  const countries = await getCountriesInfo(req, res);
+  const roles = await getAvailableRoles(req, res);
   
   res.render("./pages/users/edit", { 
     user: req.session && req.session.user ? req.session.user : null,
     target_user: { ...result.user },
-    countries: [ ...result.countries ]
+    countries: countries,
+    roles: roles
   });
 });
 // =======================================
@@ -165,13 +170,8 @@ async function getUsers(req, res) {
         u.profile_picture,
         u.country_id,
         u.contact_number,
-        u.role,
-        CASE 
-          WHEN u.role ILIKE 'Admin' THEN 3
-          WHEN u.role ILIKE 'Staff' THEN 2
-          WHEN u.role ILIKE 'User' THEN 1
-          ELSE 0
-        END AS role_permission_level,
+        r.name as role_name,
+        r.clearance_level as role_permission_level,
         c.name AS country_name,
         c.phone_code AS country_code,
         CASE
@@ -198,6 +198,7 @@ async function getUsers(req, res) {
       LEFT JOIN organizations o ON o.user_id = u.id
       LEFT JOIN user_verifications uv ON uv.user_id = u.id
       LEFT JOIN countries c ON u.country_id = c.id
+      LEFT JOIN roles r ON r.id = u.role_id
       ${filterSubQuery}
       ORDER BY u.id ASC
       LIMIT $8 OFFSET $9;
@@ -273,13 +274,8 @@ async function getUserInfo(req, res) {
         u.profile_picture,
         u.country_id,
         u.contact_number,
-        u.role,
-        CASE 
-            WHEN u.role ILIKE 'Admin' THEN 3
-            WHEN u.role ILIKE 'Staff' THEN 2
-            WHEN u.role ILIKE 'User' THEN 1
-            ELSE 0
-        END AS role_permission_level,
+        r.name as role_name,
+        r.clearance_level as role_permission_level,
         c.name AS country_name,
         c.phone_code AS country_code,
         CASE
@@ -307,6 +303,7 @@ async function getUserInfo(req, res) {
       LEFT JOIN organizations o ON o.user_id = u.id
       LEFT JOIN user_verifications uv ON uv.user_id = u.id
       LEFT JOIN countries c ON u.country_id = c.id
+      LEFT JOIN roles r ON r.id = u.role_id
       WHERE
         u.id = $1;
     `;
@@ -314,17 +311,7 @@ async function getUserInfo(req, res) {
     let query = await client.query(sqlQuery, [id]);
     const user = query.rows && query.rows.length > 0 ? query.rows[0] : null;
     // =====================================
-    sqlQuery = `
-      SELECT
-        id,
-        name,
-        phone_code
-      FROM countries;
-    `;
-    query = await client.query(sqlQuery);
-    const countries = query.rows && query.rows.length > 0 ? query.rows : [];
-    // =====================================
-    const result = { user: user, countries: countries };
+    const result = { user: user };
 
     // Debug
     //console.log("[Poll User Info] Result.", result);
@@ -362,6 +349,39 @@ async function getCountriesInfo(req, res) {
     const countries = query.rows && query.rows.length > 0 ? query.rows : [];
     
     return countries;
+  }
+  catch (error) {
+    // Debug
+    console.error(error.stack);
+
+    return {
+      error: { 
+        type: "server-error", 
+        message: "Something went wrong with the server"
+      }
+    };
+  }
+  finally {
+    client.release();
+  }
+}
+
+async function getAvailableRoles(req, res) {
+  const client = await pool.connect();
+
+  try {
+    let sqlQuery = `
+      SELECT
+        id,
+        name,
+        clearance_level
+      FROM roles;
+    `;
+
+    let query = await client.query(sqlQuery,);
+    const roles = query.rows && query.rows.length > 0 ? query.rows : [];
+    
+    return roles;
   }
   catch (error) {
     // Debug

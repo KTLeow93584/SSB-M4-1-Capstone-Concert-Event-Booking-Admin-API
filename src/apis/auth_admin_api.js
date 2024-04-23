@@ -63,19 +63,15 @@ router.post("/web/api/login", async (req, res) => {
         COALESCE(i.name, o.name) AS name,
         u.email, 
         u.password,
-        u.role,
-        CASE 
-            WHEN u.role ILIKE 'Admin' THEN 3
-            WHEN u.role ILIKE 'Staff' THEN 2
-            WHEN u.role ILIKE 'User' THEN 1
-            ELSE 0
-        END AS role_permission_level,
+        r.name as role_name,
+        r.clearance_level as role_permission_level,
         u.social_provider,
         u.profile_picture
       FROM users u
       LEFT JOIN individuals i ON i.user_id = u.id
       LEFT JOIN organizations o ON o.user_id = u.id
-      WHERE email = $1;
+      LEFT JOIN roles r ON r.id = u.role_id
+      WHERE u.email = $1;
     `;
 
     // Logged in with email and password
@@ -94,7 +90,8 @@ router.post("/web/api/login", async (req, res) => {
     if (!passwordIsValid) 
       return createJSONErrorResponseToClient(res, 200, 401, "incorrect-credentials");
 
-    if (user.role === "user") 
+    // Staff Clearance Level = 2 and above.
+    if (user.role_permission_level < 2) 
       return createJSONErrorResponseToClient(res, 200, 401, "incorrect-credentials");
 
     const { refreshToken } = createNewCustomAccessToken(user);
@@ -103,7 +100,7 @@ router.post("/web/api/login", async (req, res) => {
     query = `
       UPDATE users SET
         refresh_token = $1
-      WHERE EMAIL = $2;
+      WHERE email = $2;
     `;
     await client.query(query, [ refreshToken, body.email ]);
 
@@ -165,7 +162,7 @@ router.post("/web/api/password/forget", async (req, res) => {
       FROM users u
       LEFT JOIN individuals i ON i.user_id = u.id
       LEFT JOIN organizations o ON o.user_id = u.id
-      WHERE email = $1;
+      WHERE u.email = $1;
     `;
 
     const userQuery = await client.query(query, [email]);

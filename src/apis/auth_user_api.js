@@ -114,8 +114,8 @@ router.post("/api/register", async (req, res) => {
     const hashedPassword = await generateNewPasswordHash(body.password);
 
     insertNewUser = `
-      INSERT INTO users (email, country_id, contact_number, password, social_provider, social_uid, role) 
-      VALUES ($1, $2, $3, $4, $5, $6, 'user') 
+      INSERT INTO users (email, country_id, contact_number, password, social_provider, social_uid, role_id) 
+      VALUES ($1, $2, $3, $4, $5, $6, 4) 
       RETURNING *;
     `;
 
@@ -275,7 +275,7 @@ router.post("/api/login", async (req, res) => {
         UPDATE users SET
           device_id = $1,
           refresh_token = $2
-        WHERE EMAIL = $3;
+        WHERE email = $3;
       `;
       await client.query(query, [deviceID, refreshToken, body.email]);
     }
@@ -560,7 +560,7 @@ router.get("/api/whoami", [authenticateCustomJWToken, authenticateFirebaseJWToke
       FROM users u
       LEFT JOIN individuals i ON i.user_id = u.id
       LEFT JOIN organizations o ON o.user_id = u.id
-      WHERE email = $1
+      WHERE u.email = $1
     `;
     const query = await client.query(sqlQuery, [email]);
 

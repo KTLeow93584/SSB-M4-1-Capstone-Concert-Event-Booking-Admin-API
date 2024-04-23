@@ -26,12 +26,18 @@ router.get("/api/events/user", [authenticateCustomJWToken, authenticateFirebaseJ
     const email = req.email;
 
     // Retrieve the user id from email for next query.
-    let sqlQuery = `SELECT id, email, role FROM users WHERE email = $1`;
+    let sqlQuery = `
+      SELECT
+        id,
+        email
+      FROM users
+      WHERE email = $1;
+    `;
     let query = await client.query(sqlQuery, [email]);
     const user = query.rows[0];
     const user_id = user.id;
 
-    const eventResults = await performEventsToDisplayQuery(client, user_id, user.role);
+    const eventResults = await performEventsToDisplayQuery(client, user_id);
 
     if (eventResults.rowCount > 0)
       return createJSONSuccessResponseToClient(res, 200, { events: eventResults.rows });
@@ -62,7 +68,13 @@ router.get("/api/event/:id", [authenticateCustomJWToken, authenticateFirebaseJWT
     const event_id = req.params.id;
 
     // Retrieve the user id from email for next query.
-    let sqlQuery = `SELECT id, role FROM users WHERE email = $1`;
+    let sqlQuery = `
+      SELECT
+        id,
+        email
+      FROM users
+      WHERE email = $1
+    `;
     let query = await client.query(sqlQuery, [email]);
     const user = query.rows[0];
     const user_id = user.id;
@@ -117,7 +129,7 @@ router.post("/api/event", [authenticateCustomJWToken, authenticateFirebaseJWToke
       FROM users u
       LEFT JOIN individuals i ON i.user_id = u.id
       LEFT JOIN organizations o ON o.user_id = u.id
-      WHERE email = $1;
+      WHERE u.email = $1;
     `;
     const existingUserQuery = await client.query(existingUserSelect, [email]);
 
@@ -273,14 +285,14 @@ router.delete("/api/event", [authenticateCustomJWToken, authenticateFirebaseJWTo
     const user_id = query.rows[0].id;
 
     const selectEventQuery = await client.query(
-      "SELECT * FROM events WHERE id = $1 AND organiser_id = $2",
+      'SELECT * FROM events WHERE id = $1 AND organiser_id = $2',
       [event_id, user_id]
     );
     if (selectEventQuery.rows.length <= 0)
       return createJSONErrorResponseToClient(res, 200, 404, "no-event-found");
 
     const deleteEventQuery = await client.query(
-      "DELETE FROM events WHERE id = $1 AND organiser_id = $2;",
+      'DELETE FROM events WHERE id = $1 AND organiser_id = $2;',
       [event_id, user_id]
     );
 
@@ -308,7 +320,7 @@ router.delete("/api/event", [authenticateCustomJWToken, authenticateFirebaseJWTo
   }
 });
 // =======================================
-async function performEventsToDisplayQuery(client, user_id, role) {
+async function performEventsToDisplayQuery(client, user_id) {
   const eventQuery = `
     SELECT
       e.id as event_id,

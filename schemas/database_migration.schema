@@ -60,6 +60,11 @@ BEGIN
     DROP TABLE users;
   END IF;
   
+  -- Roles Table
+  IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = table_catalog_name AND table_name = 'roles') THEN
+    DROP TABLE roles;
+  END IF;
+  
   -- Countries Table
   IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_catalog = table_catalog_name AND table_name = 'countries') THEN
     DROP TABLE countries;
@@ -75,6 +80,14 @@ BEGIN
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
   );
   
+  -- Roles Table
+  CREATE TABLE roles (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(32),
+    clearance_level INT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  );
+  
   -- Users Table
   CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -82,14 +95,15 @@ BEGIN
     country_id INT,
     contact_number VARCHAR(16),
     password VARCHAR(64),
-    role VARCHAR(8),
+    role_id INT,
     social_provider VARCHAR(32),
     social_uid VARCHAR(32),
     device_id VARCHAR(64),
     refresh_token TEXT,
     profile_picture TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (country_id) REFERENCES countries(id) ON DELETE SET NULL
+    FOREIGN KEY (country_id) REFERENCES countries(id) ON DELETE SET NULL,
+    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL
   );
   
   -- User Sessions Table (Create only if using PostgreSQL from Neon to store session)
@@ -208,142 +222,160 @@ BEGIN
   INSERT INTO countries (name, abbreviation, phone_code) VALUES('Japan', 'JP', '81');
   INSERT INTO countries (name, abbreviation, phone_code) VALUES('Taiwan', 'TW', '886');
   
+  -- Create the 'roles' table.
+  INSERT INTO roles (name, clearance_level) VALUES('Developer', 999);
+  INSERT INTO roles (name, clearance_level) VALUES('Admin', 3);
+  INSERT INTO roles (name, clearance_level) VALUES('Staff', 2);
+  INSERT INTO roles (name, clearance_level) VALUES('User', 1);
+  
   -- Create dummy users in the 'users' table.
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('admin@admin.com', 1, '111111111', crypt('123456', gen_salt('bf')), 'admin', null);
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider) 
+  VALUES('admin@admin.com', 1, '111111111', crypt('123456', gen_salt('bf')), 2, null);
   
   INSERT INTO individuals (user_id, name, nric) 
-  VALUES(1, 'admin nimda', '990505051111');
+  VALUES(1, 'Admin 1', '990505051111');
   
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider, profile_picture) 
-  VALUES('staff1@staff.com', 1, '111111111', crypt('111111', gen_salt('bf')), 'staff', null, 'https://ik.imagekit.io/projkazcade/staff.webp');
-  
-  INSERT INTO individuals (user_id, name, nric) 
-  VALUES(2, 'Dummy Staff 1', '910505052222');
-  
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider, profile_picture) 
-  VALUES('staff2@staff.com', 2, '111111111', crypt('222222', gen_salt('bf')), 'staff', null, 'https://ik.imagekit.io/projkazcade/staff.webp');
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider) 
+  VALUES('admin2@admin.com', 1, '22222222', crypt('123456', gen_salt('bf')), 2, null);
   
   INSERT INTO individuals (user_id, name, nric) 
-  VALUES(3, 'Dummy Staff 2', '920505052222');
+  VALUES(2, 'Admin 2', '990505051112');
   
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider, profile_picture) 
-  VALUES('staff3@staff.com', 3, '111111111', crypt('333333', gen_salt('bf')), 'staff', null, 'https://ik.imagekit.io/projkazcade/staff.webp');
-  
-  INSERT INTO individuals (user_id, name, nric) 
-  VALUES(4, 'Dummy Staff 3', '930505052222');
-  
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('user1@user.com', 1, '111111111', crypt('111', gen_salt('bf')), 'user', null);
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider) 
+  VALUES('admin3@admin.com', 1, '33333333', crypt('123456', gen_salt('bf')), 2, null);
   
   INSERT INTO individuals (user_id, name, nric) 
-  VALUES(5, 'Dummy User 1', '910505053333');
+  VALUES(3, 'Admin 3', '990505051113');
   
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('user2@user.com', 1, '111111111', crypt('222', gen_salt('bf')), 'user', null);
-  
-  INSERT INTO individuals (user_id, name, nric) 
-  VALUES(6, 'Dummy User 2', '920505053333');
-  
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('user3@user.com', 2, '111111111', crypt('333', gen_salt('bf')), 'user', null);
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider, profile_picture) 
+  VALUES('staff1@staff.com', 1, '111111111', crypt('111111', gen_salt('bf')), 3, null, 'https://ik.imagekit.io/projkazcade/staff.webp');
   
   INSERT INTO individuals (user_id, name, nric) 
-  VALUES(7, 'Dummy User 3', '930505053333');
+  VALUES(4, 'Dummy Staff 1', '910505052222');
   
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('user4@user.com', 2, '111111111', crypt('444', gen_salt('bf')), 'user', null);
-  
-  INSERT INTO individuals (user_id, name, nric) 
-  VALUES(8, 'Dummy User 4', '940505053333');
-  
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('user5@user.com', 3, '111111111', crypt('555', gen_salt('bf')), 'user', null);
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider, profile_picture) 
+  VALUES('staff2@staff.com', 2, '111111111', crypt('222222', gen_salt('bf')), 3, null, 'https://ik.imagekit.io/projkazcade/staff.webp');
   
   INSERT INTO individuals (user_id, name, nric) 
-  VALUES(9, 'Dummy User 5', '950505053333');
+  VALUES(5, 'Dummy Staff 2', '920505052222');
   
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('user6@user.com', 3, '111111111', crypt('666', gen_salt('bf')), 'user', null);
-  
-  INSERT INTO individuals (user_id, name, nric) 
-  VALUES(10, 'Dummy User 6', '960505053333');
-  
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('user7@user.com', 4, '111111111', crypt('777', gen_salt('bf')), 'user', null);
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider, profile_picture) 
+  VALUES('staff3@staff.com', 3, '111111111', crypt('333333', gen_salt('bf')), 3, null, 'https://ik.imagekit.io/projkazcade/staff.webp');
   
   INSERT INTO individuals (user_id, name, nric) 
-  VALUES(11, 'Dummy User 7', '970505053333');
+  VALUES(6, 'Dummy Staff 3', '930505052222');
   
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('user8@user.com', 4, '111111111', crypt('888', gen_salt('bf')), 'user', null);
-  
-  INSERT INTO individuals (user_id, name, nric) 
-  VALUES(12, 'Dummy User 8', '970505053223');
-  
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('user9@user.com', 4, '111111111', crypt('999', gen_salt('bf')), 'user', null);
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider) 
+  VALUES('user1@user.com', 1, '111111111', crypt('111', gen_salt('bf')), 4, null);
   
   INSERT INTO individuals (user_id, name, nric) 
-  VALUES(13, 'Dummy User 9', '980505053553');
+  VALUES(7, 'Dummy User 1', '910505053333');
   
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('user10@user.com', 4, '111111111', crypt('101010', gen_salt('bf')), 'user', null);
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider) 
+  VALUES('user2@user.com', 1, '111111111', crypt('222', gen_salt('bf')), 4, null);
   
   INSERT INTO individuals (user_id, name, nric) 
-  VALUES(14, 'Dummy User 10', '980505056663');
+  VALUES(8, 'Dummy User 2', '920505053333');
   
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('org1@user.com', 5, '111111111', crypt('111111', gen_salt('bf')), 'user', null);
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider) 
+  VALUES('user3@user.com', 2, '111111111', crypt('333', gen_salt('bf')), 4, null);
+  
+  INSERT INTO individuals (user_id, name, nric) 
+  VALUES(9, 'Dummy User 3', '930505053333');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider) 
+  VALUES('user4@user.com', 2, '111111111', crypt('444', gen_salt('bf')), 4, null);
+  
+  INSERT INTO individuals (user_id, name, nric) 
+  VALUES(10, 'Dummy User 4', '940505053333');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider) 
+  VALUES('user5@user.com', 3, '111111111', crypt('555', gen_salt('bf')), 4, null);
+  
+  INSERT INTO individuals (user_id, name, nric) 
+  VALUES(11, 'Dummy User 5', '950505053333');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider) 
+  VALUES('user6@user.com', 3, '111111111', crypt('666', gen_salt('bf')), 4, null);
+  
+  INSERT INTO individuals (user_id, name, nric) 
+  VALUES(12, 'Dummy User 6', '960505053333');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider) 
+  VALUES('user7@user.com', 4, '111111111', crypt('777', gen_salt('bf')), 4, null);
+  
+  INSERT INTO individuals (user_id, name, nric) 
+  VALUES(13, 'Dummy User 7', '970505053333');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider) 
+  VALUES('user8@user.com', 4, '111111111', crypt('888', gen_salt('bf')), 4, null);
+  
+  INSERT INTO individuals (user_id, name, nric) 
+  VALUES(14, 'Dummy User 8', '970505053223');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider) 
+  VALUES('user9@user.com', 4, '111111111', crypt('999', gen_salt('bf')), 4, null);
+  
+  INSERT INTO individuals (user_id, name, nric) 
+  VALUES(15, 'Dummy User 9', '980505053553');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider) 
+  VALUES('user10@user.com', 4, '111111111', crypt('101010', gen_salt('bf')), 4, null);
+  
+  INSERT INTO individuals (user_id, name, nric) 
+  VALUES(16, 'Dummy User 10', '980505056663');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider) 
+  VALUES('org1@user.com', 5, '111111111', crypt('111111', gen_salt('bf')), 4, null);
   
   INSERT INTO organizations (user_id, name, registration_number) 
-  VALUES(15, 'Dummy Org 1', '111155553');
+  VALUES(17, 'Dummy Org 1', '111155553');
   
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('org2@user.com', 3, '111111111', crypt('222222', gen_salt('bf')), 'user', null);
-  
-  INSERT INTO organizations (user_id, name, registration_number) 
-  VALUES(16, 'Dummy Org 2', '123456789');
-  
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('org3@user.com', 2, '111111111', crypt('333333', gen_salt('bf')), 'user', null);
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider) 
+  VALUES('org2@user.com', 3, '111111111', crypt('222222', gen_salt('bf')), 4, null);
   
   INSERT INTO organizations (user_id, name, registration_number) 
-  VALUES(17, 'Dummy Org 3', '444666555');
+  VALUES(18, 'Dummy Org 2', '123456789');
   
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('org4@user.com', 6, '111111111', crypt('444444', gen_salt('bf')), 'user', null);
-  
-  INSERT INTO organizations (user_id, name, registration_number) 
-  VALUES(18, 'Dummy Org 4', '987654321');
-  
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('org5@user.com', 2, '111111111', crypt('555555', gen_salt('bf')), 'user', null);
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider) 
+  VALUES('org3@user.com', 2, '111111111', crypt('333333', gen_salt('bf')), 4, null);
   
   INSERT INTO organizations (user_id, name, registration_number) 
-  VALUES(19, 'Dummy Org 5', '222333222');
+  VALUES(19, 'Dummy Org 3', '444666555');
   
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('org6@user.com', 6, '111111111', crypt('666666', gen_salt('bf')), 'user', null);
-  
-  INSERT INTO organizations (user_id, name, registration_number) 
-  VALUES(20, 'Dummy Org 6', '333222333');
-  
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('org7@user.com', 2, '111111111', crypt('777777', gen_salt('bf')), 'user', null);
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider) 
+  VALUES('org4@user.com', 6, '111111111', crypt('444444', gen_salt('bf')), 4, null);
   
   INSERT INTO organizations (user_id, name, registration_number) 
-  VALUES(21, 'Dummy Org 7', '444553241');
+  VALUES(20, 'Dummy Org 4', '987654321');
   
-  INSERT INTO users (email, country_id, contact_number, password, role, social_provider) 
-  VALUES('org8@user.com', 6, '111111111', crypt('888888', gen_salt('bf')), 'user', null);
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider) 
+  VALUES('org5@user.com', 2, '111111111', crypt('555555', gen_salt('bf')), 4, null);
   
   INSERT INTO organizations (user_id, name, registration_number) 
-  VALUES(22, 'Dummy Org 8', '654314432');
+  VALUES(21, 'Dummy Org 5', '222333222');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider) 
+  VALUES('org6@user.com', 6, '111111111', crypt('666666', gen_salt('bf')), 4, null);
+  
+  INSERT INTO organizations (user_id, name, registration_number) 
+  VALUES(22, 'Dummy Org 6', '333222333');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider) 
+  VALUES('org7@user.com', 2, '111111111', crypt('777777', gen_salt('bf')), 4, null);
+  
+  INSERT INTO organizations (user_id, name, registration_number) 
+  VALUES(23, 'Dummy Org 7', '444553241');
+  
+  INSERT INTO users (email, country_id, contact_number, password, role_id, social_provider) 
+  VALUES('org8@user.com', 6, '111111111', crypt('888888', gen_salt('bf')), 4, null);
+  
+  INSERT INTO organizations (user_id, name, registration_number) 
+  VALUES(24, 'Dummy Org 8', '654314432');
   
   -- Automatically verify some users.
   INSERT INTO user_verifications (user_id, token, verified_at) 
-  VALUES(1, uuid_in(md5(random()::text || random()::text)::cstring), NULL);
+  VALUES(1, uuid_in(md5(random()::text || random()::text)::cstring), NOW());
   
   INSERT INTO user_verifications (user_id, token, verified_at) 
   VALUES(2, uuid_in(md5(random()::text || random()::text)::cstring), NOW());
@@ -361,7 +393,7 @@ BEGIN
   VALUES(6, uuid_in(md5(random()::text || random()::text)::cstring), NOW());
   
   INSERT INTO user_verifications (user_id, token, verified_at) 
-  VALUES(7, uuid_in(md5(random()::text || random()::text)::cstring), NULL);
+  VALUES(7, uuid_in(md5(random()::text || random()::text)::cstring), NOW());
   
   INSERT INTO user_verifications (user_id, token, verified_at) 
   VALUES(8, uuid_in(md5(random()::text || random()::text)::cstring), NOW());
@@ -407,6 +439,12 @@ BEGIN
   
   INSERT INTO user_verifications (user_id, token, verified_at) 
   VALUES(22, uuid_in(md5(random()::text || random()::text)::cstring), NOW());
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(23, uuid_in(md5(random()::text || random()::text)::cstring), NULL);
+  
+  INSERT INTO user_verifications (user_id, token, verified_at) 
+  VALUES(24, uuid_in(md5(random()::text || random()::text)::cstring), NOW());
     
   -- Create dummy venues.
   INSERT INTO venues (address, state, catalogues, remarks) 
@@ -436,7 +474,7 @@ BEGIN
   
   -- Create events.
   INSERT INTO events (organiser_id, staff_id, venue_id, name, promo_image, remarks, scheduled_at_start, scheduled_at_end) 
-  VALUES(5, 2, 1, 
+  VALUES(5, 4, 1, 
   'One Ok Rock Luxury Disease', 
   'https://pbs.twimg.com/media/F0WiDJ5aUAAZCL4?format=jpg&name=small', 
   '', 
@@ -444,7 +482,7 @@ BEGIN
   '2024-03-30 23:30:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore');
   
   INSERT INTO events (organiser_id, staff_id, venue_id, name, promo_image, remarks, scheduled_at_start, scheduled_at_end) 
-  VALUES(6, 3, 2, 
+  VALUES(6, 5, 2, 
   'Abingdon Boys School Live Concert', 
   'https://static.wikia.nocookie.net/tokyo-magnitude-8-point-zero/images/2/2e/Abingdon_Boys_School.jpg',
   '', 
@@ -452,7 +490,7 @@ BEGIN
   '2024-03-31 22:15:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore');
   
   INSERT INTO events (organiser_id, staff_id, venue_id, name, promo_image, remarks, scheduled_at_start, scheduled_at_end) 
-  VALUES(7, 4, 3, 
+  VALUES(7, 6, 3, 
   'Fear and Loathing in Last Vegas Concert 2024', 
   'https://i.pinimg.com/originals/d0/f5/83/d0f5833a3f352fdf02c7f77d8a9dc603.jpg', 
   '',
@@ -460,7 +498,7 @@ BEGIN
   '2024-03-31 18:30:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore');
   
   INSERT INTO events (organiser_id, staff_id, venue_id, name, promo_image, remarks, scheduled_at_start, scheduled_at_end) 
-  VALUES(8, 2, 1, 
+  VALUES(8, 4, 1, 
   'Dummy Band Maid Concert 2024', 
   'https://www.moshimoshi-nippon.jp/wp/wp-content/uploads/2020/07/62e7e706ec9dd790c218595d732882b2.jpg', 
   '',
@@ -468,7 +506,7 @@ BEGIN
   '2024-04-04 14:00:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore');
   
   INSERT INTO events (organiser_id, staff_id, venue_id, name, promo_image, remarks, scheduled_at_start, scheduled_at_end) 
-  VALUES(9, 3, 2, 
+  VALUES(9, 5, 2, 
   'Dummy Concert 1', 
   'https://media.istockphoto.com/id/1330424071/photo/large-group-of-people-at-a-concert-party.jpg?s=612x612&w=0&k=20&c=LwdiOCBqbfICjQ3j5AzwyugxmfkbyfL3StKEQhtx4hE=', 
   '',
@@ -476,7 +514,7 @@ BEGIN
   '2024-04-29 18:00:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore');
   
   INSERT INTO events (organiser_id, staff_id, venue_id, name, promo_image, remarks, scheduled_at_start, scheduled_at_end) 
-  VALUES(10, 4, 3, 
+  VALUES(10, 6, 3, 
   'Dummy Concert 2', 
   'https://media.istockphoto.com/id/1330424071/photo/large-group-of-people-at-a-concert-party.jpg?s=612x612&w=0&k=20&c=LwdiOCBqbfICjQ3j5AzwyugxmfkbyfL3StKEQhtx4hE=', 
   '',
@@ -484,7 +522,7 @@ BEGIN
   '2024-04-29 18:00:00'::TIMESTAMP AT TIME ZONE 'Asia/Singapore');
   
   INSERT INTO events (organiser_id, staff_id, venue_id, name, promo_image, remarks, scheduled_at_start, scheduled_at_end) 
-  VALUES(11, 2, 1, 
+  VALUES(11, 4, 1, 
   'Dummy Concert 3', 
   'https://img.freepik.com/free-photo/excited-audience-watching-confetti-fireworks-having-fun-music-festival-night-copy-space_637285-559.jpg', 
   '',
@@ -492,7 +530,7 @@ BEGIN
   '2024-04-30 20:00:00'::TIMESTAMP::TIMESTAMP::TIMESTAMP AT TIME ZONE 'Asia/Singapore' AT TIME ZONE 'Asia/Singapore');
   
   INSERT INTO events (organiser_id, staff_id, venue_id, name, promo_image, remarks, scheduled_at_start, scheduled_at_end) 
-  VALUES(12, 3, 1, 
+  VALUES(12, 5, 1, 
   'Dummy Concert 4', 
   'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuR9D1l8AaB3iL7ftTXsgOAeGkXBzfr6qYIoqdBDKB2A&s', 
   '',

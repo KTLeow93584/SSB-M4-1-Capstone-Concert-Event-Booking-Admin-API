@@ -50,21 +50,18 @@ router.post("/web/api/event", [isUserAuthorized], async (req, res) => {
     // Staff on own event = Permitted.
     let sqlQuery = `
       SELECT
-        id,
-        role,
-        CASE 
-          WHEN role ILIKE 'Admin' THEN 3
-          WHEN role ILIKE 'Staff' THEN 2
-          WHEN role ILIKE 'User' THEN 1
-          ELSE 0
-        END AS role_permission_level
-      FROM users WHERE id = $1;
+        u.id,
+        r.clearance_level as role_permission_level
+      FROM users u
+      LEFT JOIN roles r ON r.id = u.role_id
+      WHERE u.id = $1;
     `;
 
     // User Requesting the Modifications
     query = await client.query(sqlQuery, [req.session.user.id]);
     let user = query.rows[0];
 
+    // Administrator Clearance Level = 3 and above.
     if (staff_id !== user.id && user.role_permission_level < 3)
         return createJSONErrorResponseToClient(res, 200, 405, "not-authorized-to-create-event-for-other-staffs");
     // =======================
@@ -123,15 +120,11 @@ router.put("/web/api/event", [isUserAuthorized], async (req, res) => {
     // Staff on own event = Permitted.
     let sqlQuery = `
       SELECT
-        id,
-        role,
-        CASE 
-          WHEN role ILIKE 'Admin' THEN 3
-          WHEN role ILIKE 'Staff' THEN 2
-          WHEN role ILIKE 'User' THEN 1
-          ELSE 0
-        END AS role_permission_level
-      FROM users WHERE id = $1;
+        u.id,
+        r.clearance_level as role_permission_level
+      FROM users u
+      LEFT JOIN roles r ON r.id = u.role_id
+      WHERE u.id = $1;
     `;
 
     // Staff
@@ -210,14 +203,10 @@ router.delete("/web/api/event", [isUserAuthorized], async (req, res) => {
     let sqlQuery = `
       SELECT
         e.id,
-        CASE 
-            WHEN us.role ILIKE 'Admin' THEN 3
-            WHEN us.role ILIKE 'Staff' THEN 2
-            WHEN us.role ILIKE 'User' THEN 1
-            ELSE 0
-        END AS staff_role_permission_level
+        r.clearance_level as staff_role_permission_level
       FROM events e
       LEFT JOIN users us ON e.staff_id = us.id
+      LEFT JOIN roles r ON r.id = us.role_id
       WHERE e.id = $1;
     `;
     let query = await client.query(sqlQuery, [event_id]);
@@ -228,16 +217,12 @@ router.delete("/web/api/event", [isUserAuthorized], async (req, res) => {
 
     // Get active user's role.
     sqlQuery = `
-        SELECT
-            id,
-            CASE 
-                WHEN role ILIKE 'Admin' THEN 3
-                WHEN role ILIKE 'Staff' THEN 2
-                WHEN role ILIKE 'User' THEN 1
-                ELSE 0
-            END AS role_permission_level
-        FROM users
-        WHERE id = $1;
+      SELECT
+        u.id,
+        r.clearance_level as role_permission_level
+      FROM users u
+      LEFT JOIN roles r ON r.id = u.role_id
+      WHERE e.id = $1;
     `;
     query = await client.query(sqlQuery, [req.session.user.id]);
 

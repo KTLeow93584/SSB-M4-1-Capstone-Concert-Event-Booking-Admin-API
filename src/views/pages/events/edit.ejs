@@ -57,7 +57,7 @@
                 <!-- Staff -->
                 <div class="mb-5">
                     <%
-                        if (user.role.toLowerCase() === 'admin') {
+                        if (user.role_name.toLowerCase() === 'admin') {
                     %>
                         <label for="staff" class="block mb-2 text-md font-bold text-gray-900 dark:text-white">
                             Staff
@@ -262,6 +262,9 @@
     <!-- ======================================= -->
     <script>
         // =====================
+        // Server URL
+        const server_url = '<%= process.env.SERVER_URL %>';
+        // =====================
         // Event Name HTML element.
         const event_name = document.getElementById('name');
         // =====================
@@ -332,7 +335,7 @@
         }
         // =====================
         // Submit Changes to server API.
-        function onModalAccepted(server_url, context_name, body) {
+        function onModalAccepted(context_name, body) {
             // Debug
             //console.log("[On Modal Prompted - Accept] Context: " + context_name);
 
@@ -360,7 +363,7 @@
                     // Debug
                     console.log("[Output] Body: ", requestBody);
 
-                    fetch('/web/api/event', {
+                    fetch(server_url + '/web/api/event', {
                         headers: {
                             'Accept': 'application/json',
                             'Content-Type': 'application/json'

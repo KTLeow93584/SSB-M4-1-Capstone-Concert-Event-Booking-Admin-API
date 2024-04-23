@@ -269,6 +269,10 @@
   </div>
   <!-- ======================================= -->
   <script>
+    // =====================
+    // Server URL
+    const server_url = '<%= process.env.SERVER_URL %>';
+    // =====================
     function onMoveToAccountCreationPage() {
       window.location.href = '/user/create';
     }
@@ -301,7 +305,7 @@
       return '';
     }
 
-    function onModalAccepted(server_url, context_name, body) {
+    function onModalAccepted(context_name, body) {
       // Debug
       //console.log("[On Modal Prompted - Accept] Context: " + context_name);
 
