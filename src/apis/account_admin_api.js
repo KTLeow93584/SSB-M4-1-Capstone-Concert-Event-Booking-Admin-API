@@ -111,7 +111,8 @@ router.post("/web/api/user/create", [isUserAuthorized], async (req, res) => {
       VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING id, email;
     `;
-    const newUserQuery = await client.query(newUserSQL, [email, country_id, contact_number, password, role_id, profile_picture]);
+    const hashedPassword = await generateNewPasswordHash(password);
+    const newUserQuery = await client.query(newUserSQL, [email, country_id, contact_number, hashedPassword, role_id, profile_picture]);
     // =======================
     const newUser = newUserQuery.rows[0];
     // =======================
@@ -376,5 +377,9 @@ router.delete("/web/api/user", [isUserAuthorized], async (req, res) => {
     client.release();
   }
 });
+// =======================================
+async function generateNewPasswordHash(password) {
+  return await bcrypt.hash(password, parseInt(PASSWORD_HASH_AMOUNT));
+}
 // =======================================
 module.exports = router;

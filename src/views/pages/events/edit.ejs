@@ -108,18 +108,17 @@
                     <div class="flex items-center justify-center w-full mt-8">
                         <img src="<%= target_event.promo_image ? target_event.promo_image : '/img/event-default.webp' %>"
                             alt="Profile Picture (Large)" id="display_profile_lg" class="me-3"
-                            style="min-width:96px; min-height:96px; max-width:128px; max-height:128px; width:100%; height:auto;" />
+                            style="max-width:384px; max-height:384px; width:100%; height:auto;" />
                         <img src="<%= target_event.promo_image ? target_event.promo_image : '/img/event-default.webp' %>"
                             alt="Profile Picture (Medium)" id="display_profile_md" class="me-3"
-                            style="min-width:64px; min-height:64px; max-width:96px; max-height:96px; width:100%; height:auto;" />
+                            style="max-width:256px; max-height:256px; width:100%; height:auto;" />
                         <img src="<%= target_event.promo_image ? target_event.promo_image : '/img/event-default.webp' %>"
                             alt="Profile Picture (Small)" id="display_profile_sm"
-                            style="min-width:32px; min-height:32px; max-width:64px; max-height:64px; width:100%; height:auto;" />
+                            style="max-width:128px; max-height:128px; width:100%; height:auto;" />
                     </div>
                     <div class="flex flex-col rounded-lg mb-2 px-2 py-1">
                         <p class="font-bold">Requirements for promotional image setup: </p>
                         <p class="fw-normal">1. Must not exceed 512kb. </p>
-                        <p class="fw-normal">2. Equal Width and Height Dimensions. </p>
                     </div>
                 </div>
                 <!-- ============================== -->
@@ -141,45 +140,32 @@
                     </select>
                 </div>
                 <!-- ============================== -->
+                <!-- Minimum Date for Start & End (Tomorrow from Current Date) -->
+                <%
+                    const now_date = new Date();
+                    now_date.setDate(now_date.getDate() + 1);
+                    const now_date_split = now_date.toISOString().split('T');
+                    const min_date = now_date_split[0] + 'T00:00';
+                %>
+                <!-- ============================== -->
                 <!-- Start/End DateTime (Timestamp) Parse Into Local Timezone ISO String -->
                 <% 
-                    const getTimezoneOffset = date => {
-                        const tzOffset = -date.getTimezoneOffset();
-                        const diff = tzOffset >= 0 ? '+' : '-';
+                    // Input ('date-time' and 'date-time-local') Format: yyyy-mm-ddThh:mm
+                    const toDateTimeInputFormat = (timestamp) => {
+                        const date = new Date(timestamp);
 
-                        const result = diff + (tzOffset / 60).toString().padStart(2, "0") + ':' + (tzOffset % 60).toString().padStart(2, "0");
+                        const result = date.getFullYear() + '-' +
+                            (date.getMonth() + 1).toString().padStart(2, '0') + '-' +
+                            (date.getDate()).toString().padStart(2, '0') + 'T' + 
+                            (date.getHours().toString().padStart(2, '0')) + ':' + 
+                            (date.getMinutes().toString().padStart(2, '0'));
+
+                        // Debug
+                        //console.log("[Edit Mode] Input", [timestamp, date]);
+                        //console.log("[Edit Mode] Result", result);
+
                         return result;
-                    };
-
-                    const toLocalTimezoneISOString = (date) => {
-                        date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
-
-                        return date.getFullYear() +
-                            '-' + (date.getMonth() + 1).toString().padStart(2, "0") +
-                            '-' + (date.getDate()).toString().padStart(2, "0") +
-                            'T' + (date.getHours()).toString().padStart(2, "0") +
-                            ':' + (date.getMinutes()).toString().padStart(2, "0") +
-                            ':' + (date.getSeconds()).toString().padStart(2, "0");
-                    };
-
-                    const getTimeISOString = (input) => {
-                        const time = new Date(input);
-
-                        // Debug
-                        //console.log("Timezone:", time.getTimezoneOffset());
-
-                        // Debug
-                        //console.log("Input:", input);
-
-                        const time_iso = toLocalTimezoneISOString(time);
-
-                        // Debug
-                        //console.log("New Value:", time_iso);
-                        return time_iso;
-                    };
-                    
-                    const start_time = getTimeISOString(target_event.event_start_datetime);
-                    const end_time = getTimeISOString(target_event.event_end_datetime);
+                    }
                 %>
                 <!-- ============================== -->
                 <!-- Scheduled Start Date -->
@@ -188,8 +174,9 @@
                         Start Date & Time*
                     </label>
                     <input type="datetime-local" id="event_start_datetime" name="event_start_datetime"
+                        min="<%= min_date %>"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        value="<%= start_time %>" required />
+                        value="<%= toDateTimeInputFormat(target_event.event_start_datetime) %>" required />
                 </div>
                 <!-- ============================== -->
                 <!-- Scheduled End Date -->
@@ -198,8 +185,9 @@
                         End Date & Time*
                     </label>
                     <input type="datetime-local" id="event_end_datetime" name="event_end_datetime"
+                        min="<%= min_date %>"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        value="<%= end_time %>" required />
+                        value="<%= toDateTimeInputFormat(target_event.event_end_datetime) %>" required />
                 </div>
                 <!-- ============================== -->
                 <!-- Remarks -->
@@ -234,8 +222,8 @@
                                 staff_id: target_event.staff_id,
                                 promo_image: target_event.promo_image,
                                 venue_id: target_event.venue_id,
-                                event_start_datetime: start_time,
-                                event_end_datetime: end_time,
+                                event_start_datetime: toDateTimeInputFormat(target_event.event_start_datetime),
+                                event_end_datetime: toDateTimeInputFormat(target_event.event_end_datetime),
                                 remarks: target_event.remarks
                             }
                         });
@@ -307,7 +295,7 @@
                     // Debug
                     //console.log("[On Profile Picture Upload] Width: " + width + ", Height: " + height);
 
-                    const isValid = width === height & file.size <= 512000;
+                    const isValid = file.size <= 512000;
                     if (isValid) {
                         display_lg.src = url;
                         display_md.src = url;
@@ -355,8 +343,10 @@
                         staff_id: staff_id,
                         promo_image: (display_profile_lg.src === body.promo_image) ? null : display_profile_lg.src,
                         venue_id: (parseInt(venue.value) === body.venue_id) ? null : parseInt(venue.value),
-                        event_start_datetime: (new Date(event_start_datetime.value).getTime() === new Date(body.event_start_datetime).getTime()) ? null : event_start_datetime.value,
-                        event_end_datetime: (new Date(event_end_datetime.value).getTime() === new Date(body.event_end_datetime).getTime()) ? null : event_end_datetime.value,
+                        event_start_datetime: (new Date(event_start_datetime.value).getTime() === new Date(body.event_start_datetime).getTime()) ? null : 
+                            convertTimestampToUTC(event_start_datetime.value),
+                        event_end_datetime: (new Date(event_end_datetime.value).getTime() === new Date(body.event_end_datetime).getTime()) ? null : 
+                            convertTimestampToUTC(event_end_datetime.value),
                         remarks: (remarks.value === body.remarks || remarks.value.trim().length === 0) ? null : remarks.value
                     };
 
@@ -405,6 +395,22 @@
         function onModalRejected(context_name) {
             // Debug
             //console.log("[On Modal Prompted - Reject] Context: " + context_name);
+        }
+
+        function convertTimestampToUTC(timestamp) {
+            const date = new Date(timestamp);
+            const timezoneOffset = date.getTimezoneOffset();
+
+            // Debug
+            //console.log("[Timestamp Conversion - Modify Event] Input + Date.", [timestamp, date]);
+
+            const convertedTimeStampISOStrSplit = date.toISOString().split(':');
+            const convertedTimeStampISOStr = convertedTimeStampISOStrSplit[0] + ':' + convertedTimeStampISOStrSplit[1];
+            
+            // Debug
+            //console.log("[Timestamp Conversion - Modify Event] Output.", [convertedTimeStampISOStr, date, date.toISOString()]);
+
+            return convertedTimeStampISOStr;
         }
         // =====================
     </script>

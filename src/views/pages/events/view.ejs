@@ -73,13 +73,13 @@
                     <div id="promo_image" name="promo_image" class="flex items-center justify-center w-full mt-8">
                         <img src="<%= target_event.promo_image ? target_event.promo_image : '/img/event-default.webp' %>"
                             alt="Profile Picture (Large)" id="display_profile_lg" class="me-3"
-                            style="min-width:96px; min-height:96px; max-width:128px; max-height:128px; width:100%; height:auto;" />
+                            style="max-width:384px; max-height:384px; width:100%; height:auto;" />
                         <img src="<%= target_event.promo_image ? target_event.promo_image : '/img/event-default.webp' %>"
                             alt="Profile Picture (Medium)" id="display_profile_md" class="me-3"
-                            style="min-width:64px; min-height:64px; max-width:96px; max-height:96px; width:100%; height:auto;" />
+                            style="max-width:256px; max-height:256px; width:100%; height:auto;" />
                         <img src="<%= target_event.promo_image ? target_event.promo_image : '/img/event-default.webp' %>"
                             alt="Profile Picture (Small)" id="display_profile_sm"
-                            style="min-width:32px; min-height:32px; max-width:64px; max-height:64px; width:100%; height:auto;" />
+                            style="max-width:128px; max-height:128px; width:100%; height:auto;" />
                     </div>
                 </div>
                 <!-- ============================== -->
@@ -95,44 +95,23 @@
                 </div>
                 <!-- ============================== -->
                 <!-- Start/End DateTime (Timestamp) Parse Into Local Timezone ISO String -->
-                <% 
-                    const getTimezoneOffset = date => {
-                        const tzOffset = -date.getTimezoneOffset();
-                        const diff = tzOffset >= 0 ? '+' : '-';
+                <%
+                    // Input ('date-time' and 'date-time-local') Format: yyyy-mm-ddThh:mm
+                    const toDateTimeInputFormat = (timestamp) => {
+                        const date = new Date(timestamp);
 
-                        const result = diff + (tzOffset / 60).toString().padStart(2, "0") + ':' + (tzOffset % 60).toString().padStart(2, "0");
+                        const result = date.getFullYear() + '-' +
+                            (date.getMonth() + 1).toString().padStart(2, '0') + '-' +
+                            (date.getDate()).toString().padStart(2, '0') + 'T' + 
+                            (date.getHours().toString().padStart(2, '0')) + ':' + 
+                            (date.getMinutes().toString().padStart(2, '0'));
+
+                        // Debug
+                        //console.log("[View Mode] Input", [timestamp, date]);
+                        //console.log("[View Mode] Result", result);
+
                         return result;
-                    };
-
-                    const toLocalTimezoneISOString = (date) => {
-                        date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
-
-                        return date.getFullYear() +
-                            '-' + (date.getMonth() + 1).toString().padStart(2, "0") +
-                            '-' + (date.getDate()).toString().padStart(2, "0") +
-                            'T' + (date.getHours()).toString().padStart(2, "0") +
-                            ':' + (date.getMinutes()).toString().padStart(2, "0") +
-                            ':' + (date.getSeconds()).toString().padStart(2, "0");
-                    };
-
-                    const getTimeISOString = (input) => {
-                        const time = new Date(input);
-
-                        // Debug
-                        //console.log("Timezone:", time.getTimezoneOffset());
-
-                        // Debug
-                        //console.log("Input:", input);
-
-                        const time_iso = toLocalTimezoneISOString(time);
-
-                        // Debug
-                        //console.log("New Value:", time_iso);
-                        return time_iso;
-                    };
-                    
-                    const start_time = getTimeISOString(target_event.event_start_datetime);
-                    const end_time = getTimeISOString(target_event.event_end_datetime);
+                    }
                 %>
                 <!-- ============================== -->
                 <!-- Scheduled Start Date -->
@@ -142,7 +121,7 @@
                     </label>
                     <input type="datetime-local" id="event_start_datetime" name="event_start_datetime"
                         class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        value="<%= start_time %>" disabled />
+                        value="<%= toDateTimeInputFormat(target_event.event_start_datetime) %>" disabled />
                 </div>
                 <!-- ============================== -->
                 <!-- Scheduled End Date -->
@@ -152,7 +131,7 @@
                     </label>
                     <input type="datetime-local" id="event_end_datetime" name="event_end_datetime"
                         class="me-3 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        value="<%= end_time %>" disabled />
+                        value="<%= toDateTimeInputFormat(target_event.event_end_datetime) %>" disabled />
                 </div>
                 <!-- ============================== -->
                 <!-- Remarks -->

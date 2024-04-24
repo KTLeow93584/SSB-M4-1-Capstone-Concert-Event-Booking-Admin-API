@@ -101,18 +101,17 @@
                     <div class="flex items-center justify-center w-full mt-8">
                         <img src="/img/event-default.webp"
                             alt="Profile Picture (Large)" id="display_profile_lg" class="me-3"
-                            style="min-width:96px; min-height:96px; max-width:128px; max-height:128px; width:100%; height:auto;" />
+                            style="max-width:384px; max-height:384px; width:100%; height:auto;" />
                         <img src="/img/event-default.webp"
                             alt="Profile Picture (Medium)" id="display_profile_md" class="me-3"
-                            style="min-width:64px; min-height:64px; max-width:96px; max-height:96px; width:100%; height:auto;" />
+                            style="max-width:256px; max-height:256px; width:100%; height:auto;" />
                         <img src="/img/event-default.webp"
                             alt="Profile Picture (Small)" id="display_profile_sm"
-                            style="min-width:32px; min-height:32px; max-width:64px; max-height:64px; width:100%; height:auto;" />
+                            style="max-width:128px; max-height:128px; width:100%; height:auto;" />
                     </div>
                     <div class="flex flex-col rounded-lg mb-2 px-2 py-1">
                         <p class="font-bold">Requirements for promotional image setup: </p>
                         <p class="fw-normal">1. Must not exceed 512kb. </p>
-                        <p class="fw-normal">2. Equal Width and Height Dimensions. </p>
                     </div>
                 </div>
                 <!-- ============================== -->
@@ -259,7 +258,7 @@
                     // Debug
                     //console.log("[On Profile Picture Upload] Width: " + width + ", Height: " + height);
 
-                    const isValid = width === height & file.size <= 512000;
+                    const isValid = file.size <= 512000;
                     if (isValid) {
                         display_lg.src = url;
                         display_md.src = url;
@@ -296,8 +295,8 @@
                         staff_id: parseInt(staff.value),
                         promo_image: (promo_image.files && promo_image.files.length > 0) ? display_profile_lg.src : null,
                         venue_id: parseInt(venue.value),
-                        event_start_datetime: event_start_datetime.value,
-                        event_end_datetime: event_end_datetime.value,
+                        event_start_datetime: event_start_datetime.value ? convertTimestampToUTC(event_start_datetime.value) : null,
+                        event_end_datetime: event_end_datetime.value ? convertTimestampToUTC(event_end_datetime.value) : null,
                         remarks: remarks.value.trim().length > 0 ? remarks.value : null
                     };
 
@@ -349,6 +348,22 @@
         function onModalRejected(context_name) {
             // Debug
             //console.log("[On Modal Prompted - Reject] Context: " + context_name);
+        }
+
+        function convertTimestampToUTC(timestamp) {
+            const date = new Date(timestamp);
+            const timezoneOffset = date.getTimezoneOffset();
+
+            // Debug
+            //console.log("[Timestamp Conversion - Create Event] Input + Date.", [timestamp, date]);
+
+            const convertedTimeStampISOStrSplit = date.toISOString().split(':');
+            const convertedTimeStampISOStr = convertedTimeStampISOStrSplit[0] + ':' + convertedTimeStampISOStrSplit[1];
+            
+            // Debug
+            //console.log("[Timestamp Conversion - Create Event] Output.", [convertedTimeStampISOStr, date, date.toISOString()]);
+
+            return convertedTimeStampISOStr;
         }
         // =====================
     </script>
