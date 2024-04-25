@@ -345,12 +345,12 @@
         // Submit Changes to server API.
         function onModalAccepted(context_name, body) {
             // Debug
-            console.log("[On Modal Prompted - Accept] Context: " + context_name);
+            //console.log("[On Modal Prompted - Accept] Context: " + context_name);
 
             switch (context_name) {
                 case 'create_user_modal':
                     // Debug
-                    console.log("[Input] Body: ", body);
+                    //console.log("[Input] Body: ", body);
 
                     const countryObj = JSON.parse(country_name.value);
                     const roleObj = JSON.parse(role.value);
@@ -369,7 +369,7 @@
                     };
 
                     // Debug
-                    console.log("[Output] Body: ", requestBody);
+                    //console.log("[Output] Body: ", requestBody);
 
                     fetch(server_url + '/web/api/user/create', {
                         headers: {
@@ -382,7 +382,7 @@
                         .then((response) => response.json())
                         .then((result) => {
                             // Debug
-                            console.log("Result.", result);
+                            //console.log("Result.", result);
 
                             if (result.success) {
                                 alert('User successfully created!');
