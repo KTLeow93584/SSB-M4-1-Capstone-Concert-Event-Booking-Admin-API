@@ -145,7 +145,7 @@ async function getUsers(req, res) {
       FROM users u
       LEFT JOIN individuals i ON i.user_id = u.id
       LEFT JOIN organizations o ON o.user_id = u.id
-      LEFT JOIN user_verifications uv ON uv.user_id = u.id
+      LEFT JOIN user_email_verifications uv ON uv.user_id = u.id
       LEFT JOIN countries c ON u.country_id = c.id
       ${filterSubQuery};
     `;
@@ -196,7 +196,7 @@ async function getUsers(req, res) {
       FROM users u
       LEFT JOIN individuals i ON i.user_id = u.id
       LEFT JOIN organizations o ON o.user_id = u.id
-      LEFT JOIN user_verifications uv ON uv.user_id = u.id
+      LEFT JOIN user_email_verifications uv ON uv.user_id = u.id
       LEFT JOIN countries c ON u.country_id = c.id
       LEFT JOIN roles r ON r.id = u.role_id
       ${filterSubQuery}
@@ -301,7 +301,7 @@ async function getUserInfo(req, res) {
       FROM users u
       LEFT JOIN individuals i ON i.user_id = u.id
       LEFT JOIN organizations o ON o.user_id = u.id
-      LEFT JOIN user_verifications uv ON uv.user_id = u.id
+      LEFT JOIN user_email_verifications uv ON uv.user_id = u.id
       LEFT JOIN countries c ON u.country_id = c.id
       LEFT JOIN roles r ON r.id = u.role_id
       WHERE

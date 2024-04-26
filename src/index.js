@@ -3,7 +3,7 @@ let express = require("express");
 let path = require("path");
 const cors = require("cors");
 
-const result = require("dotenv").config();
+const dotEndConfig = require("dotenv").config();
 
 const { Pool } = require("pg");
 const {
@@ -111,12 +111,6 @@ async function getPostgresVersion() {
 
 getPostgresVersion();
 // =======================================
-// Phone Verification - Telesign
-const telesignServices = require("./services/phone_verify_telesign.js");
-
-//telesignServices.verifyPhoneNumberIdentity("60175845732");
-//telesignServices.sendOTPSMSToPhoneNumber("60175845732");
-// =======================================
 // APIs (End-Users)
 
 // Authentication Endpoints. (Login/Registration/etc.)
@@ -139,6 +133,10 @@ app.use("/", userEventAPIRouter);
 
 const adminEventAPIRouter = require("./apis/events_admin_api.js");
 app.use("/", adminEventAPIRouter);
+
+// Country Endpoints.
+const countryAPIRouter = require("./apis/countries_user_api.js");
+app.use("/", countryAPIRouter);
 
 // Venue Endpoints.
 const venueAPIRouter = require("./apis/venues_api.js");

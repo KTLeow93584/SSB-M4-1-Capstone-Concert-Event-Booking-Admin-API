@@ -10,7 +10,6 @@ const {
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-
 // Guide on "pseudorandom" tokens:
 // https://gist.github.com/joepie91/7105003c3b26e65efcea63f3db82dfba
 const { v4: uuidv4 } = require("uuid");
@@ -40,6 +39,9 @@ const {
   createJSONErrorResponseToClient
 } = require("../services/middlewares.js");
 // =======================================
+// Phone Verification - Telesign
+const telesignServices = require("../services/phone_verify_telesign.js");
+// =======================================
 // Registration.
 router.post("/api/register", async (req, res) => {
   const client = await pool.connect();
@@ -68,7 +70,7 @@ router.post("/api/register", async (req, res) => {
     // =======================
     // Missing Form Inputs
     if (!body.email || !body.country_id || !body.contact_number || !body.password || 
-             (!body.name && !body.organization_name && !body.nric && !body.organization_registration_number))
+        (!body.name && !body.organization_name && !body.nric && !body.organization_registration_number))
         return createJSONErrorResponseToClient(res, 200, 405, "incomplete-form");
     // =======================
     // Individual or Organization Registration Type.
@@ -76,8 +78,8 @@ router.post("/api/register", async (req, res) => {
     const isOrganizationRegistration = !!body.organization_name && !!body.organization_registration_number;
 
     // Debug
-    //console.log(`Is Individual Flag: ${isIndividualRegistration}`);
-    //console.log(`Is Organization Flag: ${isOrganizationRegistration}`);
+    //console.log(`[On New User Registration] Is Individual Flag: ${isIndividualRegistration}`);
+    //console.log(`[On New User Registration] Is Organization Flag: ${isOrganizationRegistration}`);
 
     // Cannot be both individual & organization registration, nor neither.
     if (isIndividualRegistration && isOrganizationRegistration)
@@ -98,19 +100,29 @@ router.post("/api/register", async (req, res) => {
     if (!pass)
       return createJSONErrorResponseToClient(res, 200, 405, "incorrect-password-format");
     // =======================
-    // Check for existing email.
-    const userResult = await client.query(
-      "SELECT * FROM users WHERE email = $1 OR social_uid = $2", 
-      [body.email, body.social_uid]
-    );
+    // Check if phone number is already in use.
+    const existingUserCountryQuery = await client.query('SELECT id, phone_code FROM countries WHERE id = $1;', [body.country_id]);
+    const existingUserCountry = existingUserCountryQuery.rows.length > 0 ? existingUserCountryQuery.rows[0] : null;
 
-    // If email already exists, return response
-    if (userResult.rows.length > 0)
-      return createJSONErrorResponseToClient(res, 200, 409, "user-already-exist");
+    const existingUserQuery = await client.query('SELECT id, contact_number FROM users WHERE contact_number = $1;', [body.contact_number]);
+    const existingUser = existingUserQuery.rows.length > 0 ? existingUserQuery.rows[0] : null;
 
-    // If email doesn't exist, proceed on.
-    let insertNewUser = null;
-    let newUserQuery = null;
+    // Debug
+    /*
+    console.log("[On New User Registration] Country Code, Contact Number.", [existingUserCountry.phone_code, body.contact_number]);
+    console.log("[On New User Registration] Existing User.", existingUser);
+    console.log("[On New User Registration] Existing User Counter.", existingUserCountry);
+    console.log("[On New User Registration] Body.", body);
+
+    if (existingUser && existingUserCountry) {
+      console.log("[On New User Registration] Flag 1.", (existingUserCountry.id === body.country_id));
+      console.log("[On New User Registration] Flag 2.", (existingUser.contact_number === body.contact_number)); 
+    }
+    */
+
+    if ((existingUser && existingUserCountry) && 
+      existingUserCountry.id === body.country_id && existingUser.contact_number === body.contact_number)
+        return createJSONErrorResponseToClient(res, 200, 409, "contact-number-already-in-use");
     // =======================
     const hashedPassword = await generateNewPasswordHash(body.password);
 
@@ -152,18 +164,24 @@ router.post("/api/register", async (req, res) => {
       await client.query(newIndividualQuery, [newUser.id, body.organization_registration_number]);
     }
     // =======================
-    // Add pending verification query
-    const verificationToken = uuidv4();
+    // Send SMS to Number.
+    const verifyCode = telesignServices.sendOTPSMSToPhoneNumber(existingUserCountry.phone_code.toString() + body.contact_number);
+
+    // Debug Mode (Dummy Code)
+    //const verifyCode = 222333;
     
-    const verifiedQuery = `
-      INSERT INTO user_verifications (user_id, token)
+    // Add SMS verification query
+    const smsCodeQuery = `
+      INSERT INTO user_sms_verifications (user_id, code)
       VALUES ($1, $2);
     `;
-    await client.query(verifiedQuery, [newUser.id, verificationToken]);
+    await client.query(smsCodeQuery, [newUser.id, verifyCode]);
     // =======================
+    const verificationToken = uuidv4();
+
     // Send Email to Newly Registered User.
     // Requesting them to verify their email.
-    sendMailToRecipientHTML(
+    const result = await sendMailToRecipientHTML(
       "ror-support-noreply@ror.com",
       body.email,
       `Hello, ${body.name}. Please verify your email.`,
@@ -173,7 +191,94 @@ router.post("/api/register", async (req, res) => {
       },
       path.join(__dirname, "../services/mail/templates/user_verify_email.ejs")
     );
+    // Debug
+    //console.log("[On New User Registration] Mail Send Query Result.", result);
+
+    // Error Code 403 -> Unverified Email. (Free Mailgun Limitations)
+    if (result.status === 403) {
+      // Add pending verification query
+      const verifiedQuery = `
+        INSERT INTO user_email_verifications (user_id, token, verified_at)
+        VALUES ($1, $2, $3);
+      `;
+      await client.query(verifiedQuery, [newUser.id, verificationToken, new Date()]);
+      // =======================
+      // Send new data back to client.
+      return createJSONSuccessResponseToClient(res, 200, {
+        message: "unverified-email",
+        user: {
+          id: newUser.id
+        }
+      });
+      // =======================
+    }
+    else if (result.status === 200) {
+      // Add pending email verification query
+      const verifiedQuery = `
+        INSERT INTO user_email_verifications (user_id, token)
+        VALUES ($1, $2);
+      `;
+      await client.query(verifiedQuery, [newUser.id, verificationToken]);
+      // =======================
+    }
     // =======================
+    // Send no data back to client.
+    return createJSONSuccessResponseToClient(res, 200, {
+      message: null,
+      user: {
+        id: newUser.id
+      }
+    });
+    // =======================
+  }
+  catch (error) {
+    // Debug
+    console.error("[On New User Registration] Error.", error);
+
+    // Duplicate Entry
+    if (error.code === '23505') {
+      const errorDescription = error.detail;
+      if (errorDescription.includes('email'))
+        return createJSONErrorResponseToClient(res, 200, 409, "email-already-in-use");
+    }
+
+    return createJSONErrorResponseToClient(res, 200, 500, "server-error");
+  }
+  finally {
+    client.release();
+  }
+});
+
+// User verifies account's email.
+router.post("/api/sms/verify", async (req, res) => {
+  const client = await pool.connect();
+  try {
+    // =======================
+    const { user_id, sms_code } = req.body;
+    // =======================
+    const verificationQueryResult = await client.query("SELECT * from user_sms_verifications where user_id = $1;", [user_id])
+    if (verificationQueryResult.rows.length <= 0)
+      return createJSONErrorResponseToClient(res, 200, 404, "verification-not-found");
+    // =======================
+    const verificationResult = verificationQueryResult.rows[0];
+    if (verificationResult.verified_at)
+      return createJSONErrorResponseToClient(res, 200, 409, "user-already-verified");
+    // =======================
+    if (sms_code === verificationResult.code) {
+      // Debug
+      console.log("Input Code Matches Stored Code!");
+    }
+
+    verificationQuery = `
+      UPDATE user_sms_verifications SET
+        verified_at = $1
+      WHERE user_id = $2;
+    `;
+    await client.query(verificationQuery, [new Date(), user_id]);
+
+    // Debug
+    console.log("[Verify User's SMS] Successful.");
+
     return createJSONSuccessResponseToClient(res, 201);
   }
   catch (error) {
@@ -386,7 +491,7 @@ router.post("/api/password/forget", async (req, res) => {
     await client.query(query, [user.id, requestToken, expiryTimestamp]);
 
     // Send Email to User whom has forgotten their password.
-    sendMailToRecipientHTML(
+    await sendMailToRecipientHTML(
       "ror-support-noreply@ror.com",
       email,
       `Hello, ${user.name}. We have received your password reset request (Forgot Password).`,
@@ -484,7 +589,7 @@ router.post("/api/password/reset", async (req, res) => {
 });
 
 // User verifies account's email.
-router.post("/api/verify", async (req, res) => {
+router.post("/api/email/verify", async (req, res) => {
   const client = await pool.connect();
   try {
     const { token } = req.body;
@@ -497,7 +602,7 @@ router.post("/api/verify", async (req, res) => {
         COALESCE(i.name, o.name) AS name,
         uv.token,
         uv.verified_at
-      FROM user_verifications uv
+      FROM user_email_verifications uv
       INNER JOIN users u ON uv.user_id = u.id
       LEFT JOIN individuals i ON i.user_id = u.id
       LEFT JOIN organizations o ON o.user_id = u.id
@@ -515,7 +620,7 @@ router.post("/api/verify", async (req, res) => {
       return createJSONErrorResponseToClient(res, 200, 409, "user-already-verified");
     // =======================
     verificationQuery = `
-      UPDATE user_verifications SET
+      UPDATE user_email_verifications SET
         verified_at = $1
       WHERE token = $2;
     `;
@@ -526,14 +631,14 @@ router.post("/api/verify", async (req, res) => {
 
     // Send Email to Newly Registered User.
     // Requesting them to verify their email.
-    sendMailToRecipientHTML(
+    await sendMailToRecipientHTML(
       "ror-support-noreply@ror.com",
       user.email,
       `Welcome to Republic of Rock, ${user.name}`,
       { name: user.name },
       path.join(__dirname, "../services/mail/templates/welcome.ejs")
     );
-    
+
     return createJSONSuccessResponseToClient(res, 201);
   }
   catch (error) {

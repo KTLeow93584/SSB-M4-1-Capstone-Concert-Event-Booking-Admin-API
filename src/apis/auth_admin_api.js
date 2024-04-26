@@ -205,7 +205,7 @@ router.post("/web/api/password/forget", async (req, res) => {
     await client.query(query, [user.id, requestToken, expiryTimestamp]);
 
     // Send Email to User whom has forgotten their password.
-    sendMailToRecipientHTML(
+    await sendMailToRecipientHTML(
       "ror-support-noreply@ror.com",
       email,
       `Hello, ${user.name}. We have received your password reset request (Forgot Password).`,
@@ -390,7 +390,7 @@ async function verifyAccountEmail (req, res) {
         COALESCE(i.name, o.name) AS name,
         uv.token,
         uv.verified_at
-      FROM user_verifications uv
+      FROM user_email_verifications uv
       INNER JOIN users u ON uv.user_id = u.id
       LEFT JOIN individuals i ON i.user_id = u.id
       LEFT JOIN organizations o ON o.user_id = u.id
@@ -411,7 +411,7 @@ async function verifyAccountEmail (req, res) {
       return { success: true, is_already_verified: true };
     // =======================
     verificationQuery = `
-      UPDATE user_verifications SET
+      UPDATE user_email_verifications SET
         verified_at = $1
       WHERE token = $2;
     `;
@@ -422,7 +422,7 @@ async function verifyAccountEmail (req, res) {
 
     // Send Email to Newly Registered User.
     // Requesting them to verify their email.
-    sendMailToRecipientHTML(
+    await sendMailToRecipientHTML(
       "ror-support-noreply@ror.com",
       user.email,
       `Welcome to Republic of Rock, ${user.name}`,

@@ -25,7 +25,7 @@ function sendMailToRecipientText(senderEmail, recipientEmail, subject, text) {
 const fs = require("fs");
 const ejs = require("ejs");
 
-function sendMailToRecipientHTML(senderEmail, recipientEmail, subject, userData, htmlPath) {
+async function sendMailToRecipientHTML(senderEmail, recipientEmail, subject, userData, htmlPath) {
   const emailTemplate = fs.readFileSync(htmlPath, "utf8");
 
   // Render the template with dynamic data
@@ -41,20 +41,24 @@ function sendMailToRecipientHTML(senderEmail, recipientEmail, subject, userData,
   // Debug
   //console.log("Data.", messageData.html);
   
-  sendMail(messageData);
+  const result = await sendMail(messageData);
+  return result;
 }
 // ================
-function sendMail(messageData) {
-  client.messages
-    .create(MAILGUN_DOMAIN, messageData)
-    .then((response) => {
-      // Debug
-      console.log("[Mailgun API] Response:", response);
-    })
-    .catch((error) => {
-      // Debug
-      console.error("[Mailgun API] Error:", error);
-    });
+async function sendMail(messageData) {
+  try {
+    const response = await client.messages.create(MAILGUN_DOMAIN, messageData);
+
+    // Debug
+    console.log("[Mailgun API] Response.", response);
+
+    return response
+  }
+  catch (error) {
+    // Debug
+    console.error("[Mailgun API] Error.", error);
+    return error;
+  }
 }
 // =======================================
 module.exports = {

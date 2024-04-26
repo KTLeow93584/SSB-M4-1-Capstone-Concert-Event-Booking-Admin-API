@@ -36,6 +36,7 @@ const {
   createJSONSuccessResponseToClient,
   createJSONErrorResponseToClient
 } = require("../services/middlewares.js");
+const { contact } = require("telesign/lib/phoneId.js");
 // =======================================
 // Create a New User Account Info
 router.post("/web/api/user/create", [isUserAuthorized], async (req, res) => {
@@ -103,7 +104,9 @@ router.post("/web/api/user/create", [isUserAuthorized], async (req, res) => {
     if (countryQuery.rows.length <= 0)
         return createJSONErrorResponseToClient(res, 200, 404, "no-valid-country-found");
 
-    const country_id = countryQuery.rows[0].id;
+    const country = countryQuery.rows[0];
+    // =======================
+    const phoneNumber = country.phone_code + body.contact_number;
     // =======================
     // Insert into users table (Email, Country ID, Contact Number, Password, Role ID, Profile Picture)
     const newUserSQL = `
@@ -112,7 +115,7 @@ router.post("/web/api/user/create", [isUserAuthorized], async (req, res) => {
       RETURNING id, email;
     `;
     const hashedPassword = await generateNewPasswordHash(password);
-    const newUserQuery = await client.query(newUserSQL, [email, country_id, contact_number, hashedPassword, role_id, profile_picture]);
+    const newUserQuery = await client.query(newUserSQL, [email, country.id, phoneNumber, hashedPassword, role_id, profile_picture]);
     // =======================
     const newUser = newUserQuery.rows[0];
     // =======================
@@ -141,14 +144,14 @@ router.post("/web/api/user/create", [isUserAuthorized], async (req, res) => {
     const verificationToken = uuidv4();
     
     const verifiedQuery = `
-      INSERT INTO user_verifications (user_id, token)
+      INSERT INTO user_email_verifications (user_id, token)
       VALUES ($1, $2);
     `;
     await client.query(verifiedQuery, [newUser.id, verificationToken]);
     // =======================
     // Send Email to Newly Registered User.
     // Requesting them to verify their email.
-    sendMailToRecipientHTML(
+    await sendMailToRecipientHTML(
       "ror-support-noreply@ror.com",
       email,
       `Hello, ${name}. Please verify your email.`,
@@ -168,7 +171,13 @@ router.post("/web/api/user/create", [isUserAuthorized], async (req, res) => {
   }
   catch (error) {
     // Debug
-    console.error(error.stack);
+    //console.error("[On Admin Create New User] Error.", error);
+
+    const errorDescription = error.detail;
+    if (errorDescription.includes('email'))
+      return createJSONErrorResponseToClient(res, 200, 409, "email-already-in-use");
+    else if (errorDescription.includes('contact_number'))
+      return createJSONErrorResponseToClient(res, 200, 409, "contact-number-already-in-use");
 
     return createJSONErrorResponseToClient(res, 200, 500, "server-error");
   }
@@ -233,18 +242,36 @@ router.put("/web/api/user", [isUserAuthorized], async (req, res) => {
     }
     // =======================
     // Modify Country ID, Contact Number, Profile Picture,
-    let country_id = null;
+    let country = null;
+    let phoneNumber = null;
+
     if (country_name) {
-      const selectCountryQuery = await client.query('SELECT id, name FROM countries WHERE name = $1;', [country_name]);
+      const selectCountryQuery = await client.query('SELECT id, name, phone_code FROM countries WHERE name = $1;', [country_name]);
 
       if (selectCountryQuery.rows.length <= 0)
         return createJSONErrorResponseToClient(res, 200, 404, "no-valid-country-found");
 
-      country_id = selectCountryQuery.rows[0].id;
+      country = selectCountryQuery.rows[0];
+    }
+    else {
+      const selectCountryQuery = await client.query('SELECT id, name, phone_code FROM countries WHERE id = $1;', [selectedUser.country_id]);
+
+      if (selectCountryQuery.rows.length <= 0)
+        return createJSONErrorResponseToClient(res, 200, 404, "no-valid-country-found");
+
+      country = selectCountryQuery.rows[0];
     }
     // =======================
+    // Check if Phone Number is already in use.
+    const existingUserQuery = await client.query('SELECT id, contact_number FROM users WHERE contact_number = $1;', [body.contact_number]);
+    const existingUser = existingUserQuery.rows.length > 0 ? existingUserQuery.rows[0] : null;
+    
+    if ((existingUser && country) && 
+      existingUser.country_id === country.id && existingUser.contact_number === contact_number)
+        return createJSONErrorResponseToClient(res, 200, 409, "contact-number-already-in-use");
+    // =======================
     // Debug
-    //console.log("[Edit User Info] Parameters (ID, Email, Name, Country ID, Contact Number, Type, Identification Number).", [
+    //console.log("[On Edit User Info] Parameters (ID, Email, Name, Country ID, Contact Number, Type, Identification Number).", [
       //user_id, email, name, country_id, contact_number, type, id_number
     //]);
     // =======================
@@ -301,10 +328,6 @@ router.put("/web/api/user", [isUserAuthorized], async (req, res) => {
       await client.query(editNameSQL, [name, id_number, user_id]);
     }
     // =======================
-    // Debug
-    //console.log("[On Delete Existing User] Log 1 - User ID", user_id);
-    //console.log("[On Delete Existing User] Log 2 - Delete Query", deleteUserQuery.rowCount);
-
     // Track User Table Modification Records
     if (editUserQuery.rowCount > 0) {
       const insertRecords = `
@@ -323,7 +346,11 @@ router.put("/web/api/user", [isUserAuthorized], async (req, res) => {
   }
   catch (error) {
     // Debug
-    console.error(error.stack);
+    //console.error("[On Admin Modify Existing User] Error.", error);
+
+    const errorDescription = error.detail;
+    if (errorDescription.includes('email'))
+      return createJSONErrorResponseToClient(res, 200, 409, "email-already-in-use");
 
     return createJSONErrorResponseToClient(res, 200, 500, "server-error");
   }
@@ -369,7 +396,7 @@ router.delete("/web/api/user", [isUserAuthorized], async (req, res) => {
   }
   catch (error) {
     // Debug
-    console.error(error.stack);
+    //console.error("[On Admin Delete Existing User] Error.", error);
 
     return createJSONErrorResponseToClient(res, 200, 500, "server-error");
   }

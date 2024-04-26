@@ -113,10 +113,32 @@ router.put("/api/profile", [authenticateCustomJWToken, authenticateFirebaseJWTok
       if (contact_number && typeof contact_number === "number")
         contact_number = contact_number.toString();
       // ==============================================
-      const userQuery = await client.query('SELECT id FROM users  WHERE email = $1;', [email]);
+      const userQuery = await client.query('SELECT id, country_id FROM users WHERE email = $1;', [email]);
 
       if (userQuery.rows.length <= 0)
         return createJSONErrorResponseToClient(res, 200, 404, "no-user-found");
+      // ==============================================
+      // Check if phone number is already in use.
+      const existingUserCountryQuery = await client.query('SELECT id, phone_code FROM countries WHERE id = $1;', [country_id]);
+      const existingUserCountry = existingUserCountryQuery.rows.length > 0 ? existingUserCountryQuery.rows[0] : null;
+
+      const existingUserQuery = await client.query(
+        'SELECT id, email, country_id, contact_number FROM users WHERE contact_number = $1;',
+        [contact_number]
+      );
+      const existingUser = existingUserQuery.rows.length > 0 ? existingUserQuery.rows[0] : null;
+
+      // Debug
+      //console.log("[On Update User Profile] Existing User.", existingUser);
+      //console.log("[On Update User Profile] Existing User's Country.", existingUserCountry);
+      //console.log("[On Update User Profile] Contact Number.", contact_number);
+      //console.log("[On Update User Profile] Flag 1.", (existingUser.email !== email && (existingUser && existingUserCountry)));
+      //console.log("[On Update User Profile] Flag 2.", parseInt(existingUser.country_id) === parseInt(existingUserCountry.id));
+      //console.log("[On Update User Profile] Flag 3.", existingUser.contact_number === contact_number);
+
+      if ((existingUser && existingUserCountry) && existingUser.email !== email && 
+        parseInt(existingUser.country_id) === parseInt(existingUserCountry.id) && existingUser.contact_number === contact_number)
+          return createJSONErrorResponseToClient(res, 200, 409, "contact-number-already-in-use");
       // ==============================================
       let sql = `
         UPDATE users SET
@@ -167,7 +189,7 @@ router.put("/api/profile", [authenticateCustomJWToken, authenticateFirebaseJWTok
     }
     catch (error) {
       // Debug
-      console.error(error.stack);
+      console.error("[On Admin Modify Existing User] Error.", error);
 
       return createJSONErrorResponseToClient(res, 200, 500, "server-error");
     }
@@ -176,28 +198,5 @@ router.put("/api/profile", [authenticateCustomJWToken, authenticateFirebaseJWTok
     }
   },
 );
-// =======================================
-async function getUserProfileInfo(client, user_id) {
-  const userProfileQuery = `
-      SELECT 
-        u.id as user_id,
-        COALESCE(i.name, o.name) AS name,
-        u.profile_picture
-
-        FROM users u
-        
-        LEFT JOIN individuals i ON i.user_id = u.id
-        LEFT JOIN organizations o ON o.user_id = u.id
-
-        WHERE u.id = $1;
-    `;
-  query = await client.query(userProfileQuery, [user_id]);
-  const user = query.rows[0];
-
-  // Debug
-  //console.log("[Get User Profile (Self)] Result", user);
-
-  return user;
-}
 // =======================================
 module.exports = router;

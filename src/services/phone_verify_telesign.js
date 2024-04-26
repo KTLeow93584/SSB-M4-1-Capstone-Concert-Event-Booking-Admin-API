@@ -27,9 +27,9 @@ function onVerifyPhoneNumberIdentityCallback(error, responseBody) {
   // Display the response body in the console for debugging purposes.
   // In your production code, you would likely remove this.
   if (!error)
-    console.log("\nResponse body:\n" + JSON.stringify(responseBody));
+    console.log("Response body:", JSON.stringify(responseBody));
   else
-    console.error("An exception occurred. Error:\n\n" + error);
+    console.error("An exception occurred. Error:", error);
 }
 // =======================================;
 // Phone ID Verification (via OTP SMS).
@@ -75,6 +75,7 @@ function sendOTPSMSToPhoneNumber(phoneNumber) {
   };
 
   telesign.verify.sms(options, smsVerifyCallback);
+  return verifyCode;
 }
 // =======================================
 function showPrompt(question, callback) {
