@@ -13,7 +13,7 @@ const {
 // ======================================
 let app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({limit: '50mb'}));
 
 const pool = new Pool({
   connectionString: DATABASE_URL,
@@ -86,7 +86,7 @@ app.use((req, res, next) => {
 //https://www.npmjs.com/package/memory-cache-node
 // ======================================
 var bodyParser = require('body-parser');
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 // =======================================
 // Sets the view engine to ejs
 app.set("view engine", 'ejs');
